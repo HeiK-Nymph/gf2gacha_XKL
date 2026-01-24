@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 export const useGachaRecordStore = defineStore('gachaRecord', () => {
     const gacha = ref({
-  "permanent_pool": [],
+  "permanent_pool": [  ],
   "character_pool": [],
   "weapon_pool": [],
 })

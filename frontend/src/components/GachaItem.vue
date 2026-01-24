@@ -119,6 +119,7 @@ const customColorMethod = (percentage) => {
 // 动态获取图片路径
 const getImagePath = (itemId) => {
   try {
+    console.log(itemId)
     return new URL(`../assets/images/gacha/character/${itemId}.png`, import.meta.url).href
   } catch {
     // 如果图片不存在，返回空字符串或默认图片
