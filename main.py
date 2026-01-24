@@ -1,0 +1,372 @@
+import webview
+import webbrowser
+import threading
+import asyncio
+import sys
+import os
+import json
+from pathlib import Path
+import requests
+
+# 添加backend路径
+sys.path.insert(0, str(Path(__file__).parent / "backend"))
+
+class GachaApp:
+    def __init__(self):
+        self.window = None
+        self.proxy_thread = None
+        self.proxy_running = False  # 新增：代理运行标志
+        # 新增：版本管理
+        self.version = self._load_version()
+        # 改成你的 GitHub 仓库地址
+        self.version_url = "https://raw.githubusercontent.com/HeiK-Nymph/gf2gacha_XKL/main/version.json"
+        
+    def get_gacha(self):
+        from backend.api.getGacha import get_gacha_data_all
+        from backend.proxy import close_proxy
+
+        self.enable_system_proxy()
+
+            
+        
+        gacha =  get_gacha_data_all()
+        
+        if gacha is not None:
+            print("=" * 50)
+            print(gacha)
+            close_proxy()
+            return {
+                "status": "success",
+                "msg": "获取抽卡记录成功",
+                "data": gacha
+            }
+        else:
+            return {
+                "status": "error",
+                "msg": "获取抽卡记录失败",
+            }
+        
+    def install_cert(self):
+        try:
+            self.start_proxy()
+            webbrowser.open('http://mitm.it/')
+            return {
+                "status": "success",
+                "msg": "打开证书网站成功",
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "msg": "打开证书网站失败",
+            }
+        
+    def import_record(self, record_id):
+        try:
+            records_dir = Path(__file__).parent / "records"
+            input_file = records_dir / f"{record_id}.json"
+
+            if not input_file.exists():
+                return {
+                    "status": "error",
+                    "msg": f"记录文件 {record_id}.json 不存在",
+                }
+
+            with open(input_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            print(data)
+            return {
+                "status": "success",
+                "msg": "导入抽卡记录成功",
+                "data": data
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "msg": f"导入抽卡记录失败: {e}",
+            }
+
+    def export_record(self, record_id, gacha_data):
+        try:
+            if not gacha_data:
+                return {
+                    "status": "error",
+                    "msg": "抽卡记录为空",
+                }
+            records_dir = Path(__file__).parent / "records"
+            records_dir.mkdir(exist_ok=True)
+            output_file = records_dir / f"{record_id}.json"
+            if output_file.exists():
+                # 读取现有文件
+                with open(output_file, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+                
+                # 合并三个池子
+                merged_data = {
+                    "permanent_pool": self._merge_pool_data(
+                        gacha_data.get("permanent_pool", []),
+                        existing_data.get("permanent_pool", [])
+                    ),
+                    "character_pool": self._merge_pool_data(
+                        gacha_data.get("character_pool", []),
+                        existing_data.get("character_pool", [])
+                    ),
+                    "weapon_pool": self._merge_pool_data(
+                        gacha_data.get("weapon_pool", []),
+                        existing_data.get("weapon_pool", [])
+                    )
+                }
+                gacha_data = merged_data
+            
+            with open(output_file, "w", encoding="utf-8") as f:
+                json.dump(gacha_data, f, ensure_ascii=False, indent=2)
+            return {
+                "status": "success",
+                "msg": "导出抽卡记录成功",
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "msg": "导出抽卡记录失败",
+            }
+    
+    def _merge_pool_data(self, new_pages, old_pages):
+        """合并池子数据，新数据在上，旧数据在下，去除连续重复记录"""
+        # 将页面扁平化为记录列表
+        new_records = []
+        for page in new_pages:
+            for record in page.get("data", {}).get("list", []):
+                new_records.append(record)
+
+        old_records = []
+        for page in old_pages:
+            for record in page.get("data", {}).get("list", []):
+                old_records.append(record)
+
+        # 将记录转为字符串以便比较
+        new_str_records = [json.dumps(r, sort_keys=True) for r in new_records]
+        old_str_records = [json.dumps(r, sort_keys=True) for r in old_records]
+
+        # 找到新数据尾部和旧数据头部最长的连续重合部分
+        # 遍历新数据的最后一条记录开始向前找
+        overlap_count = 0
+        for i in range(len(new_str_records)):
+            # 检查新数据从第i条到末尾是否匹配旧数据从开始到第(len - i)条
+            new_suffix = new_str_records[i:]
+            old_prefix = old_str_records[:len(new_suffix)]
+
+            if new_suffix == old_prefix:
+                overlap_count = len(new_suffix)
+                break
+
+        # 去掉旧数据中的重合部分
+        old_records = old_records[overlap_count:]
+
+        # 合并新旧记录（先新后旧）
+        all_records = new_records + old_records
+
+        # 重建页面结构
+        return self._rebuild_pages(all_records)
+
+    def _rebuild_pages(self, records):
+        """将记录列表重建为页面结构"""
+        if not records:
+            return []
+
+        pages = []
+        current_list = []
+
+        # 按原始页面大小重建（每页6条）
+        for i, record in enumerate(records):
+            current_list.append(record)
+            if (i + 1) % 6 == 0 or i == len(records) - 1:
+                page = {
+                    "code": 0,
+                    "message": "OK",
+                    "data": {"list": current_list.copy(), "next": ""}
+                }
+                pages.append(page)
+                current_list = []
+
+        return pages
+    
+    def _load_version(self):
+        """加载本地版本"""
+        version_file = Path(__file__).parent / "version.json"
+        if version_file.exists():
+            with open(version_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return {"current_version": "1.0.0"}
+    
+    def check_update(self):
+        """检查更新"""
+        try:
+            # 从 GitHub 获取最新版本
+            response = requests.get(self.version_url, timeout=5)
+            remote_data = response.json()
+            remote_version = remote_data.get("current_version", "1.0.0")
+            local_version = self.version.get("current_version", "1.0.0")
+            
+            # 比较版本号
+            if self._is_newer(remote_version, local_version):
+                return {
+                    "status": "success",
+                    "has_update": True,
+                    "latest_version": remote_version,
+                    "message": f"发现新版本 v{remote_version}"
+                }
+            else:
+                return {
+                    "status": "success",
+                    "has_update": False,
+                    "message": "当前已是最新版本"
+                }
+        except Exception as e:
+            return {
+                "status": "error",
+                "has_update": False,
+                "message": f"检查更新失败"
+            }
+    
+    def _is_newer(self, remote, local):
+        """简单的版本号比较"""
+        try:
+            return [int(x) for x in remote.split(".")] > [int(x) for x in local.split(".")]
+        except:
+            return False
+    
+    def get_version_info(self):
+        """获取版本信息"""
+        try:
+            # 检查更新
+            update_result = self.check_update()
+            local_version = self.version.get("current_version", "1.0.0")
+            
+            return {
+                "status": "success",
+                "current_version": local_version,
+                "has_update": update_result.get("has_update", False),
+                "latest_version": update_result.get("latest_version", ""),
+                "message": update_result.get("message", "")
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"获取版本信息失败"
+            }
+    
+    def open_github(self):
+        """打开GitHub主页"""
+        try:
+            webbrowser.open("https://github.com/HeiK-Nymph/gf2gacha_XKL")
+            return {
+                "status": "success",
+                "message": "已打开GitHub主页"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": "打开GitHub主页失败"
+            }
+        
+    def enable_system_proxy(self):
+        """开启系统代理(不启动mitmproxy)"""
+        from backend.proxy import set_proxy
+        try:
+            set_proxy('127.0.0.1', 8080)
+            print("[OK] 开启系统代理成功")
+        except Exception as e:
+            print(f"[ERROR] 开启系统代理失败: {e}")
+    
+    def load_frontend(self):
+        """加载Vue前端"""
+        # 获取前端构建目录
+        frontend_dir = Path(__file__).parent / "frontend" / "dist"
+        index_path = frontend_dir / "index.html"
+        
+        if not index_path.exists():
+            print("[ERROR] 前端未构建，请先运行: npm run build")
+            return None
+            
+        # 使用绝对路径
+        url = f"file://{index_path.absolute()}"
+        print(f"[INFO] 加载前端: {url}")
+        return url
+    
+    def start_proxy(self):
+        """在子线程中启动mitmproxy"""
+        if self.proxy_running:
+            print("[ERROR] 代理已运行")
+            return
+
+        from backend.proxy import run_proxy
+        from backend.addons.addons import set_event_handler
+        
+        def run():
+            # 设置事件处理器
+            set_event_handler(self)
+
+            # 启动mitmproxy（在后台线程）
+            print("[INFO] 启动mitmproxy代理...")
+            try:
+                self.proxy_running = True
+                asyncio.run(run_proxy(8080))
+            except Exception as e:
+                print(f"[ERROR] 代理启动失败: {e}")
+            finally:
+                self.proxy_running = False
+        
+        self.proxy_thread = threading.Thread(target=run, daemon=True)
+        self.proxy_thread.start()
+    
+    def on_closed(self):
+        """窗口关闭时的处理"""
+        from backend.proxy import close_proxy
+        close_proxy()
+        self.proxy_running = False
+        print("[INFO] 应用关闭")
+        # 这里可以添加清理代码
+
+    
+    
+    def test_api(self, message):
+        """测试API - 供前端调用"""
+        print(f"[INFO] 收到前端消息: {message}")
+        return {"status": "success", "reply": f"Python收到: {message}"}
+    
+    def run(self):
+        """启动应用"""
+        print("=" * 50)
+        print("少女前线抽卡记录工具")
+        print(f"[INFO] 当前版本: v{self.version.get('current_version', '1.0.0')}")
+        print("=" * 50)
+        
+        # 加载前端URL
+        url = self.load_frontend()
+        if not url:
+            return
+        
+        # 创建窗口
+        self.window = webview.create_window(
+            title="少女前线抽卡记录",
+            url=url,
+            width=1200,
+            height=800,
+            js_api=self,  # 将整个对象暴露给JS
+            confirm_close=False,  # 询问是否关闭
+            resizable=False
+        )
+        
+        # 注册关闭事件
+        self.window.events.closed += self.on_closed
+        
+        # 启动mitmproxy（在后台线程）
+        self.start_proxy()
+        
+        # 启动Webview GUI（主线程）
+        print("[OK] 启动GUI界面...")
+        print("[INFO] 按 Ctrl+C 停止应用")
+        webview.start()
+
+if __name__ == "__main__":
+    app = GachaApp()
+    app.run()
