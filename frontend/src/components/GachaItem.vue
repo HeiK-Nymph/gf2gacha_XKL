@@ -4,11 +4,14 @@
     <div>共获得五星<span>{{ ssrTotal }}</span>个，歪了<span v-if="props.pool_type !== 'permanent'"><span>{{ waiCount }}</span></span>个，具体如下：</div>
     <div class="ssr-grid" v-if="ssrTotal > 0">
       <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" >
-        <img :src="getImagePath(item.item)" style="width: 35px;"/>
+        <img v-if="props.pool_type !== 'weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
+        <span v-else class="weapon-name">{{ item.name }}</span>
       </div>
     </div>
     <div>
       <div class="ssr-item">
+
+
 
  
         <div>
@@ -21,9 +24,8 @@
 
         <div>
 
-       
-          <img :src="getImagePath(item.item)" style="width: 35px;"/>
-          
+          <img v-if="props.pool_type !== 'weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
+          <span v-else class="weapon-name">{{ item.name }}</span>
         </div>
         <el-progress  :text-inside="true" :stroke-width="30" :percentage="item.costDraws * 1.25" :format="ssrListFormat" :color="customColorMethod"/>
         <span v-if="item.isWai && props.pool_type !== 'permanent'" class="wai-tag">歪</span>
@@ -380,6 +382,21 @@ const jumpToPage = () => {
   background-color: #ff4757;
   border-radius: 4px;
   text-align: center;
+}
+
+.weapon-name {
+  display: inline-block;
+  padding: 5px;
+  font-size: 12px;
+  color: #fff;
+  background-color: #2196F3;
+  border-radius: 4px;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
 }
 
 .raw-data-container {

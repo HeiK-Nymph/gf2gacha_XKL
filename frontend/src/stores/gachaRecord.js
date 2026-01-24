@@ -5,7 +5,7 @@ export const useGachaRecordStore = defineStore('gachaRecord', () => {
     const gacha = ref({
   "permanent_pool": [],
   "character_pool": [],
-  "weapon_pool": []
+  "weapon_pool": [],
 })
 
     const characterGacha = computed(() => {

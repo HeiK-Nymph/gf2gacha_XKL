@@ -42,7 +42,7 @@ export const useSSRStore = defineStore('ssr', () => {
     }
 
     const SSR_weapon = {
-
+        10713:"告死礼赞"
     }
 
     const SSR_permanent = {

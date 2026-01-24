@@ -146,10 +146,10 @@ def get_gacha_data_all():
 
     set_gacha_Banner("4")
     response = get_gacha_data_one()
-    gacha_data_Character.append(response)
+    gacha_data_Weapon.append(response)
     while response["data"]["next"] != "":
         response = get_gacha_data_one()
-        gacha_data_Character.append(response)
+        gacha_data_Weapon.append(response)
 
     
 
