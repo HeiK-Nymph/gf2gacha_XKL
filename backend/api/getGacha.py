@@ -1,11 +1,21 @@
 import requests
 import json
 from pathlib import Path
+import asyncio
+import shutil
+import tempfile
 
 
-def set_gacha_Banner(id):
-    json_path = Path(__file__).parent.parent.parent / "json" / "latest_request.json"
-    
+def set_gacha_Banner(id, json_path=None):
+    """设置抽卡池类型
+
+    Args:
+        id: 池子类型ID (1=常驻池, 3=角色池, 4=武器池)
+        json_path: json文件路径，默认使用 latest_request.json
+    """
+    if json_path is None:
+        json_path = Path(__file__).parent.parent.parent / "json" / "latest_request.json"
+
     try:
         if not json_path.exists():
             print("[ERROR] 请求数据不存在")
@@ -15,10 +25,10 @@ def set_gacha_Banner(id):
     except Exception as e:
         print(f"[ERROR] 读取请求数据失败: {e}")
         return False
-    
-    
+
+
     latest_request["body"]["type_id"] = id
-    
+
     if "next" in latest_request["body"]:  # 先判断键存在再删除，避免报KeyError
         del latest_request["body"]["next"]
         try:
@@ -41,10 +51,14 @@ def set_gacha_Banner(id):
 
 
 
-def get_gacha_data_one():
-    
+def get_gacha_data_one(json_path=None):
+    """获取单页抽卡数据
 
-    json_path = Path(__file__).parent.parent.parent / "json" / "latest_request.json"
+    Args:
+        json_path: json文件路径，默认使用 latest_request.json
+    """
+    if json_path is None:
+        json_path = Path(__file__).parent.parent.parent / "json" / "latest_request.json"
 
     
 
@@ -123,41 +137,106 @@ def get_gacha_data_one():
         print(f"[ERROR] 请求失败：{str(e)}")
         return None
 
+
+async def get_gacha_data_one_async(json_path):
+    """异步获取单页抽卡数据
+
+    Args:
+        json_path: json文件路径
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, get_gacha_data_one, json_path)
+
+
+async def get_gacha_pool_async(pool_type_id, pool_name):
+    """异步获取单个池子的所有数据
+
+    Args:
+        pool_type_id: 池子类型ID (1=常驻池, 3=角色池, 4=武器池)
+        pool_name: 池子名称（用于日志）
+
+    Returns:
+        池子的完整数据列表
+    """
+    # 创建临时文件用于该池子的状态管理
+    original_json_path = Path(__file__).parent.parent.parent / "json" / "latest_request.json"
+    temp_json_path = Path(tempfile.gettempdir()) / f"gf2_gacha_{pool_name}_{pool_type_id}.json"
+
+    try:
+        # 复制原始配置到临时文件
+        shutil.copy(original_json_path, temp_json_path)
+        print(f"[INFO] 创建临时配置文件: {temp_json_path}")
+
+        # 设置池子类型
+        set_gacha_Banner(pool_type_id, temp_json_path)
+
+        # 异步获取第一页
+        response = await get_gacha_data_one_async(temp_json_path)
+        if response is None:
+            print(f"[ERROR] 获取{pool_name}第一页数据失败")
+            return []
+
+        gacha_data = [response]
+        print(f"[OK] 获取{pool_name}第一页数据成功")
+
+        # 异步获取剩余页（由于分页有依赖关系，必须串行获取，但使用线程池执行网络请求）
+        page = 2
+        while response["data"]["next"] != "":
+            response = await get_gacha_data_one_async(temp_json_path)
+            if response is None:
+                print(f"[ERROR] 获取{pool_name}第{page}页数据失败")
+                break
+            gacha_data.append(response)
+            print(f"[OK] 获取{pool_name}第{page}页数据成功")
+            page += 1
+
+        print(f"[OK] {pool_name}数据获取完成，共{len(gacha_data)}页")
+        return gacha_data
+
+    except Exception as e:
+        print(f"[ERROR] 获取{pool_name}数据失败: {e}")
+        return []
+    finally:
+        # 清理临时文件
+        if temp_json_path.exists():
+            temp_json_path.unlink()
+            print(f"[INFO] 删除临时配置文件: {temp_json_path}")
+
+
 def get_gacha_data_all():
+    """并行获取所有池子的抽卡数据"""
+    print("[INFO] 开始并行获取三个池子的数据...")
 
-    gacha_data_Permanent = []
-    gacha_data_Character = []
-    gacha_data_Weapon = []
+    # 使用 asyncio 并行获取三个池子的数据
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
+    try:
+        # 并行执行三个池子的数据获取
+        results = loop.run_until_complete(asyncio.gather(
+            get_gacha_pool_async("1", "常驻池"),
+            get_gacha_pool_async("3", "角色池"),
+            get_gacha_pool_async("4", "武器池")
+        ))
 
-    set_gacha_Banner("1")
-    response = get_gacha_data_one()
-    gacha_data_Permanent.append(response)
-    while response["data"]["next"] != "":
-        response = get_gacha_data_one()
-        gacha_data_Permanent.append(response)
+        gacha_data_Permanent, gacha_data_Character, gacha_data_Weapon = results
 
-    set_gacha_Banner("3")
-    response = get_gacha_data_one()
-    gacha_data_Character.append(response)
-    while response["data"]["next"] != "":
-        response = get_gacha_data_one()
-        gacha_data_Character.append(response)
+        print("[OK] 所有池子数据获取完成")
 
-    set_gacha_Banner("4")
-    response = get_gacha_data_one()
-    gacha_data_Weapon.append(response)
-    while response["data"]["next"] != "":
-        response = get_gacha_data_one()
-        gacha_data_Weapon.append(response)
-
-    
-
-    return {
-        "permanent_pool": gacha_data_Permanent,  # 常驻池
-        "character_pool": gacha_data_Character,  # 角色池
-        "weapon_pool": gacha_data_Weapon         # 武器池
-    }
+        return {
+            "permanent_pool": gacha_data_Permanent,  # 常驻池
+            "character_pool": gacha_data_Character,  # 角色池
+            "weapon_pool": gacha_data_Weapon         # 武器池
+        }
+    except Exception as e:
+        print(f"[ERROR] 获取抽卡数据失败: {e}")
+        return {
+            "permanent_pool": [],
+            "character_pool": [],
+            "weapon_pool": []
+        }
+    finally:
+        loop.close()
     
 
     

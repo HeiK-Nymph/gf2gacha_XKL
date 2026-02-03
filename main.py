@@ -25,16 +25,23 @@ class GachaApp:
         from backend.api.getGacha import get_gacha_data_all
         from backend.proxy import close_proxy
 
+        # 检查 latest_request.json 是否为空
+        json_path = Path(__file__).parent / "json" / "latest_request.json"
+        if not json_path.exists() or json_path.stat().st_size == 0:
+            
+            return {
+                "status": "error",
+                "msg": "获取抽卡记录失败",
+            }
+
         self.enable_system_proxy()
 
-            
-        
-        gacha =  get_gacha_data_all()
-        
+        gacha = get_gacha_data_all()
+
         if gacha is not None:
             print("=" * 50)
             print(gacha)
-            close_proxy()
+            
             return {
                 "status": "success",
                 "msg": "获取抽卡记录成功",
@@ -199,15 +206,37 @@ class GachaApp:
     
     def check_update(self):
         """检查更新"""
+        print("=" * 50)
+        print("[UPDATE] 开始检查更新...")
+        print(f"[UPDATE] 版本检查URL: {self.version_url}")
+
+        # 暂时关闭系统代理以检查更新
+        from backend.proxy import close_proxy
+        print("[UPDATE] 暂时关闭系统代理...")
+        close_proxy()
+
         try:
             # 从 GitHub 获取最新版本
+            print("[UPDATE] 正在请求 GitHub...")
             response = requests.get(self.version_url, timeout=5)
+            print(f"[UPDATE] HTTP状态码: {response.status_code}")
+
             remote_data = response.json()
+            print(f"[UPDATE] 远程数据: {remote_data}")
+
             remote_version = remote_data.get("current_version", "1.0.0")
+            print(f"[UPDATE] remote_version: {remote_version}")
+
             local_version = self.version.get("current_version", "1.0.0")
-            
+            print(f"[UPDATE] local_version: {local_version}")
+
             # 比较版本号
-            if self._is_newer(remote_version, local_version):
+            remote_list = [int(x) for x in remote_version.split(".")]
+            local_list = [int(x) for x in local_version.split(".")]
+
+            if remote_list > local_list:
+                print("[UPDATE] 发现新版本！")
+                # 发现新版本，不恢复代理
                 return {
                     "status": "success",
                     "has_update": True,
@@ -215,17 +244,58 @@ class GachaApp:
                     "message": f"发现新版本 v{remote_version}"
                 }
             else:
+                print("[UPDATE] 当前已是最新版本")
+                # 已是最新版本，恢复代理
+                print("[UPDATE] 恢复系统代理...")
+                self.enable_system_proxy()
                 return {
                     "status": "success",
                     "has_update": False,
                     "message": "当前已是最新版本"
                 }
-        except Exception as e:
+        except requests.exceptions.ProxyError as e:
+            print(f"[UPDATE] 代理错误: {e}")
+            # 检查出错，恢复代理
+            print("[UPDATE] 恢复系统代理...")
+            self.enable_system_proxy()
             return {
                 "status": "error",
                 "has_update": False,
-                "message": f"检查更新失败"
+                "message": "网络连接失败，请检查代理设置"
             }
+        except requests.exceptions.Timeout as e:
+            print(f"[UPDATE] 请求超时: {e}")
+            # 检查出错，恢复代理
+            print("[UPDATE] 恢复系统代理...")
+            self.enable_system_proxy()
+            return {
+                "status": "error",
+                "has_update": False,
+                "message": "连接超时，请稍后重试"
+            }
+        except requests.exceptions.ConnectionError as e:
+            print(f"[UPDATE] 连接错误: {e}")
+            # 检查出错，恢复代理
+            print("[UPDATE] 恢复系统代理...")
+            self.enable_system_proxy()
+            return {
+                "status": "error",
+                "has_update": False,
+                "message": "网络连接失败，请检查网络"
+            }
+        except Exception as e:
+            print(f"[UPDATE] 未知错误: {e}")
+            import traceback
+            traceback.print_exc()
+            # 检查出错，恢复代理
+            print("[UPDATE] 恢复系统代理...")
+            self.enable_system_proxy()
+            return {
+                "status": "error",
+                "has_update": False,
+                "message": f"检查更新失败: {str(e)}"
+            }
+
     
     def _is_newer(self, remote, local):
         """简单的版本号比较"""
@@ -236,10 +306,21 @@ class GachaApp:
     
     def get_version_info(self):
         """获取版本信息"""
+        print("=" * 50)
+        print("[UPDATE] 开始获取版本信息...")
         try:
             # 检查更新
             update_result = self.check_update()
             local_version = self.version.get("current_version", "1.0.0")
+            
+            if update_result.get("status") != "success":
+                return {
+                    "status": "error",
+                    "current_version": local_version,
+                    "has_update": False,
+                    "latest_version": "",
+                    "message": update_result.get("message", "检查更新失败")
+                }
             
             return {
                 "status": "success",
@@ -270,10 +351,14 @@ class GachaApp:
         
     def enable_system_proxy(self):
         """开启系统代理(不启动mitmproxy)"""
-        from backend.proxy import set_proxy
+        from backend.proxy import set_proxy, actual_port
+
+        # 使用 mitmproxy 实际监听的端口
+        port = actual_port if actual_port is not None else 8080
+
         try:
-            set_proxy('127.0.0.1', 8080)
-            print("[OK] 开启系统代理成功")
+            set_proxy('127.0.0.1', port)
+            print(f"[OK] 开启系统代理成功，端口: {port}")
         except Exception as e:
             print(f"[ERROR] 开启系统代理失败: {e}")
     
@@ -367,6 +452,43 @@ class GachaApp:
         print("[INFO] 按 Ctrl+C 停止应用")
         webview.start()
 
+def check_single_instance():
+    """检查程序是否已在运行"""
+    try:
+        import psutil
+        current_pid = os.getpid()
+        current_process = psutil.Process(current_pid)
+        process_name = current_process.name()
+
+        # 查找同名进程
+        count = 0
+        for proc in psutil.process_iter(['pid', 'name']):
+            try:
+                if proc.info['name'] == process_name:
+                    count += 1
+                    if count > 1:
+                        return False
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        return True
+    except ImportError:
+        print("[WARNING] 未安装 psutil，无法进行单实例检查")
+        print("[INFO] 运行 pip install psutil 以启用单实例检查")
+        return True
+    except Exception as e:
+        print(f"[WARNING] 单实例检查失败: {e}")
+        return True
+
 if __name__ == "__main__":
+    # 检查单实例
+    if not check_single_instance():
+        print("[ERROR] 程序已在运行，请勿重复打开！")
+        import ctypes
+        import time
+        # 显示错误提示
+        ctypes.windll.user32.MessageBoxW(0, "程序已在运行，请勿重复打开！", "错误", 0)
+        sys.exit(1)
+
     app = GachaApp()
     app.run()

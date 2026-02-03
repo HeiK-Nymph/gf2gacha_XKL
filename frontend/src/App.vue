@@ -4,7 +4,7 @@
 
       <div class="header-left">
         <el-button type="warning" size="large" @click="installCert">安装证书</el-button>
-        <el-button type="success" size="large" @click="updateRecord">更新记录</el-button>
+        <el-button type="success" size="large" @click="updateRecord" :loading="isUpdating">更新记录</el-button>
         <el-button type="primary" size="large" @click="importRecord">导入记录</el-button>
         <el-button type="primary" size="large" @click="exportRecord">导出记录</el-button>
       </div>
@@ -40,31 +40,18 @@
 
   
 <script setup>
-  import {ref, computed, onMounted} from 'vue'
+  import {ref} from 'vue'
   import GachaItem from './components/GachaItem.vue'
   import {ElMessage, ElMessageBox} from 'element-plus'
   import {useGachaRecordStore} from '@/stores/gachaRecord'
-  
-  
+  import versionInfo from '@/../../version.json'
+
+
   const gachaRecordStore = useGachaRecordStore()
 
   const recordId = ref('')
-  const currentVersion = ref('1.0.0')
-
-  // 获取版本信息
-  const getVersionInfo = async () => {
-    try {
-      const res = await window.pywebview.api.get_version_info()
-      if (res.status == 'success') {
-        currentVersion.value = res.current_version
-        if (res.has_update) {
-          showUpdateNotification(res.latest_version)
-        }
-      }
-    } catch (e) {
-      console.error('获取版本信息失败', e)
-    }
-  }
+  const currentVersion = ref(versionInfo.current_version)
+  const isUpdating = ref(false)
 
   // 显示更新通知
   const showUpdateNotification = (latestVersion) => {
@@ -88,6 +75,7 @@
     try {
       const res = await window.pywebview.api.get_version_info()
       if (res.status == 'success') {
+        currentVersion.value = res.current_version
         if (res.has_update) {
           showUpdateNotification(res.latest_version)
         } else {
@@ -151,8 +139,18 @@
 
   // 更新记录
   const updateRecord = async () => {
+    isUpdating.value = true
+    const loadingMessage = ElMessage({
+      message: '正在获取抽卡记录...',
+      type: 'info',
+      duration: 0,
+      showClose: false
+    })
+
     try{
        const res = await window.pywebview.api.get_gacha()
+       loadingMessage.close()
+
        if (res.status == 'success'){
           ElMessage.success(res.msg)
           gachaRecordStore.gacha = res.data
@@ -160,8 +158,10 @@
           ElMessage.error(res.msg)
         }
    }catch (e) {
-      
+      loadingMessage.close()
       ElMessage.error('获取记录失败')
+   } finally {
+      isUpdating.value = false
    }
   }
   
@@ -178,11 +178,6 @@
       ElMessage.error('打开证书网站失败')
     }
   }
-
-  // 组件挂载时获取版本信息
-  onMounted(() => {
-    getVersionInfo()
-  })
 
 </script>
   
