@@ -1,0 +1,6 @@
+@echo off
+echo 清理 Python 缓存...
+python -c "import sys; import os; [os.system(f'rmdir /s /q \"{p}\\__pycache__\" 2>nul') for p in [os.path.join(os.getcwd(), 'backend'), os.getcwd()] if os.path.exists(p)]"
+echo 启动应用...
+python -B main.py
+pause

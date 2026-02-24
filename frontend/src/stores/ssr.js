@@ -19,6 +19,7 @@ export const useSSRStore = defineStore('ssr', () => {
         1039: "索米",
         1040: "波波沙",
         1043: "绯",
+        1045: "比悠卡",
         1048: "秋桦",
         1049: "哈卜茜",
         1050: "朝晖",
@@ -40,7 +41,8 @@ export const useSSRStore = defineStore('ssr', () => {
         1069: "罗蕾莱",
         1070: "夏安",
         1071: "贝丝蒂",
-        1072: "刘莳"
+        1072: "刘莳",
+        1073: "六分仪"
     }
 
     const SSR_weapon = {

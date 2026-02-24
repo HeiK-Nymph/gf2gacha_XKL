@@ -67,6 +67,41 @@ class GachaApp:
                 "msg": "打开证书网站失败",
             }
         
+    def get_record_list(self):
+        """获取所有已保存的记录列表"""
+        try:
+            print("[INFO] 正在获取记录列表...")
+            records_dir = Path(__file__).parent / "records"
+            print(f"[INFO] records目录路径: {records_dir}")
+
+            # 如果目录不存在，自动创建
+            if not records_dir.exists():
+                print("[INFO] records目录不存在，自动创建...")
+                records_dir.mkdir(exist_ok=True)
+                print("[INFO] records目录创建成功")
+
+            record_files = []
+            for file in records_dir.glob("*.json"):
+                record_id = file.stem  # 获取文件名（不含.json扩展名）
+                record_files.append(record_id)
+                print(f"[INFO] 找到记录: {record_id}")
+
+            print(f"[INFO] 共找到 {len(record_files)} 条记录")
+            return {
+                "status": "success",
+                "msg": "获取记录列表成功",
+                "data": record_files
+            }
+        except Exception as e:
+            print(f"[ERROR] 获取记录列表失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "status": "error",
+                "msg": f"获取记录列表失败: {e}",
+                "data": []
+            }
+
     def import_record(self, record_id):
         try:
             records_dir = Path(__file__).parent / "records"
@@ -128,12 +163,12 @@ class GachaApp:
                 json.dump(gacha_data, f, ensure_ascii=False, indent=2)
             return {
                 "status": "success",
-                "msg": "导出抽卡记录成功",
+                "msg": "保存抽卡记录成功",
             }
         except Exception as e:
             return {
                 "status": "error",
-                "msg": "导出抽卡记录失败",
+                "msg": "保存抽卡记录失败",
             }
     
     def _merge_pool_data(self, new_pages, old_pages):
