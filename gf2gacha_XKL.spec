@@ -21,10 +21,11 @@ if not os.path.exists(runtime_dll_path):
 
 print(f"找到 Python.Runtime.dll: {runtime_dll_path}")
 
-a = Analysis(
+# ==================== 主程序 Analysis ====================
+a_main = Analysis(
     ['main.py'],
     pathex=['.'],
-    binaries=[(runtime_dll_path, 'pythonnet/runtime')],  # ← 注意目标目录
+    binaries=[(runtime_dll_path, 'pythonnet/runtime')],
     datas=[
         ('backend', 'backend'),
         ('json', 'json'),
@@ -46,11 +47,47 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-exe = EXE(
-    pyz,
-    a.scripts,
+# ==================== 更新器 Analysis ====================
+# 更新器是独立的，不需要webview、pythonnet等大型依赖
+a_updater = Analysis(
+    ['updater.py'],
+    pathex=['.'],
+    binaries=[],
+    datas=[
+        ('version.json', '.'),
+    ],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[
+        'webview',
+        'pythonnet',
+        'clr',
+        'clr_loader',
+        'mitmproxy',
+        'OpenSSL',
+        'cryptography',
+        'PIL',
+        'pygame',
+        'numpy',
+        'pandas',
+    ],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+
+# ==================== PYZ ====================
+pyz_main = PYZ(a_main.pure, a_main.zipped_data, cipher=block_cipher)
+pyz_updater = PYZ(a_updater.pure, a_updater.zipped_data, cipher=block_cipher)
+
+# ==================== 主程序 EXE ====================
+exe_main = EXE(
+    pyz_main,
+    a_main.scripts,
     [],
     exclude_binaries=True,
     name='gf2gacha_XKL',
@@ -69,13 +106,40 @@ exe = EXE(
     icon='favicon.ico',
 )
 
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
+# ==================== 更新器 EXE ====================
+exe_updater = EXE(
+    pyz_updater,
+    a_updater.scripts,
+    a_updater.binaries,
+    a_updater.zipfiles,
+    a_updater.datas,
+    [],
+    name='updater',
+    debug=False,
+    bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_exclude=['Python.Runtime.dll'],  # 排除 UPX 压缩
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=True,  # 更新器显示控制台，方便查看更新进度
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    icon='favicon.ico',
+)
+
+# ==================== COLLECT ====================
+# 只收集主程序的内容，更新器已经是独立的单文件exe
+coll = COLLECT(
+    exe_main,
+    a_main.binaries,
+    a_main.zipfiles,
+    a_main.datas,
+    exe_updater,  # 将更新器exe也放入同一目录
+    strip=False,
+    upx=True,
+    upx_exclude=['Python.Runtime.dll'],
     name='gf2gacha_XKL',
 )

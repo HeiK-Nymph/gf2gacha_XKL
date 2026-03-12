@@ -18,8 +18,11 @@ class GachaApp:
         self.proxy_running = False  # 新增：代理运行标志
         # 新增：版本管理
         self.version = self._load_version()
-        # 改成你的 GitHub 仓库地址
-        self.version_url = "https://raw.githubusercontent.com/HeiK-Nymph/gf2gacha_XKL/main/version.json"
+        # 从本地 version.json 读取远程版本检查地址（R2）
+        self.version_url = self.version.get("version_url", "https://cdn.jsdelivr.net/gh/HeiK-Nymph/gf2gacha_XKL@main/version.json")
+
+        # 启动时清理旧的更新器
+        self._cleanup_old_updater()
         
     def get_gacha(self):
         from backend.api.getGacha import get_gacha_data_all
@@ -239,6 +242,22 @@ class GachaApp:
                 return json.load(f)
         return {"current_version": "1.0.0"}
     
+    def _cleanup_old_updater(self):
+        """清理旧的更新器文件"""
+        try:
+            # 在打包后的环境中，updater_old.exe 在 _internal 目录
+            if getattr(sys, 'frozen', False):
+                base_path = Path(sys.executable).parent / "_internal"
+            else:
+                base_path = Path(__file__).parent
+            
+            old_updater = base_path / "updater_old.exe"
+            if old_updater.exists():
+                old_updater.unlink()
+                print(f"[INFO] 已清理旧更新器: {old_updater}")
+        except Exception as e:
+            print(f"[WARNING] 清理旧更新器失败: {e}")
+    
     def check_update(self):
         """检查更新"""
         print("=" * 50)
@@ -252,7 +271,7 @@ class GachaApp:
 
         try:
             # 从 GitHub 获取最新版本
-            print("[UPDATE] 正在请求 GitHub...")
+            print("[UPDATE] 正在请求 r2...")
             response = requests.get(self.version_url, timeout=5)
             print(f"[UPDATE] HTTP状态码: {response.status_code}")
 
@@ -329,6 +348,64 @@ class GachaApp:
                 "status": "error",
                 "has_update": False,
                 "message": f"检查更新失败: {str(e)}"
+            }
+    
+    def start_update(self):
+        """启动更新器并关闭主程序"""
+        print("=" * 50)
+        print("[UPDATE] 准备启动更新器...")
+        
+        try:
+            import subprocess
+            
+            # 确定 updater.exe 的路径
+            if getattr(sys, 'frozen', False):
+                # 打包后的环境
+                base_path = Path(sys.executable).parent / "_internal"
+            else:
+                # 开发环境
+                base_path = Path(__file__).parent
+            
+            updater_path = base_path / "updater.exe"
+            
+            if not updater_path.exists():
+                print(f"[ERROR] 更新器不存在: {updater_path}")
+                return {
+                    "status": "error",
+                    "message": "更新器文件不存在"
+                }
+            
+            print(f"[UPDATE] 更新器路径: {updater_path}")
+            
+            # 启动更新器（独立进程）
+            subprocess.Popen(
+                [str(updater_path)],
+                cwd=str(base_path),
+                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+            )
+            
+            print("[UPDATE] 更新器已启动，主程序即将退出...")
+            
+            # 关闭代理
+            from backend.proxy import close_proxy
+            close_proxy()
+            
+            # 关闭主程序
+            if self.window:
+                self.window.destroy()
+            
+            return {
+                "status": "success",
+                "message": "更新器已启动"
+            }
+            
+        except Exception as e:
+            print(f"[ERROR] 启动更新器失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "status": "error",
+                "message": f"启动更新器失败: {str(e)}"
             }
 
     

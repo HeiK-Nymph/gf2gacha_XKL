@@ -92,18 +92,34 @@
   // 显示更新通知
   const showUpdateNotification = (latestVersion) => {
     ElMessageBox.confirm(
-      `发现新版本 v${latestVersion}，是否前往 GitHub 下载？`,
+      `发现新版本 v${latestVersion}，是否更新？`,
       '更新提示',
       {
-        confirmButtonText: '前往下载',
+        confirmButtonText: '更新',
         cancelButtonText: '稍后',
         type: 'info',
       }
     ).then(() => {
-      openGitHub()
+      startUpdate()
     }).catch(() => {
       // 用户取消
     })
+  }
+
+  // 开始更新
+  const startUpdate = async () => {
+    try {
+      const res = await window.pywebview.api.start_update()
+      if (res.status == 'success') {
+        ElMessage.success('正在启动更新器...')
+        // 更新器会自动关闭主程序
+      } else {
+        ElMessage.error(`启动更新失败: ${res.message || '未知错误'}`)
+      }
+    } catch (e) {
+      console.error('[ERROR] 启动更新异常:', e)
+      ElMessage.error(`启动更新失败: ${e.message || e}`)
+    }
   }
 
   // 加载记录列表
