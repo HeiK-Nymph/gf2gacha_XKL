@@ -14,8 +14,8 @@
 
 
  
-        <div>
-          <img src="../assets/images/gacha/character/question.png" style="width: 35px;"/>
+        <div v-if="totalDrawCount > 0">
+          <img :src="getImagePath('question')" style="width: 35px;"/>
         </div>
         <el-progress  :text-inside="true" :stroke-width="26" :percentage="currentPadCount * 1.25" :format="ssrListFormat" :color="customColorMethod"/>
         <span class="wai-tag" style="background-color: white; padding: 0;"></span>
@@ -116,15 +116,12 @@ const customColorMethod = (percentage) => {
   return '#D66555'
 }
 
-// 动态获取图片路径
+// 动态获取图片路径（R2）
 const getImagePath = (itemId) => {
-  try {
-    console.log(itemId)
-    return new URL(`../assets/images/gacha/character/${itemId}.png`, import.meta.url).href
-  } catch {
-    // 如果图片不存在，返回空字符串或默认图片
-    return ''
+  if (itemId === 'question') {
+    return 'https://static.gf2gacha-xkl.uk/images/character/question.png'
   }
+  return `https://static.gf2gacha-xkl.uk/images/character/${itemId}.png`
 }
 
 // 3. 动态获取对应卡池数据，兜底空数组

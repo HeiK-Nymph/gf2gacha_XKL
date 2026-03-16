@@ -20,6 +20,16 @@ class GachaApp:
         self.version = self._load_version()
         # 从本地 version.json 读取远程版本检查地址（R2）
         self.version_url = self.version.get("version_url", "https://cdn.jsdelivr.net/gh/HeiK-Nymph/gf2gacha_XKL@main/version.json")
+        # SSR数据URL
+        self.ssr_url = "https://static.gf2gacha-xkl.uk/ssr.json"
+        # 先设置为空数据，延迟加载（后台线程）
+        self.ssr_data = {
+            "version": "loading",
+            "SSR_character": {},
+            "SSR_weapon": {},
+            "SSR_permanent": {}
+        }
+        self.ssr_loading = True  # 标记正在加载
 
         # 启动时清理旧的更新器
         self._cleanup_old_updater()
@@ -241,7 +251,105 @@ class GachaApp:
             with open(version_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         return {"current_version": "1.0.0"}
-    
+
+    def _load_ssr_data(self):
+        """启动时加载SSR数据（支持热更新）"""
+        print("[SSR] 开始加载SSR角色数据...")
+
+        # 尝试从R2获取最新数据
+        try:
+            print(f"[SSR] 请求远程: {self.ssr_url}")
+            response = requests.get(self.ssr_url, timeout=10)
+            if response.status_code == 200:
+                remote_data = response.json()
+                print(f"[SSR] 获取远程数据成功，版本: {remote_data.get('version', 'unknown')}")
+                return remote_data
+            else:
+                print(f"[SSR] 请求失败，状态码: {response.status_code}")
+        except Exception as e:
+            print(f"[SSR] 获取远程数据失败: {e}")
+
+        # 远程失败，读取本地json文件
+        try:
+            local_ssr_path = Path(__file__).parent / "json" / "ssr.json"
+            if local_ssr_path.exists():
+                with open(local_ssr_path, "r", encoding="utf-8") as f:
+                    local_data = json.load(f)
+                print(f"[SSR] 使用本地数据，版本: {local_data.get('version', 'unknown')}")
+                return local_data
+        except Exception as e:
+            print(f"[SSR] 读取本地数据失败: {e}")
+
+        # 返回空数据结构
+        print("[SSR] 无法获取SSR数据，返回空结构")
+        return {
+            "version": "none",
+            "SSR_character": {},
+            "SSR_weapon": {},
+            "SSR_permanent": {}
+        }
+
+    def load_ssr_data(self):
+        """前端调用加载SSR数据（同步加载）"""
+        print("[SSR] 前端请求加载SSR数据...")
+        
+        # 尝试从远程加载
+        try:
+            print(f"[SSR] 请求远程: {self.ssr_url}")
+            response = requests.get(self.ssr_url, timeout=10, verify=False)
+            if response.status_code == 200:
+                self.ssr_data = response.json()
+                self.ssr_data['_fromRemote'] = True
+                print(f"[SSR] ★★★ 从远程获取数据成功，版本: {self.ssr_data.get('version', 'unknown')} ★★★")
+                print(f"[SSR] 获取到的JSON数据: {json.dumps(self.ssr_data, ensure_ascii=False, indent=2)}")
+                return {
+                    "status": "success",
+                    "source": "remote",
+                    "data": self.ssr_data
+                }
+            else:
+                raise Exception(f"HTTP {response.status_code}")
+        except Exception as e:
+            print(f"[SSR] 获取远程数据失败: {e}，尝试本地数据")
+            # 远程失败，读取本地
+            try:
+                local_ssr_path = Path(__file__).parent / "json" / "ssr.json"
+                if local_ssr_path.exists():
+                    with open(local_ssr_path, "r", encoding="utf-8") as f:
+                        self.ssr_data = json.load(f)
+                    self.ssr_data['_fromRemote'] = False
+                    print(f"[SSR] 使用本地数据，版本: {self.ssr_data.get('version', 'unknown')}")
+                    return {
+                        "status": "success",
+                        "source": "local",
+                        "data": self.ssr_data
+                    }
+                else:
+                    raise Exception("本地文件不存在")
+            except Exception as e2:
+                print(f"[SSR] 读取本地数据失败: {e2}")
+                self.ssr_data = {
+                    "version": "none",
+                    "SSR_character": {},
+                    "SSR_weapon": {},
+                    "SSR_permanent": {},
+                    "_fromRemote": False
+                }
+                return {
+                    "status": "error",
+                    "source": "none",
+                    "data": self.ssr_data
+                }
+
+    def get_ssr_data(self):
+        """供前端调用获取SSR数据（仅返回当前数据）"""
+        return {
+            "status": "success",
+            "data": self.ssr_data
+        }
+
+    pass
+
     def _cleanup_old_updater(self):
         """清理旧的更新器文件"""
         try:
@@ -555,7 +663,9 @@ class GachaApp:
         
         # 注册关闭事件
         self.window.events.closed += self.on_closed
-        
+
+        # 前端会主动请求SSR数据，后端不再自动加载
+
         # 启动mitmproxy（在后台线程）
         self.start_proxy()
         

@@ -1,5 +1,13 @@
 <template>
   <el-container>
+    <!-- 全屏加载遮罩 -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-content">
+        <el-icon class="loading-spinner" :size="50"><Loading /></el-icon>
+        <span class="loading-text">正在加载角色数据...</span>
+      </div>
+    </div>
+
     <el-header class="app-header">
 
       <div class="header-left">
@@ -73,14 +81,17 @@
   
 <script setup>
   import {ref, onMounted} from 'vue'
-  import {Plus} from '@element-plus/icons-vue'
+  import {Plus, Loading} from '@element-plus/icons-vue'
   import GachaItem from './components/GachaItem.vue'
   import {ElMessage, ElMessageBox} from 'element-plus'
   import {useGachaRecordStore} from '@/stores/gachaRecord'
+  import {useSSRStore} from '@/stores/ssr'
   import versionInfo from '@/../../version.json'
+  import axios from 'axios'
 
 
   const gachaRecordStore = useGachaRecordStore()
+  const ssrStore = useSSRStore()
 
   const recordList = ref([])
   const selectedRecordId = ref('')
@@ -88,6 +99,7 @@
   const currentVersion = ref(versionInfo.current_version)
   const isUpdating = ref(false)
   const isInputMode = ref(false)
+  const isLoading = ref(true)
 
   // 显示更新通知
   const showUpdateNotification = (latestVersion) => {
@@ -304,9 +316,25 @@
     }
   }
 
-  // 组件挂载时加载记录列表
-  onMounted(() => {
+  // 组件挂载时加载数据
+  onMounted(async () => {
+    // 加载记录列表
     loadRecordList()
+    
+    // 加载SSR数据（前端主动控制）
+    const source = await ssrStore.loadData()
+    
+    // 关闭遮罩
+    isLoading.value = false
+    
+    // 显示提示
+    if (source === 'remote') {
+      ElMessage.success('正在使用最新五星数据')
+    } else if (source === 'local') {
+      ElMessage.warning('正在使用本地五星数据')
+    } else {
+      ElMessage.error('无法加载五星数据')
+    }
   })
 
 </script>
@@ -353,5 +381,43 @@
   .app-main-item span{
     font-size: 20px;
     font-weight: bold;
+  }
+
+  /* 全屏加载遮罩 */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .loading-spinner {
+    animation: spin 1s linear infinite;
+    color: #409eff;
+  }
+
+  .loading-text {
+    font-size: 18px;
+    color: #606266;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 </style>

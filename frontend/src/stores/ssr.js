@@ -1,65 +1,58 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useSSRStore = defineStore('ssr', () => {
-    const SSR_character = {
-        1013: "莱娜",
-        1015: "维普蕾",
-        1021: "佩里缇亚",
-        1023: "杜莎妮",
-        1025: "托洛洛",
-        1027: "琼玖",
-        1028: "桑朵莱希",
-        1029: "塞布丽娜",
-        1032: "黛烟",
-        1033: "莫辛纳甘",
-        1034: "玛绮朵",
-        1035: "绛雨",
-        1037: "乌尔丽德",
-        1039: "索米",
-        1040: "波波沙",
-        1043: "绯",
-        1045: "比悠卡",
-        1048: "秋桦",
-        1049: "哈卜茜",
-        1050: "朝晖",
-        1052: "可露凯",
-        1053: "佩莉",
-        1054: "幼熙",
-        1055: "妮基塔",
-        1056: "莱娅",
-        1057: "洛贝拉",
-        1058: "莱妮",
-        1059: "琳德",
-        1060: "翡图萨",
-        1061: "巴希达",
-        1064: "芙洛伦",
-        1065: "埃芙",
-        1066: "威玛西娜",
-        1067: "海伦",
-        1068: "樱花",
-        1069: "罗蕾莱",
-        1070: "夏安",
-        1071: "贝丝蒂",
-        1072: "刘莳",
-        1073: "六分仪"
+  const SSR_character = ref({})
+  const SSR_weapon = ref({})
+  const SSR_permanent = ref({})
+  const SSR_version = ref('')
+  const SSR_fromRemote = ref(false)
+  const isLoaded = ref(false)
+
+  async function loadData() {
+    if (isLoaded.value) return
+
+    try {
+      // 等待 pywebview 完全准备好（最多等待10秒）
+      let apiReady = false
+      for (let i = 0; i < 100; i++) {
+        if (window.pywebview?.api?.load_ssr_data) {
+          apiReady = true
+          break
+        }
+        console.log(`[SSR] 等待 pywebview 准备中... ${i + 1}/100`)
+        await new Promise(r => setTimeout(r, 100))
+      }
+      
+      if (!apiReady) {
+        console.error('[SSR] pywebview 未准备好')
+        return 'error'
+      }
+      
+      // 调用后端加载数据
+      const result = await window.pywebview.api.load_ssr_data()
+      const data = result.data
+      SSR_character.value = data.SSR_character || {}
+      SSR_weapon.value = data.SSR_weapon || {}
+      SSR_permanent.value = data.SSR_permanent || {}
+      SSR_version.value = data.version || ''
+      SSR_fromRemote.value = result.source === 'remote'
+      isLoaded.value = true
+      
+      return result.source  // 返回数据来源
+    } catch (e) {
+      console.error('[SSR] 加载失败', e)
+      return 'error'
     }
+  }
 
-    const SSR_weapon = {
-        10713:"告死礼赞"
-    }
-
-    const SSR_permanent = {
-        1015: "维普蕾",
-        1021: "佩里缇亚",
-        1025: "托洛洛",
-        1027: "琼玖",
-        1029: "塞布丽娜",
-        1033: "莫辛纳甘",
-        1043: "绯",
-        1049: "哈卜茜",
-
-    }
-
-    return {SSR_character, SSR_weapon, SSR_permanent}
+  return {
+    SSR_character,
+    SSR_weapon,
+    SSR_permanent,
+    SSR_version,
+    SSR_fromRemote,
+    loadData,
+    isLoaded
+  }
 })
