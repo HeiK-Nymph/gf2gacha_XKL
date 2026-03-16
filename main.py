@@ -19,7 +19,7 @@ class GachaApp:
         # 新增：版本管理
         self.version = self._load_version()
         # 从本地 version.json 读取远程版本检查地址（R2）
-        self.version_url = self.version.get("version_url", "https://cdn.jsdelivr.net/gh/HeiK-Nymph/gf2gacha_XKL@main/version.json")
+        self.version_url = self.version.get("version_url", "https://r2.gf2gacha-xkl.uk/version.json")
         # SSR数据URL
         self.ssr_url = "https://static.gf2gacha-xkl.uk/ssr.json"
         # 先设置为空数据，延迟加载（后台线程）
