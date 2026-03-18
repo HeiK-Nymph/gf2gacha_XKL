@@ -13,40 +13,23 @@
       <div class="header-left">
         <el-button type="warning" size="large" @click="installCert">安装证书</el-button>
         <el-button type="success" size="large" @click="updateRecord" :loading="isUpdating">更新记录</el-button>
-        <el-button type="primary" size="large" @click="exportRecord">保存记录</el-button>
       </div>
       <div class="header-center">
         <div class="record-selector">
-          <template v-if="isInputMode">
-            <el-input
-              v-model="newRecordId"
-              placeholder="请输入新记录名称"
-              size="large"
-              style="width: 300px;"
-              @keyup.enter="saveNewRecord"
+          <el-select
+            v-model="selectedRecordId"
+            placeholder="选择抽卡记录"
+            size="large"
+            style="width: 300px;"
+            @change="onRecordChange"
+          >
+            <el-option
+              v-for="record in recordList"
+              :key="record"
+              :label="record"
+              :value="record"
             />
-            <el-button type="primary" size="large" @click="saveNewRecord">保存</el-button>
-            <el-button size="large" @click="cancelNewRecord">取消</el-button>
-          </template>
-          <template v-else>
-            <el-select
-              v-model="selectedRecordId"
-              placeholder="选择抽卡记录"
-              size="large"
-              style="width: 300px;"
-              @change="onRecordChange"
-            >
-              <el-option
-                v-for="record in recordList"
-                :key="record"
-                :label="record"
-                :value="record"
-              />
-            </el-select>
-            <el-button type="success" size="large" @click="showInputMode">
-              <el-icon><Plus /></el-icon>
-            </el-button>
-          </template>
+          </el-select>
         </div>
       </div>
       <div class="header-right">
@@ -81,13 +64,12 @@
   
 <script setup>
   import {ref, onMounted} from 'vue'
-  import {Plus, Loading} from '@element-plus/icons-vue'
+  import {Loading} from '@element-plus/icons-vue'
   import GachaItem from './components/GachaItem.vue'
   import {ElMessage, ElMessageBox} from 'element-plus'
   import {useGachaRecordStore} from '@/stores/gachaRecord'
   import {useSSRStore} from '@/stores/ssr'
   import versionInfo from '@/../../version.json'
-  import axios from 'axios'
 
 
   const gachaRecordStore = useGachaRecordStore()
@@ -95,10 +77,8 @@
 
   const recordList = ref([])
   const selectedRecordId = ref('')
-  const newRecordId = ref('')
   const currentVersion = ref(versionInfo.current_version)
   const isUpdating = ref(false)
-  const isInputMode = ref(false)
   const isLoading = ref(true)
 
   // 显示更新通知
@@ -180,36 +160,6 @@
     }
   }
 
-  // 显示输入模式（添加新记录）
-  const showInputMode = () => {
-    isInputMode.value = true
-    newRecordId.value = ''
-  }
-
-  // 取消添加新记录
-  const cancelNewRecord = () => {
-    isInputMode.value = false
-    newRecordId.value = ''
-  }
-
-  // 保存新记录
-  const saveNewRecord = () => {
-    if (newRecordId.value.trim() == '') {
-      ElMessage.error('请输入记录名称')
-      return
-    }
-
-    if (recordList.value.includes(newRecordId.value.trim())) {
-      ElMessage.error('该记录已存在')
-      return
-    }
-
-    selectedRecordId.value = newRecordId.value.trim()
-    isInputMode.value = false
-    newRecordId.value = ''
-    ElMessage.success('记录创建成功')
-  }
-
   // 记录选择变化时自动导入
   const onRecordChange = async (recordId) => {
     if (!recordId) return
@@ -248,28 +198,6 @@
     }
   }
 
-  const exportRecord = async () => {
-    if (!selectedRecordId.value) {
-      ElMessage.error('请先选择或创建一个记录')
-      return
-    }
-
-    try{
-      const res = await window.pywebview.api.export_record(selectedRecordId.value, gachaRecordStore.gacha)
-      if (res.status == 'success'){
-        ElMessage.success(res.msg)
-        // 导出后刷新记录列表
-        loadRecordList()
-      }else{
-        console.error('[ERROR] 导出记录失败:', res.msg)
-        ElMessage.error(res.msg)
-      }
-    }catch (e) {
-      console.error('[ERROR] 导出记录异常:', e)
-      ElMessage.error(`导出记录失败: ${e.message || e}`)
-    }
-  }
-
   // 更新记录
   const updateRecord = async () => {
     isUpdating.value = true
@@ -286,7 +214,23 @@
 
        if (res.status == 'success'){
           ElMessage.success(res.msg)
-          gachaRecordStore.gacha = res.data
+          // 新的数据结构包含uid和gacha
+          gachaRecordStore.gacha = res.data.gacha
+          
+          // 自动保存记录，使用uid作为记录名称
+          if (res.data.uid) {
+            const uid = res.data.uid.toString()
+            const saveRes = await window.pywebview.api.export_record(uid, gachaRecordStore.gacha)
+            if (saveRes.status == 'success') {
+              ElMessage.success(`记录已自动保存: ${uid}`)
+              // 刷新记录列表并选中刚保存的记录
+              await loadRecordList()
+              selectedRecordId.value = uid
+            } else {
+              console.error('[ERROR] 自动保存记录失败:', saveRes.msg)
+              ElMessage.error(`自动保存记录失败: ${saveRes.msg}`)
+            }
+          }
        }else{
           console.error('[ERROR] 获取记录失败:', res.msg)
           ElMessage.error(res.msg)

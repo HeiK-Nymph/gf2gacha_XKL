@@ -156,7 +156,7 @@ async def get_gacha_pool_async(pool_type_id, pool_name):
         pool_name: 池子名称（用于日志）
 
     Returns:
-        池子的完整数据列表
+        池子的完整数据列表，如果获取失败返回 None
     """
     # 创建临时文件用于该池子的状态管理
     original_json_path = Path(__file__).parent.parent.parent / "json" / "latest_request.json"
@@ -174,7 +174,7 @@ async def get_gacha_pool_async(pool_type_id, pool_name):
         response = await get_gacha_data_one_async(temp_json_path)
         if response is None:
             print(f"[ERROR] 获取{pool_name}第一页数据失败")
-            return []
+            return None  # 返回 None 表示获取失败
 
         gacha_data = [response]
         print(f"[OK] 获取{pool_name}第一页数据成功")
@@ -185,7 +185,7 @@ async def get_gacha_pool_async(pool_type_id, pool_name):
             response = await get_gacha_data_one_async(temp_json_path)
             if response is None:
                 print(f"[ERROR] 获取{pool_name}第{page}页数据失败")
-                break
+                return None  # 返回 None 表示获取失败
             gacha_data.append(response)
             print(f"[OK] 获取{pool_name}第{page}页数据成功")
             page += 1
@@ -195,7 +195,7 @@ async def get_gacha_pool_async(pool_type_id, pool_name):
 
     except Exception as e:
         print(f"[ERROR] 获取{pool_name}数据失败: {e}")
-        return []
+        return None  # 返回 None 表示获取失败
     finally:
         # 清理临时文件
         if temp_json_path.exists():
@@ -221,6 +221,11 @@ def get_gacha_data_all():
 
         gacha_data_Permanent, gacha_data_Character, gacha_data_Weapon = results
 
+        # 检查是否有任何一个池子获取失败（返回 None）
+        if gacha_data_Permanent is None or gacha_data_Character is None or gacha_data_Weapon is None:
+            print("[ERROR] 部分池子数据获取失败")
+            return None  # 返回 None 表示获取失败
+
         print("[OK] 所有池子数据获取完成")
 
         return {
@@ -230,11 +235,7 @@ def get_gacha_data_all():
         }
     except Exception as e:
         print(f"[ERROR] 获取抽卡数据失败: {e}")
-        return {
-            "permanent_pool": [],
-            "character_pool": [],
-            "weapon_pool": []
-        }
+        return None  # 返回 None 表示获取失败
     finally:
         loop.close()
     

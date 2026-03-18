@@ -37,6 +37,7 @@ class GachaApp:
     def get_gacha(self):
         from backend.api.getGacha import get_gacha_data_all
         from backend.proxy import close_proxy
+        import requests
 
         # 检查 latest_request.json 是否为空
         json_path = Path(__file__).parent / "json" / "latest_request.json"
@@ -47,7 +48,54 @@ class GachaApp:
                 "msg": "获取抽卡记录失败",
             }
 
+        # 读取 Authorization
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                latest_request = json.load(f)
+            authorization = latest_request.get("headers", {}).get("Authorization", "")
+            
+            if not authorization:
+                print("[ERROR] 未找到Authorization字段")
+                return {
+                    "status": "error",
+                    "msg": "获取抽卡记录失败",
+                }
+        except Exception as e:
+            print(f"[ERROR] 读取Authorization失败: {e}")
+            return {
+                "status": "error",
+                "msg": "获取抽卡记录失败",
+            }
+
         self.enable_system_proxy()
+
+        # 获取用户uid
+        uid = None
+        try:
+            account_url = "https://gf2-zoneinfo.sunborngame.com/account/info"
+            account_headers = {
+                "Host": "gf2-zoneinfo.sunborngame.com",
+                "User-Agent": "UnityPlayer/2019.4.40f1 (UnityWebRequest/1.0, libcurl/7.80.0-DEV)",
+                "Accept": "*/*",
+                "Accept-Encoding": "deflate, gzip",
+                "Authorization": authorization,
+                "Content-Type": "application/json",
+                "X-Unity-Version": "2019.4.40f1"
+            }
+            
+            response = requests.post(account_url, headers=account_headers, json={}, verify=False)
+            
+            if response.status_code == 200:
+                account_data = response.json()
+                if account_data.get("code") == 0:
+                    uid = account_data.get("data", {}).get("uid")
+                    print(f"[INFO] 获取到用户UID: {uid}")
+                else:
+                    print(f"[ERROR] 获取UID失败: {account_data.get('msg')}")
+            else:
+                print(f"[ERROR] 请求失败，状态码: {response.status_code}")
+        except Exception as e:
+            print(f"[ERROR] 获取UID失败: {e}")
 
         gacha = get_gacha_data_all()
 
@@ -55,15 +103,20 @@ class GachaApp:
             print("=" * 50)
             print(gacha)
             
+            # 将uid和gacha数据一起返回
             return {
                 "status": "success",
                 "msg": "获取抽卡记录成功",
-                "data": gacha
+                "data": {
+                    "uid": uid,
+                    "gacha": gacha
+                }
             }
         else:
+            # 只要有一个池子获取失败，就返回错误，而不是返回空数据
             return {
                 "status": "error",
-                "msg": "获取抽卡记录失败",
+                "msg": "获取抽卡记录失败：请检查token是否过期或网络连接",
             }
         
     def install_cert(self):
@@ -652,7 +705,7 @@ class GachaApp:
         
         # 创建窗口
         self.window = webview.create_window(
-            title="少女前线抽卡记录",
+            title="少前2抽卡记录工具_XKL",
             url=url,
             width=1200,
             height=800,
