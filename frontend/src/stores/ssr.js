@@ -5,6 +5,8 @@ export const useSSRStore = defineStore('ssr', () => {
   const SSR_character = ref({})
   const SSR_weapon = ref({})
   const SSR_permanent = ref({})
+  const SSR_custom_character = ref({})
+  const SSR_custom_weapon = ref({})
   const SSR_version = ref('')
   const SSR_fromRemote = ref(false)
   const isLoaded = ref(false)
@@ -35,6 +37,9 @@ export const useSSRStore = defineStore('ssr', () => {
       SSR_character.value = data.SSR_character || {}
       SSR_weapon.value = data.SSR_weapon || {}
       SSR_permanent.value = data.SSR_permanent || {}
+      // 自选池子使用与普通池子相同的SSR映射
+      SSR_custom_character.value = data.SSR_character || {}
+      SSR_custom_weapon.value = data.SSR_weapon || {}
       SSR_version.value = data.version || ''
       SSR_fromRemote.value = result.source === 'remote'
       isLoaded.value = true
@@ -50,6 +55,8 @@ export const useSSRStore = defineStore('ssr', () => {
     SSR_character,
     SSR_weapon,
     SSR_permanent,
+    SSR_custom_character,
+    SSR_custom_weapon,
     SSR_version,
     SSR_fromRemote,
     loadData,

@@ -208,7 +208,7 @@ class GachaApp:
                 with open(output_file, "r", encoding="utf-8") as f:
                     existing_data = json.load(f)
                 
-                # 合并三个池子
+                # 合并五个池子
                 merged_data = {
                     "permanent_pool": self._merge_pool_data(
                         gacha_data.get("permanent_pool", []),
@@ -221,6 +221,14 @@ class GachaApp:
                     "weapon_pool": self._merge_pool_data(
                         gacha_data.get("weapon_pool", []),
                         existing_data.get("weapon_pool", [])
+                    ),
+                    "custom_character_pool": self._merge_pool_data(
+                        gacha_data.get("custom_character_pool", []),
+                        existing_data.get("custom_character_pool", [])
+                    ),
+                    "custom_weapon_pool": self._merge_pool_data(
+                        gacha_data.get("custom_weapon_pool", []),
+                        existing_data.get("custom_weapon_pool", [])
                     )
                 }
                 gacha_data = merged_data

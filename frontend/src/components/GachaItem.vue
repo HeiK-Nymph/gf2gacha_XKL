@@ -86,7 +86,7 @@ const props = defineProps({
     type: String,
     required: true,
     default: 'character',
-    validator: (val) => ['character', 'weapon', 'permanent'].includes(val)
+    validator: (val) => ['character', 'weapon', 'permanent', 'custom_character', 'custom_weapon'].includes(val)
   }
 })
 
@@ -129,7 +129,9 @@ const gachaData = computed(() => {
   const poolMap = {
     character: gachaRecordStore.characterGacha,
     weapon: gachaRecordStore.weaponGacha,
-    permanent: gachaRecordStore.permanentGacha
+    permanent: gachaRecordStore.permanentGacha,
+    custom_character: gachaRecordStore.customCharacterGacha,
+    custom_weapon: gachaRecordStore.customWeaponGacha
   }
   return poolMap[props.pool_type] || []
 })
@@ -139,7 +141,9 @@ const getSsrMap = computed(() => {
   const ssrMap = {
     character: ssrStore.SSR_character || {},
     weapon: ssrStore.SSR_weapon || {},
-    permanent: ssrStore.SSR_permanent || {}
+    permanent: ssrStore.SSR_permanent || {},
+    custom_character: ssrStore.SSR_custom_character || {},
+    custom_weapon: ssrStore.SSR_custom_weapon || {}
   }
   return ssrMap[props.pool_type]
 })

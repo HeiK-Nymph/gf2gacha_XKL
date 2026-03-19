@@ -10,7 +10,7 @@ def set_gacha_Banner(id, json_path=None):
     """设置抽卡池类型
 
     Args:
-        id: 池子类型ID (1=常驻池, 3=角色池, 4=武器池)
+        id: 池子类型ID (1=常驻池, 3=角色池, 4=武器池, 6=自选角色池, 7=自选武器池)
         json_path: json文件路径，默认使用 latest_request.json
     """
     if json_path is None:
@@ -152,7 +152,7 @@ async def get_gacha_pool_async(pool_type_id, pool_name):
     """异步获取单个池子的所有数据
 
     Args:
-        pool_type_id: 池子类型ID (1=常驻池, 3=角色池, 4=武器池)
+        pool_type_id: 池子类型ID (1=常驻池, 3=角色池, 4=武器池, 6=自选角色池, 7=自选武器池)
         pool_name: 池子名称（用于日志）
 
     Returns:
@@ -205,24 +205,28 @@ async def get_gacha_pool_async(pool_type_id, pool_name):
 
 def get_gacha_data_all():
     """并行获取所有池子的抽卡数据"""
-    print("[INFO] 开始并行获取三个池子的数据...")
+    print("[INFO] 开始并行获取五个池子的数据...")
 
-    # 使用 asyncio 并行获取三个池子的数据
+    # 使用 asyncio 并行获取五个池子的数据
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     try:
-        # 并行执行三个池子的数据获取
+        # 并行执行五个池子的数据获取
         results = loop.run_until_complete(asyncio.gather(
             get_gacha_pool_async("1", "常驻池"),
             get_gacha_pool_async("3", "角色池"),
-            get_gacha_pool_async("4", "武器池")
+            get_gacha_pool_async("4", "武器池"),
+            get_gacha_pool_async("6", "自选角色池"),
+            get_gacha_pool_async("7", "自选武器池")
         ))
 
-        gacha_data_Permanent, gacha_data_Character, gacha_data_Weapon = results
+        gacha_data_Permanent, gacha_data_Character, gacha_data_Weapon, gacha_data_CustomCharacter, gacha_data_CustomWeapon = results
 
         # 检查是否有任何一个池子获取失败（返回 None）
-        if gacha_data_Permanent is None or gacha_data_Character is None or gacha_data_Weapon is None:
+        if (gacha_data_Permanent is None or gacha_data_Character is None or 
+            gacha_data_Weapon is None or gacha_data_CustomCharacter is None or 
+            gacha_data_CustomWeapon is None):
             print("[ERROR] 部分池子数据获取失败")
             return None  # 返回 None 表示获取失败
 
@@ -231,7 +235,9 @@ def get_gacha_data_all():
         return {
             "permanent_pool": gacha_data_Permanent,  # 常驻池
             "character_pool": gacha_data_Character,  # 角色池
-            "weapon_pool": gacha_data_Weapon         # 武器池
+            "weapon_pool": gacha_data_Weapon,        # 武器池
+            "custom_character_pool": gacha_data_CustomCharacter,  # 自选角色池
+            "custom_weapon_pool": gacha_data_CustomWeapon         # 自选武器池
         }
     except Exception as e:
         print(f"[ERROR] 获取抽卡数据失败: {e}")

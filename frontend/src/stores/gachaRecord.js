@@ -6,6 +6,8 @@ export const useGachaRecordStore = defineStore('gachaRecord', () => {
   "permanent_pool": [  ],
   "character_pool": [],
   "weapon_pool": [],
+  "custom_character_pool": [],
+  "custom_weapon_pool": [],
 })
 
     const characterGacha = computed(() => {
@@ -20,5 +22,13 @@ export const useGachaRecordStore = defineStore('gachaRecord', () => {
         return gacha.value.permanent_pool
     })
 
-    return { gacha, characterGacha, weaponGacha, permanentGacha }
+    const customCharacterGacha = computed(() => {
+        return gacha.value.custom_character_pool
+    })
+
+    const customWeaponGacha = computed(() => {
+        return gacha.value.custom_weapon_pool
+    })
+
+    return { gacha, characterGacha, weaponGacha, permanentGacha, customCharacterGacha, customWeaponGacha }
 })

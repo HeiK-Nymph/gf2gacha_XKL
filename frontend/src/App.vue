@@ -13,6 +13,13 @@
       <div class="header-left">
         <el-button type="warning" size="large" @click="installCert">安装证书</el-button>
         <el-button type="success" size="large" @click="updateRecord" :loading="isUpdating">更新记录</el-button>
+        <el-button 
+          :type="isCustomPurchaseOn ? 'success' : 'info'" 
+          size="large" 
+          @click="toggleCustomPurchase"
+        >
+          自选采购：{{ isCustomPurchaseOn ? '开' : '关' }}
+        </el-button>
       </div>
       <div class="header-center">
         <div class="record-selector">
@@ -56,6 +63,17 @@
           <GachaItem pool_type="permanent" style="margin-right: auto;"></GachaItem>
         </div></el-col>
       </el-row>
+      
+      <el-row :gutter="40" v-if="isCustomPurchaseOn">
+        <el-col :span="8"><div class="app-main-item" >
+          <span>自选角色池</span>
+          <GachaItem pool_type="custom_character" style="margin-right: auto;"></GachaItem>
+        </div></el-col>
+        <el-col :span="8"><div class="app-main-item" >
+          <span>自选武器池</span>
+          <GachaItem pool_type="custom_weapon" style="margin-right: auto;"></GachaItem>
+        </div></el-col>
+      </el-row>
     </el-main>
   </el-container>
   
@@ -80,6 +98,7 @@
   const currentVersion = ref(versionInfo.current_version)
   const isUpdating = ref(false)
   const isLoading = ref(true)
+  const isCustomPurchaseOn = ref(false)
 
   // 显示更新通知
   const showUpdateNotification = (latestVersion) => {
@@ -260,6 +279,11 @@
     }
   }
 
+  // 切换自选采购开关
+  const toggleCustomPurchase = () => {
+    isCustomPurchaseOn.value = !isCustomPurchaseOn.value
+  }
+
   // 组件挂载时加载数据
   onMounted(async () => {
     // 加载记录列表
@@ -320,6 +344,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 20px;
     
   }
   .app-main-item span{
