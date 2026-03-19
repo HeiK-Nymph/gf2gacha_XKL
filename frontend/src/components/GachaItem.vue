@@ -4,7 +4,7 @@
     <div>共获得五星<span>{{ ssrTotal }}</span>个，歪了<span v-if="props.pool_type !== 'permanent'"><span>{{ waiCount }}</span></span>个，具体如下：</div>
     <div class="ssr-grid" v-if="ssrTotal > 0">
       <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" >
-        <img v-if="props.pool_type !== 'weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
+        <img v-if="props.pool_type !== 'weapon' && props.pool_type !== 'custom_weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
         <span v-else class="weapon-name">{{ item.name }}</span>
       </div>
     </div>
@@ -24,7 +24,7 @@
 
         <div>
 
-          <img v-if="props.pool_type !== 'weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
+          <img v-if="props.pool_type !== 'weapon' && props.pool_type !== 'custom_weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
           <span v-else class="weapon-name">{{ item.name }}</span>
         </div>
         <el-progress  :text-inside="true" :stroke-width="30" :percentage="item.costDraws * 1.25" :format="ssrListFormat" :color="customColorMethod"/>
