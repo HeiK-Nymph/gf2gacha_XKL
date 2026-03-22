@@ -1,0 +1,40 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    margin: 0 20rpx 0 20rpx;
+    .hot-utils{
+        display: flex;
+        flex-direction: column;
+        background-color: aqua;
+        .hot-utils-title{
+            background-color: darkgray;
+        }
+        .hot-utils-content{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            color: white;
+            .gacha-analyze{
+                width: 65%;
+                border-radius: 8px;
+                box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+                background-color: #ffc300;
+                box-sizing: border-box;
+                padding: 8rpx;
+                font-weight: bold;
+                font-size: 40rpx;
+            }
+            .gacha-rank{
+                width: 30%;
+                border-radius: 8px;
+                box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+                background-color: #07c160;
+                box-sizing: border-box;
+                padding: 8rpx;
+                font-weight: bold;
+                font-size: 25rpx;
+            }
+        }
+    }
+}
