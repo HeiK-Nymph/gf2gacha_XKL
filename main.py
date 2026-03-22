@@ -120,17 +120,195 @@ class GachaApp:
             }
         
     def install_cert(self):
+        """安装证书 - 首次运行自动生成用户专属证书并自动安装到系统"""
         try:
-            self.start_proxy()
-            webbrowser.open('http://mitm.it/')
-            return {
-                "status": "success",
-                "msg": "打开证书网站成功",
-            }
+            from backend.cert_generator import (
+                ensure_ca_certificate, 
+                generate_user_ca_certificate,
+                install_certificate_windows,
+                check_certificate_installed_windows,
+                get_certificate_info
+            )
+            import platform
+            
+            # 检查并生成证书（如果不存在）
+            cert_dir, is_new = ensure_ca_certificate()
+            if is_new:
+                cert_dir = generate_user_ca_certificate()
+            
+            # 获取证书信息
+            cert_path = cert_dir / "mitmproxy-ca-cert.cer"
+            if not cert_path.exists():
+                cert_path = cert_dir / "mitmproxy-ca-cert.pem"
+            
+            info = get_certificate_info(cert_path)
+            if not info:
+                return {
+                    "status": "error",
+                    "msg": "无法读取证书信息",
+                }
+            
+            cert_name = info['common_name']
+            
+            # 检查是否已安装
+            if platform.system() == "Windows":
+                if check_certificate_installed_windows(cert_name):
+                    return {
+                        "status": "success",
+                        "msg": "证书已安装，无需重复安装",
+                        "cert_name": cert_name
+                    }
+                
+                # 自动安装证书
+                success = install_certificate_windows(cert_path)
+                if success:
+                    return {
+                        "status": "success",
+                        "msg": "证书安装成功！",
+                        "cert_name": cert_name
+                    }
+                else:
+                    return {
+                        "status": "error",
+                        "msg": "证书自动安装失败，请手动安装",
+                    }
+            else:
+                # 非Windows系统，打开证书目录让用户手动安装
+                import webbrowser
+                webbrowser.open(str(cert_dir))
+                return {
+                    "status": "success",
+                    "msg": "非Windows系统，请手动安装证书",
+                    "cert_path": str(cert_dir)
+                }
+                
         except Exception as e:
+            print(f"[ERROR] 安装证书失败: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 "status": "error",
-                "msg": "打开证书网站失败",
+                "msg": f"证书安装失败: {str(e)}",
+            }
+    
+    def uninstall_cert(self):
+        """卸载证书 - 仅卸载 gf2gacha_XKL 证书"""
+        try:
+            from backend.cert_generator import (
+                uninstall_certificate_windows, 
+                check_certificate_installed_windows,
+                get_certificate_info
+            )
+            import platform
+            
+            if platform.system() != "Windows":
+                return {
+                    "status": "error",
+                    "msg": "仅支持Windows系统卸载证书",
+                }
+            
+            # 获取本工具的证书信息
+            cert_dir = Path(__file__).parent / "certs"
+            cert_path = cert_dir / "mitmproxy-ca-cert.cer"
+            
+            if not cert_path.exists():
+                return {
+                    "status": "error",
+                    "msg": "证书文件不存在",
+                }
+            
+            info = get_certificate_info(cert_path)
+            if not info or not info['common_name']:
+                return {
+                    "status": "error",
+                    "msg": "无法读取证书信息",
+                }
+            
+            cert_name = info['common_name']
+            
+            # 检查是否已安装
+            if not check_certificate_installed_windows(cert_name):
+                return {
+                    "status": "success",
+                    "msg": "证书未安装，无需卸载",
+                }
+            
+            # 卸载 gf2gacha_XKL 证书
+            success = uninstall_certificate_windows(cert_name)
+            
+            if success:
+                return {
+                    "status": "success",
+                    "msg": "证书卸载成功！",
+                }
+            else:
+                return {
+                    "status": "error",
+                    "msg": "证书卸载失败",
+                }
+                
+        except Exception as e:
+            print(f"[ERROR] 卸载证书失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "status": "error",
+                "msg": f"卸载证书失败: {str(e)}",
+            }
+    
+    def check_cert_status(self):
+        """检查证书安装状态"""
+        try:
+            from backend.cert_generator import (
+                check_certificate_installed_windows, 
+                get_certificate_info
+            )
+            import platform
+            
+            cert_dir = Path(__file__).parent / "certs"
+            cert_path = cert_dir / "mitmproxy-ca-cert.cer"
+            
+            if not cert_path.exists():
+                return {
+                    "status": "not_generated",
+                    "msg": "证书尚未生成",
+                    "installed": False
+                }
+            
+            info = get_certificate_info(cert_path)
+            if not info:
+                return {
+                    "status": "error",
+                    "msg": "无法读取证书信息",
+                    "installed": False
+                }
+            
+            cert_name = info['common_name']
+            
+            if platform.system() == "Windows":
+                installed = check_certificate_installed_windows(cert_name)
+                return {
+                    "status": "success",
+                    "msg": "证书状态查询成功",
+                    "installed": installed,
+                    "cert_name": cert_name,
+                    "valid_from": str(info['valid_from']),
+                    "valid_to": str(info['valid_to'])
+                }
+            else:
+                return {
+                    "status": "success",
+                    "msg": "非Windows系统，请手动检查",
+                    "installed": False,
+                    "cert_path": str(cert_path)
+                }
+                
+        except Exception as e:
+            print(f"[ERROR] 检查证书状态失败: {e}")
+            return {
+                "status": "error",
+                "msg": f"检查证书状态失败: {str(e)}",
+                "installed": False
             }
         
     def get_record_list(self):
@@ -706,6 +884,9 @@ class GachaApp:
         print(f"[INFO] 当前版本: v{self.version.get('current_version', '1.0.0')}")
         print("=" * 50)
         
+        # 首次运行时检查并生成证书
+        self._check_and_generate_certificate()
+        
         # 加载前端URL
         url = self.load_frontend()
         if not url:
@@ -734,6 +915,26 @@ class GachaApp:
         print("[OK] 启动GUI界面...")
         print("[INFO] 按 Ctrl+C 停止应用")
         webview.start()
+    
+    def _check_and_generate_certificate(self):
+        """检查并生成证书（首次运行）"""
+        try:
+            from backend.cert_generator import ensure_ca_certificate, generate_user_ca_certificate
+            
+            print("[CERT] 检查证书状态...")
+            cert_dir, is_new = ensure_ca_certificate()
+            
+            if is_new:
+                print("[CERT] 首次运行，生成用户专属证书...")
+                cert_dir = generate_user_ca_certificate()
+                print(f"[CERT] 证书已生成并保存到: {cert_dir}")
+            else:
+                print("[CERT] 证书已存在，跳过生成")
+                
+        except Exception as e:
+            print(f"[ERROR] 检查证书时出错: {e}")
+            import traceback
+            traceback.print_exc()
 
 def check_single_instance():
     """检查程序是否已在运行"""

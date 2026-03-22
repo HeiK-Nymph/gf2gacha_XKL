@@ -70,10 +70,17 @@ async def run_proxy(port=8080, auto_find_port=True):
 
     set_proxy('127.0.0.1', port)
 
+    # 确保证书存在，不存在则自动生成
+    from backend.cert_generator import ensure_ca_certificate, generate_user_ca_certificate
+    cert_dir, is_new = ensure_ca_certificate()
+    if is_new:
+        cert_dir = generate_user_ca_certificate()
+
     # 配置选项
     opts = options.Options(
         listen_port=port,
-        ssl_insecure=True
+        ssl_insecure=True,
+        confdir=str(cert_dir)  # 使用项目专属证书目录
     )
 
     # 创建DumpMaster对象

@@ -12,6 +12,7 @@
 
       <div class="header-left">
         <el-button type="warning" size="large" @click="installCert">安装证书</el-button>
+        <el-button type="danger" size="large" @click="uninstallCert">卸载证书</el-button>
         <el-button type="success" size="large" @click="updateRecord" :loading="isUpdating">更新记录</el-button>
         <el-button 
           :type="isCustomPurchaseOn ? 'success' : 'info'" 
@@ -268,14 +269,43 @@
     try{
       const res = await window.pywebview.api.install_cert()
       if (res.status == 'success'){
-        ElMessage.success(res.msg)
+        ElMessage.success(res.msg || '证书安装成功')
       }else{
-        console.error('[ERROR] 打开证书网站失败:', res.msg)
+        console.error('[ERROR] 安装证书失败:', res.msg)
         ElMessage.error(res.msg)
       }
     }catch (e) {
-      console.error('[ERROR] 打开证书网站异常:', e)
-      ElMessage.error(`打开证书网站失败: ${e.message || e}`)
+      console.error('[ERROR] 安装证书异常:', e)
+      ElMessage.error(`安装证书失败: ${e.message || e}`)
+    }
+  }
+
+  // 卸载证书
+  const uninstallCert = async () => {
+    try{
+      // 确认对话框
+      await ElMessageBox.confirm(
+        '确定要卸载 gf2gacha_XKL 证书吗？',
+        '警告',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+      
+      const res = await window.pywebview.api.uninstall_cert()
+      if (res.status == 'success'){
+        ElMessage.success(res.msg || '证书卸载成功')
+      }else{
+        console.error('[ERROR] 卸载证书失败:', res.msg)
+        ElMessage.error(res.msg)
+      }
+    }catch (e) {
+      if (e !== 'cancel') {
+        console.error('[ERROR] 卸载证书异常:', e)
+        ElMessage.error(`卸载证书失败: ${e.message || e}`)
+      }
     }
   }
 
