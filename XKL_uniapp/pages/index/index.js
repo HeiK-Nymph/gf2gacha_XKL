@@ -1,8 +1,12 @@
 import {ref} from 'vue'
 
 export const index = () => {
-    const title = ref('欢迎来到XKL')
+    const gotoGachaAnalyze = () => {
+        uni.navigateTo({
+            url: '/pages/gacha-analyze/gacha-analyze'
+        })
+    }
     return {
-        title
+        gotoGachaAnalyze
     }
 }

@@ -1,0 +1,28 @@
+.gacha-detail-container{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    margin: 30rpx 20rpx 0 20rpx;
+    .user-info{
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding: 30rpx;
+        gap: 20rpx;
+        background-color: #f1f1f1;
+        border-radius: 16rpx;
+        box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+        .uid{
+            font-weight: bold;
+            font-size: 35rpx;
+        }
+        .gacha-overview{
+            font-weight: bold;
+            font-size: 30rpx;
+            text{
+                font-size: 35rpx;
+                color: #1677ff;
+            }
+        }
+    }
+}

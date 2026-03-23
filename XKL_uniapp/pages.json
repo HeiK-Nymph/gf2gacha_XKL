@@ -5,6 +5,25 @@
 			"style": {
 				"navigationBarTitleText": "追放夏克里助手"
 			}
+		},
+		{
+			"path": "pages/gacha-analyze/gacha-analyze",
+			"style": {
+				"navigationBarTitleText": "抽卡分析"
+			}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "gachaCoreViews",
+			"pages": [
+				{
+					"path": "gacha-detail/gacha-detail",
+					"style": {
+						"navigationBarTitleText": "少前2抽卡记录工具"
+					}
+				}
+			]
 		}
 	],
 	"globalStyle": {
