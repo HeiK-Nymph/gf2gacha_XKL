@@ -1,39 +1,63 @@
+page{
+    background-color: #f5f5f5;
+}
+
 .content {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    margin: 30rpx 50rpx 0 50rpx;
+    padding: 30rpx 40rpx;
+    
     .hot-utils{
         display: flex;
         flex-direction: column;
-        background-color: aqua;
+        background-color: #fff;
+        border-radius: 16rpx;
+        box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+        overflow: hidden;
+        
         .hot-utils-title{
-            background-color: darkgray;
+            padding: 24rpx 30rpx;
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1rpx solid #f0f0f0;
         }
+        
         .hot-utils-content{
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            color: white;
-            .gacha-analyze{
-                width: 65%;
-                border-radius: 8px;
-                box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-                background-color: #ffc300;
-                box-sizing: border-box;
-                padding: 8rpx;
+            padding: 30rpx;
+            gap: 20rpx;
+            
+            .gacha-analyze, .gacha-rank{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 180rpx;
+                border-radius: 16rpx;
+                box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.1);
                 font-weight: bold;
-                font-size: 40rpx;
+                color: #fff;
+                transition: transform 0.2s, box-shadow 0.2s;
+                
+                &:active{
+                    transform: scale(0.98);
+                    box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+                }
             }
+            
+            .gacha-analyze{
+                flex: 2;
+                font-size: 36rpx;
+                background: linear-gradient(135deg, #ffc300, #ff9500);
+            }
+            
             .gacha-rank{
-                width: 30%;
-                border-radius: 8px;
-                box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-                background-color: #07c160;
-                box-sizing: border-box;
-                padding: 8rpx;
-                font-weight: bold;
-                font-size: 25rpx;
+                flex: 1;
+                font-size: 32rpx;
+                background: linear-gradient(135deg, #07c160, #06ad56);
             }
         }
     }

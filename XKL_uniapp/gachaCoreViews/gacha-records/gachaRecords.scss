@@ -1,0 +1,113 @@
+.gacha-records-container{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    
+    .records-header{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30rpx 40rpx;
+        background-color: #fff;
+        border-bottom: 1rpx solid #f0f0f0;
+        
+        .records-title{
+            font-size: 36rpx;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .records-count{
+            font-size: 26rpx;
+            color: #999;
+        }
+    }
+    
+    .records-tip{
+        text-align: center;
+        font-size: 24rpx;
+        color: #999;
+        padding: 16rpx 0;
+        background-color: #fff;
+    }
+    
+    .records-list{
+        flex: 1;
+        padding: 20rpx 0;
+    }
+    
+    .record-item-wrapper{
+        position: relative;
+        margin: 0 30rpx 20rpx 30rpx;
+        border-radius: 16rpx;
+        overflow: hidden;
+        
+        .delete-btn{
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 150rpx;
+            background-color: #ff4d4f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            .delete-text{
+                color: #fff;
+                font-size: 30rpx;
+                font-weight: bold;
+            }
+        }
+        
+        .record-item{
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fff;
+            padding: 30rpx;
+            transition: transform 0.1s ease-out;
+            box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+            z-index: 1;
+            
+            .record-info{
+                display: flex;
+                flex-direction: column;
+                gap: 12rpx;
+                
+                .record-uid{
+                    font-size: 32rpx;
+                    font-weight: bold;
+                    color: #333;
+                }
+                
+                .record-time{
+                    font-size: 26rpx;
+                    color: #999;
+                }
+            }
+            
+            .record-arrow{
+                font-size: 40rpx;
+                color: #ccc;
+            }
+        }
+    }
+    
+    .empty-state{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 100rpx 0;
+        
+        .empty-text{
+            font-size: 28rpx;
+            color: #999;
+        }
+    }
+}

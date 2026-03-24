@@ -16,13 +16,167 @@
             font-weight: bold;
             font-size: 35rpx;
         }
-        .gacha-overview{
+        .user-info-gacha-all{
             font-weight: bold;
             font-size: 30rpx;
             text{
                 font-size: 35rpx;
                 color: #1677ff;
             }
+        }
+    }
+    .gacha-overview-content{
+        display: flex;
+        flex-direction: column;
+        background-color: #f1f1f1;
+        border-radius: 16rpx;
+        box-sizing: border-box;
+        padding: 30rpx 0;
+        margin-top: 30rpx;
+        box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+        gap:20rpx;
+        .gacha-overview{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            
+            
+            .gacha-overview-item{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-weight: bold;
+                .gacha-overview-item-count{
+                    color: #1677ff;
+                    font-size: 35rpx;
+                }
+                .gacha-overview-item-info{
+                    font-size: 30rpx;
+                }
+            }
+        }
+        .user-rank{
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            box-sizing: border-box;
+            padding: 0 20rpx;
+            .user-rank-bto{
+                background-color: #f8f8f8;
+                box-sizing: border-box;
+                padding: 10rpx 40rpx;
+                border-radius: 16rpx;
+                border: 1px solid #cecece;
+                font-size: 28rpx;
+            }
+        }
+    }
+    .SSR-class-content{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        box-sizing: border-box;
+        font-size: 35rpx;
+        border-radius: 16rpx 16rpx 0 0;
+        background-color: #f1f1f1;
+        padding: 20rpx 0;
+        margin-top: 30rpx;
+        .SSR-class{
+            padding-bottom: 10rpx;
+            &.SSR-class-active{
+                font-weight: bold;
+                color: #1677ff;
+                border-bottom: 6rpx solid #1677ff;
+            }
+        }
+    }
+    .gacha-detail-content{
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding: 20rpx;
+        background-color: #f1f1f1;
+        border-radius: 0 0 16rpx 16rpx;
+        box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+        .gacha-stats{
+            font-size: 28rpx;
+            font-weight: bold;
+            margin-bottom: 20rpx;
+            .highlight{
+                color: #D66555;
+            }
+        }
+        .ssr-grid{
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16rpx;
+            padding: 16rpx;
+            background-color: gold;
+            border-radius: 12rpx;
+            margin-bottom: 20rpx;
+            .ssr-grid-item{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+        .ssr-item{
+            display: flex;
+            align-items: center;
+            margin: 16rpx 0;
+            gap: 16rpx;
+        }
+        .ssr-avatar{
+            width: 70rpx;
+            height: 70rpx;
+            border-radius: 8rpx;
+            flex-shrink: 0;
+        }
+        .weapon-name{
+            display: inline-block;
+            padding: 10rpx 16rpx;
+            font-size: 24rpx;
+            color: #fff;
+            background-color: #2196F3;
+            border-radius: 8rpx;
+            white-space: nowrap;
+            max-width: 140rpx;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+        }
+        .progress-wrapper{
+            flex: 1;
+            height: 52rpx;
+            background-color: #EBEEF5;
+            border-radius: 26rpx;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-bar{
+            height: 100%;
+            background-color: #409eff;
+            border-radius: 26rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80rpx;
+            transition: width 0.3s ease;
+        }
+        .progress-text{
+            font-size: 24rpx;
+            color: #fff;
+            font-weight: bold;
+        }
+        .wai-tag{
+            display: inline-block;
+            padding: 4rpx 12rpx;
+            font-size: 24rpx;
+            color: #fff;
+            background-color: #ff4757;
+            border-radius: 8rpx;
+            text-align: center;
+            flex-shrink: 0;
         }
     }
 }

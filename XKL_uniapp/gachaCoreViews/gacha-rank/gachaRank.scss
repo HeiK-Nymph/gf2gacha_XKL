@@ -1,0 +1,179 @@
+.gacha-rank-container{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 20rpx;
+    padding-bottom: 280rpx; // 为底部固定卡片留空间
+    background-color: #f5f5f5;
+    height: 85vh;
+    overflow: hidden; // 禁止外部滚动
+    padding-bottom:0;
+    .rank-tabs{
+        display: flex;
+        flex-direction: row;
+        background-color: #fff;
+        border-radius: 16rpx;
+        padding: 8rpx;
+        margin-bottom: 20rpx;
+        flex-shrink: 0;
+        
+        .rank-tab{
+            flex: 1;
+            text-align: center;
+            padding: 20rpx 0;
+            font-size: 28rpx;
+            color: #666;
+            border-radius: 12rpx;
+            transition: all 0.3s;
+            
+            &.rank-tab-active{
+                background-color: #1677ff;
+                color: #fff;
+                font-weight: bold;
+            }
+        }
+    }
+    
+    .rank-header{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        margin-bottom: 20rpx;
+        gap: 50rpx;
+        flex-shrink: 0;
+        
+        .rank-rule, .rank-test{
+            font-size: 26rpx;
+            color: #1677ff;
+            padding: 12rpx 24rpx;
+            background-color: #fff;
+            border-radius: 8rpx;
+        }
+    }
+    
+    .rank-table{
+        display: flex;
+        flex-direction: column;
+        background-color: #fff;
+        border-radius: 16rpx;
+        overflow: hidden;
+        flex: 1; // 填满剩余空间
+        min-height: 0; // 允许flex子项收缩
+        
+        .table-header{
+            display: flex;
+            flex-direction: row;
+            background-color: #f0f5ff;
+            padding: 24rpx 16rpx;
+            font-size: 26rpx;
+            font-weight: bold;
+            color: #333;
+            flex-shrink: 0;
+        }
+        
+        .table-body{
+            flex: 1;
+            height: 0; // 配合flex:1生效
+        }
+        
+        .table-row{
+            display: flex;
+            flex-direction: row;
+            padding: 20rpx 16rpx;
+            font-size: 26rpx;
+            border-bottom: 1rpx solid #f0f0f0;
+            
+            &:last-child{
+                border-bottom: none;
+            }
+        }
+        
+        .th-rank, .td-rank{
+            width: 120rpx;
+            text-align: center;
+        }
+        
+        .th-value, .td-value{
+            flex: 1;
+            text-align: center;
+            color: #1677ff;
+            font-weight: bold;
+        }
+        
+        .th-uid, .td-uid{
+            width: 200rpx;
+            text-align: center;
+            color: #999;
+        }
+        
+        .rank-medal{
+            display: inline-block;
+            width: 48rpx;
+            height: 48rpx;
+            line-height: 48rpx;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 28rpx;
+        }
+        
+        .rank-gold{
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #fff;
+        }
+        
+        .rank-silver{
+            background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+            color: #fff;
+        }
+        
+        .rank-bronze{
+            background: linear-gradient(135deg, #CD7F32, #B87333);
+            color: #fff;
+        }
+        
+        .rank-num{
+            font-weight: bold;
+            color: #666;
+        }
+    }
+    
+    .my-rank-card{
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        background-color: #1677ff;
+        border-radius: 16rpx 16rpx 0 0;
+        padding: 30rpx 20rpx 5vh 20rpx;
+        box-shadow: 0 -4rpx 20rpx rgba(22, 119, 255, 0.3);
+        
+        .my-rank-info{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            
+            .my-rank-label{
+                font-size: 24rpx;
+                color: rgba(255,255,255,0.8);
+                margin-bottom: 8rpx;
+            }
+            
+            .my-rank-value{
+                font-size: 32rpx;
+                color: #fff;
+                font-weight: bold;
+            }
+        }
+        
+        .my-rank-divider{
+            width: 1rpx;
+            height: 60rpx;
+            background-color: rgba(255,255,255,0.3);
+        }
+    }
+}

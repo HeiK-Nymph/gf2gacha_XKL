@@ -6,7 +6,13 @@ export const index = () => {
             url: '/pages/gacha-analyze/gacha-analyze'
         })
     }
+    const gotoGachaRank = () => {
+        uni.navigateTo({
+            url: '/gachaCoreViews/gacha-rank/gacha-rank'
+        })
+    }
     return {
-        gotoGachaAnalyze
+        gotoGachaAnalyze,
+        gotoGachaRank
     }
 }

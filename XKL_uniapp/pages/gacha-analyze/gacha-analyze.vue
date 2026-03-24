@@ -10,8 +10,8 @@
         </view>
         <view class="bottom-container">
             <view class="bottom-item bottom-active" @click="gotoGachaDetail">开始分析</view>
-            <view class="bottom-item">历史记录</view>
-            <view class="bottom-item">排行榜</view>
+            <view class="bottom-item" @click="gotoGachaRecords">历史记录</view>
+            <view class="bottom-item" @click="gotoGachaRank">排行榜</view>
         </view>
         <view class="gacha-analyze-title">▌获取分析请求教程</view>
         <view class="readme-text">B站bv号：<text user-select="true">BV1M7AGzuEPk</text></view>
@@ -21,7 +21,7 @@
     
 <script setup>
     import { gachaAnalyze } from './gachaAnalyze'
-    const {gotoGachaDetail} = gachaAnalyze()
+    const {gotoGachaDetail, gotoGachaRank, gotoGachaRecords} = gachaAnalyze()
 </script>
     
 <style scoped lang="scss">

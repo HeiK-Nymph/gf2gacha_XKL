@@ -22,6 +22,18 @@
 					"style": {
 						"navigationBarTitleText": "少前2抽卡记录工具"
 					}
+				},
+				{
+					"path":"gacha-rank/gacha-rank",
+					"style":{
+						"navigationBarTitleText":"抽卡分析-排行榜"
+					}
+				},
+				{
+					"path":"gacha-records/gacha-records",
+					"style":{
+						"navigationBarTitleText":"抽卡分析-历史记录"
+					}
 				}
 			]
 		}
