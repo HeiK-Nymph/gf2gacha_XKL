@@ -45,3 +45,42 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 XKL_uniapp/manifest.json
+XKL_java/src/main/resources/application.properties
+
+# Java/Maven
+XKL_java/target/
+XKL_java/*.class
+XKL_java/*.jar
+XKL_java/*.war
+XKL_java/*.ear
+
+# Maven Wrapper (只保留配置，忽略下载的 jar)
+XKL_java/.mvn/wrapper/maven-wrapper.jar
+
+# IDE - IntelliJ IDEA
+XKL_java/.idea/
+XKL_java/*.iml
+XKL_java/*.iws
+XKL_java/*.ipr
+
+# IDE - Eclipse
+XKL_java/.classpath
+XKL_java/.project
+XKL_java/.settings/
+XKL_java/bin/
+
+# IDE - VS Code (如果有)
+XKL_java/.vscode/
+
+# Java 日志
+XKL_java/*.log
+XKL_java/logs/
+
+# Java 临时文件
+XKL_java/*.tmp
+XKL_java/*.bak
+XKL_java/*.swp
+
+# Java 操作系统文件
+XKL_java/.DS_Store
+XKL_java/Thumbs.db

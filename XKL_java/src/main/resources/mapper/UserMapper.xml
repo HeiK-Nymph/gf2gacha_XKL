@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.example.xkl_java.mapper.UserMapper">
+    <insert id="insertUser">
+        INSERT INTO user (uid, user_name, cnt)
+        VALUES (#{uid}, #{userName}, #{cnt})
+    </insert>
+
+    <select id="selectByUid" resultType="org.example.xkl_java.bean.User">
+        SELECT uid, user_name, cnt
+        FROM user
+        WHERE uid = #{uid}
+    </select>
+
+    <select id="selectAllUsers" resultType="org.example.xkl_java.bean.User">
+        SELECT uid, user_name, cnt
+        FROM user
+    </select>
+
+    <update id="updateCnt">
+        UPDATE user
+        SET cnt = #{cnt}
+        WHERE uid = #{uid}
+    </update>
+
+    <delete id="deleteByUid">
+        DELETE
+        FROM user
+        WHERE uid = #{uid}
+    </delete>
+</mapper>
