@@ -867,8 +867,17 @@ class GachaApp:
         from backend.proxy import close_proxy
         close_proxy()
         self.proxy_running = False
+        
+        # 清除 latest_request.json 内容
+        try:
+            json_path = Path(__file__).parent / "json" / "latest_request.json"
+            if json_path.exists():
+                json_path.write_text("", encoding="utf-8")
+                print("[INFO] 已清除 latest_request.json")
+        except Exception as e:
+            print(f"[WARNING] 清除 latest_request.json 失败: {e}")
+        
         print("[INFO] 应用关闭")
-        # 这里可以添加清理代码
 
     
     

@@ -393,8 +393,32 @@ def download_file_parallel(url, dest_path, num_threads=16):
 
 
 def download_file(url, dest_path):
-    """主下载函数（16线程内存下载）"""
-    return download_file_parallel(url, dest_path, num_threads=16)
+    """单线程下载"""
+    dest_path = Path(dest_path)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    print(f"[UPDATER] 开始下载: {url}")
+    
+    try:
+        with GLOBAL_SESSION.get(url, stream=True, timeout=300, verify=False) as r:
+            r.raise_for_status()
+            total = int(r.headers.get('Content-Length', 0))
+            dl = 0
+            t0 = time.time()
+            with open(dest_path, 'wb') as f:
+                for chunk in r.iter_content(256 * 1024):
+                    if chunk:
+                        f.write(chunk)
+                        dl += len(chunk)
+                        if total:
+                            print(f"\r[UPDATER] {dl*100/total:.1f}% | {dl/1024/1024:.1f}MB", end="")
+            print(f"\n[UPDATER] 完成 {dl/1024/1024:.1f}MB")
+            return True
+    except Exception as e:
+        print(f"\n[UPDATER] 下载失败: {e}")
+        if dest_path.exists():
+            dest_path.unlink()
+        return False
 
 
 def download_with_urllib(url, dest_path):
@@ -449,9 +473,30 @@ def perform_update(download_url):
         except Exception as e:
             pass
     
-    preserve_items = {"records", "updater_old.exe"}
+    preserve_items = {"records", "certs", "updater_old.exe"}
+    
+    # 1. 备份数据文件夹到根目录
+    backup_records = app_root / "records_backup_temp"
+    backup_certs = app_root / "certs_backup_temp"
+    
+    # 如果备份已存在，先删除（防止残留）
+    if backup_records.exists():
+        shutil.rmtree(backup_records)
+    if backup_certs.exists():
+        shutil.rmtree(backup_certs)
+    
+    # 执行备份
+    records_src = base_path / "records"
+    certs_src = base_path / "certs"
+    
+    if records_src.exists():
+        shutil.copytree(records_src, backup_records)
+    if certs_src.exists():
+        shutil.copytree(certs_src, backup_certs)
+    
+    # 2. 处理根目录（不包含 _internal）
     for item in source_dir.iterdir():
-        if item.name in preserve_items:
+        if item.name in preserve_items or item.name == "_internal":
             continue
         dest = app_root / item.name
         try:
@@ -465,8 +510,12 @@ def perform_update(download_url):
             else:
                 shutil.copy2(item, dest)
         except Exception as e:
-            pass
+            if "拒绝访问" in str(e) or "WinError 5" in str(e):
+                pass  # 跳过正在使用的文件，不显示错误
+            else:
+                print(f"[UPDATER] 处理根目录文件失败: {item.name}, {e}")
     
+    # 3. 处理 _internal 目录内部（不删除整个 _internal）
     source_internal = source_dir / "_internal"
     if source_internal.exists():
         for item in source_internal.iterdir():
@@ -484,7 +533,20 @@ def perform_update(download_url):
                 else:
                     shutil.copy2(item, dest)
             except Exception as e:
-                pass
+                if "拒绝访问" in str(e) or "WinError 5" in str(e):
+                    pass  # 跳过正在使用的文件，不显示错误
+                else:
+                    print(f"[UPDATER] 处理 _internal 文件失败: {item.name}, {e}")
+    
+    # 4. 恢复备份的数据文件夹
+    if backup_records.exists():
+        if records_src.exists():
+            shutil.rmtree(records_src)
+        shutil.move(str(backup_records), str(records_src))
+    if backup_certs.exists():
+        if certs_src.exists():
+            shutil.rmtree(certs_src)
+        shutil.move(str(backup_certs), str(certs_src))
     
     cleanup_temp(temp_dir)
     print("[UPDATER] 更新完成!")
@@ -542,4 +604,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"\n[UPDATER] 发生致命错误: {e}")
+        import traceback
+        traceback.print_exc()
+        print("\n按回车键退出...")
+        input()
+        import sys
+        sys.exit(1)
