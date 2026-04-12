@@ -84,3 +84,6 @@ XKL_java/*.swp
 # Java 操作系统文件
 XKL_java/.DS_Store
 XKL_java/Thumbs.db
+test.py
+tlv_pb_parser.py
+tlv_pb_parser.spec

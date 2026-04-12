@@ -326,10 +326,10 @@
     isLoading.value = false
     
     // 显示提示
-    if (source === 'remote') {
+    if (source === 'remote' || source === 'local-proto') {
       ElMessage.success('正在使用最新五星数据')
-    } else if (source === 'local') {
-      ElMessage.warning('正在使用本地五星数据')
+    } else if (source === 'local-json') {
+      ElMessage.warning('正在使用本地五星数据(可能不是最新)')
     } else {
       ElMessage.error('无法加载五星数据')
     }

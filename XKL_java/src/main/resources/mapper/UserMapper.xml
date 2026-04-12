@@ -1,25 +1,72 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.example.xkl_java.mapper.UserMapper">
-    <insert id="insertUser">
+
+    <cache/>
+
+<!--    数据库自增id回显 -->
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user (uid, user_name, cnt)
-        VALUES (#{uid}, #{userName}, #{cnt})
+        VALUES (#{user.uid}, #{user.userName}, #{user.cnt})
     </insert>
 
-    <select id="selectByUid" resultType="org.example.xkl_java.bean.User">
-        SELECT uid, user_name, cnt
+
+    <resultMap id="userRM" type="org.example.xkl_java.bean.User">
+        <!--声明主键映射-->
+        <id column="id" property="id" />
+        <!--声明普通列映射-->
+        <result column="uid" property="uid" />
+        <result column="user_name" property="userName" />
+        <result column="cnt" property="cnt" />
+
+    </resultMap>
+    <select id="selectByUid" resultMap="userRM">
+        SELECT *
         FROM user
         WHERE uid = #{uid}
     </select>
 
     <select id="selectAllUsers" resultType="org.example.xkl_java.bean.User">
-        SELECT uid, user_name, cnt
+        SELECT *
         FROM user
+    </select>
+
+    <select id="selectByUidAndCnt" resultType="org.example.xkl_java.bean.User">
+        SELECT * FROM user
+            <where>
+                <if test="uid != null">
+                    uid = #{uid}
+                </if>
+                <if test="cnt != null">
+                    AND cnt = #{cnt}
+                </if>
+            </where>
+    </select>
+
+    <select id="selectByUidIn" resultType="org.example.xkl_java.bean.User">
+        SELECT * FROM user
+            <if test="uidList != null">
+                <foreach collection="uidList" item="uid" separator="," open="WHERE uid IN (" close=")">
+                    #{uid}
+                </foreach>
+            </if>
     </select>
 
     <update id="updateCnt">
         UPDATE user
         SET cnt = #{cnt}
+        WHERE uid = #{uid}
+    </update>
+    <update id="updateUserNameAndCnt">
+        UPDATE user
+        <set>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+            <if test="cnt != null">
+                cnt = #{cnt},
+            </if>
+        </set>
         WHERE uid = #{uid}
     </update>
 

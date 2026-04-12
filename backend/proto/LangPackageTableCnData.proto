@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package gf2gacha;
+
+import "LanguageStringData.proto";
+
+message LangPackageTableCnDataUnit {
+    int64 id = 1;
+    string content = 2;
+}
+
+message LangPackageTableCnData {
+    repeated LangPackageTableCnDataUnit Units = 1;
+}

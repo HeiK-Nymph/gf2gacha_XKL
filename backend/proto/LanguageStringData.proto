@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package gf2gacha;
+
+message LanguageStringData {
+    int64 id = 1;
+}

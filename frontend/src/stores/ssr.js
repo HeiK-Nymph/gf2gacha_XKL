@@ -41,7 +41,8 @@ export const useSSRStore = defineStore('ssr', () => {
       SSR_custom_character.value = data.SSR_character || {}
       SSR_custom_weapon.value = data.SSR_weapon || {}
       SSR_version.value = data.version || ''
-      SSR_fromRemote.value = result.source === 'remote'
+      // 数据来源标识
+      SSR_fromRemote.value = result.source === 'remote' || result.source === 'local-proto'
       isLoaded.value = true
       
       return result.source  // 返回数据来源

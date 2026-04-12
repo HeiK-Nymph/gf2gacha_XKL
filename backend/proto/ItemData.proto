@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package gf2gacha;
+
+import "LanguageStringData.proto";
+
+message ItemDataUnit {
+    int64 id = 1;
+    LanguageStringData name = 2;
+    int64 type = 5;
+    string icon = 7;
+    int64 rank = 8;
+}
+
+message ItemData {
+    repeated ItemDataUnit Units = 1;
+}

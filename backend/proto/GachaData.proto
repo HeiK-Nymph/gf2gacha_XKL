@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package gf2gacha;
+
+import "LanguageStringData.proto";
+
+message GachaDataUnit {
+    int64 id = 1;
+    int64 type = 4;
+    int64 startTime = 7;
+    int64 endTime = 8;
+    LanguageStringData name = 9;
+    string rateDesGun = 22;
+    string rateDesWeapon = 23;
+    string gunUpItem = 27;
+    string weaponUpItem = 29;
+}
+
+message GachaData {
+    repeated GachaDataUnit Units = 1;
+}
