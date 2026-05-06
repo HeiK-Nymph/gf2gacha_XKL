@@ -10,10 +10,10 @@
             <view 
                 class="record-item-wrapper" 
                 v-for="item in recordsList" 
-                :key="item.id"
+                :key="item.uid"
             >
                 <!-- 删除按钮（底层） -->
-                <view class="delete-btn" @click="deleteRecord(item.id)">
+                <view class="delete-btn" @click="deleteRecord(item.uid)">
                     <text class="delete-text">删除</text>
                 </view>
                 
@@ -28,7 +28,7 @@
                 >
                     <view class="record-info">
                         <view class="record-uid">UID：{{ item.uid }}</view>
-                        <view class="record-time">{{ item.time }}</view>
+                        <view class="record-time">{{ formatTime(item.time) }}</view>
                     </view>
                     <view class="record-arrow">›</view>
                 </view>
@@ -44,7 +44,7 @@
     
 <script setup>
     import {gachaRecords} from './gachaRecords'
-    const {recordsList, touchStart, touchMove, touchEnd, deleteRecord, viewDetail} = gachaRecords()
+    const {recordsList, touchStart, touchMove, touchEnd, deleteRecord, viewDetail, formatTime} = gachaRecords()
 </script>
     
 <style scoped lang="scss">

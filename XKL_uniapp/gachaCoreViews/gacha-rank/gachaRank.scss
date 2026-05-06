@@ -3,11 +3,10 @@
     flex-direction: column;
     box-sizing: border-box;
     padding: 20rpx;
-    padding-bottom: 280rpx; // 为底部固定卡片留空间
+    padding-bottom:0;
     background-color: #f5f5f5;
     height: 85vh;
     overflow: hidden; // 禁止外部滚动
-    padding-bottom:0;
     .rank-tabs{
         display: flex;
         flex-direction: row;
@@ -47,6 +46,50 @@
             color: #1677ff;
             padding: 12rpx 24rpx;
             background-color: #fff;
+            border-radius: 8rpx;
+        }
+
+        .rank-test{
+            color: #52c41a;
+        }
+    }
+
+    // Loading 状态
+    .rank-loading{
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        border-radius: 16rpx;
+
+        text{
+            font-size: 28rpx;
+            color: #999;
+        }
+    }
+
+    // 错误状态
+    .rank-error{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        border-radius: 16rpx;
+        gap: 20rpx;
+
+        text{
+            font-size: 28rpx;
+            color: #ff4d4f;
+        }
+
+        .retry-btn{
+            font-size: 26rpx;
+            color: #1677ff;
+            padding: 16rpx 40rpx;
+            border: 2rpx solid #1677ff;
             border-radius: 8rpx;
         }
     }
@@ -136,6 +179,19 @@
             font-weight: bold;
             color: #666;
         }
+
+        // 空数据状态
+        .rank-empty{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80rpx 0;
+
+            text{
+                font-size: 28rpx;
+                color: #999;
+            }
+        }
     }
     
     .my-rank-card{
@@ -174,6 +230,89 @@
             width: 1rpx;
             height: 60rpx;
             background-color: rgba(255,255,255,0.3);
+        }
+    }
+
+    // 排名规则弹窗
+    .rule-mask{
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .rule-popup{
+            width: 600rpx;
+            background-color: #fff;
+            border-radius: 24rpx;
+            padding: 40rpx 32rpx;
+            max-height: 80vh;
+
+            .rule-popup-title{
+                font-size: 34rpx;
+                font-weight: bold;
+                color: #333;
+                text-align: center;
+                margin-bottom: 32rpx;
+            }
+
+            .rule-popup-content{
+                .rule-item{
+                    margin-bottom: 28rpx;
+
+                    .rule-formula{
+                        font-size: 28rpx;
+                        font-weight: bold;
+                        color: #1677ff;
+                        margin-bottom: 10rpx;
+                    }
+
+                    .rule-desc{
+                        font-size: 24rpx;
+                        color: #666;
+                        line-height: 1.6;
+                    }
+                }
+
+                .rule-note{
+                    margin-top: 20rpx;
+                    padding: 16rpx 20rpx;
+                    background-color: #fff7e6;
+                    border-radius: 8rpx;
+
+                    text{
+                        font-size: 22rpx;
+                        color: #d48806;
+                        line-height: 1.5;
+                    }
+                }
+
+                .rule-total{
+                    margin-top: 28rpx;
+                    padding: 20rpx 0;
+                    border-top: 2rpx dashed #eee;
+                    text-align: center;
+
+                    text{
+                        font-size: 30rpx;
+                        font-weight: bold;
+                        color: #1677ff;
+                    }
+                }
+            }
+
+            .rule-popup-close{
+                margin-top: 36rpx;
+                padding: 22rpx 0;
+                background-color: #1677ff;
+                border-radius: 12rpx;
+                text-align: center;
+                font-size: 30rpx;
+                color: #fff;
+                font-weight: bold;
+            }
         }
     }
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.example.xkl_java.mapper.GfUserMapper">
+    <insert id="insertGfUser">
+        insert into gf_user(uid, sys_user_id)
+        values (#{uid}, #{sysUserId})
+    </insert>
+    <update id="removeGfUserByUid">
+        update gf_user set is_deleted = 1 where uid = #{uid}
+    </update>
+    <delete id="deleteGfUserByIsDeleted">
+        delete from gf_user where is_deleted = 1
+    </delete>
+    <select id="getGfUserByUid" resultType="org.example.xkl_java.bean.GfUser">
+        select * from gf_user where uid = #{uid} and is_deleted = 0
+    </select>
+</mapper>

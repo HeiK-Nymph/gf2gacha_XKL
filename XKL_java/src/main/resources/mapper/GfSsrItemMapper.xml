@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.example.xkl_java.mapper.GfSsrItemMapper">
+    <insert id="insertGfSsrItem">
+        insert into gf_ssr_item(item_id, item_name, item_type, ssr_type)
+        values (#{itemId}, #{itemName}, #{itemType}, #{ssrType})
+    </insert>
+    <insert id="insertGfSsrItemList">
+        insert into gf_ssr_item(item_id, item_name, item_type, ssr_type)
+        values
+        <foreach collection="gfSsrItemList" item="item" separator=",">
+            (#{item.itemId}, #{item.itemName}, #{item.itemType}, #{item.ssrType})
+        </foreach>
+    </insert>
+    <update id="removeGfSsrItemByItemId">
+        update gf_ssr_item set is_deleted = 1 where item_id = #{itemId}
+    </update>
+    <update id="restoreGfSsrItemAll">
+        update gf_ssr_item set is_deleted = 0 where is_deleted = 1
+    </update>
+    <delete id="deleteGfSsrItemByIsDeleted">
+        delete from gf_ssr_item where is_deleted = 1
+    </delete>
+    <select id="getGfSsrItemList" resultType="org.example.xkl_java.bean.GfSsrItem">
+        select * from gf_ssr_item where is_deleted = 0
+    </select>
+    <select id="getGfSsrItemByItemId" resultType="org.example.xkl_java.bean.GfSsrItem">
+        select * from gf_ssr_item where item_id = #{itemId} and is_deleted = 0
+    </select>
+</mapper>

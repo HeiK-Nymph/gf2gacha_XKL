@@ -87,3 +87,7 @@ XKL_java/Thumbs.db
 test.py
 tlv_pb_parser.py
 tlv_pb_parser.spec
+
+
+# 数据库
+mysqlConfig/

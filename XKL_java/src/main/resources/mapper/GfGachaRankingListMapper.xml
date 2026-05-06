@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.example.xkl_java.mapper.GfGachaRankingListMapper">
+    <insert id="insertGfGachaRankingList">
+        insert into gf_gacha_ranking_list(user_id, luck_value, total_draws)
+        values (#{userId}, #{luckValue}, #{totalDraws})
+
+    </insert>
+    <insert id="insertGfGachaRankingListList">
+        <foreach collection="gfGachaRankingListList" item="rankingList" separator=";">
+            insert into gf_gacha_ranking_list(user_id, luck_value, total_draws)
+            values (#{userId}, #{luckValue}, #{totalDraws})
+        </foreach>
+    </insert>
+    <update id="removeGfGachaRankingListByUserId">
+        update gf_gacha_ranking_list set is_deleted = 1 where user_id = #{userId}
+    </update>
+    <delete id="deleteGfGachaRankingListByIsDeleted">
+        delete from gf_gacha_ranking_list where is_deleted = 1
+    </delete>
+    <update id="updateGfGachaRankingListByUserId">
+        update gf_gacha_ranking_list
+        set luck_value = #{luckValue}, total_draws = #{totalDraws}
+        where user_id = #{userId} and is_deleted = 0
+    </update>
+
+    <select id="getGfGachaRankingListOrderByLuckValueDesc"
+            resultType="org.example.xkl_java.vo.GfGachaRankingListVO">
+        select r.luck_value, r.total_draws, u.uid as userId
+        from gf_gacha_ranking_list as r
+        left join gf_user as u on r.user_id = u.id
+        where r.is_deleted = 0
+        order by r.luck_value desc limit 1000
+    </select>
+    <select id="getGfGachaRankingListOrderByTotalDrawsDesc"
+            resultType="org.example.xkl_java.vo.GfGachaRankingListVO">
+        select r.luck_value, r.total_draws, u.uid as userId
+        from gf_gacha_ranking_list as r
+        left join gf_user as u on r.user_id = u.id
+        where r.is_deleted = 0
+        order by r.total_draws desc limit 1000
+    </select>
+</mapper>

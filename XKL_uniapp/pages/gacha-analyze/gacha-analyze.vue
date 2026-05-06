@@ -6,6 +6,8 @@
             <textarea 
                 class="custom-input"
                 placeholder="例如latest_request.json里的请求"
+                v-model="requestText"
+                :maxlength="1000"
             />
         </view>
         <view class="bottom-container">
@@ -21,7 +23,7 @@
     
 <script setup>
     import { gachaAnalyze } from './gachaAnalyze'
-    const {gotoGachaDetail, gotoGachaRank, gotoGachaRecords} = gachaAnalyze()
+    const {gotoGachaDetail, gotoGachaRank, gotoGachaRecords, requestText} = gachaAnalyze()
 </script>
     
 <style scoped lang="scss">

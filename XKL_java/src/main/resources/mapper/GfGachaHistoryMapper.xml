@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.example.xkl_java.mapper.GfGachaHistoryMapper">
+    <insert id="insertGfGachaHistory" useGeneratedKeys="true" keyProperty="id">
+        insert into gf_gacha_history(user_id, permanent_pool_json, character_pool_json, weapon_pool_json, custom_character_pool_json, custom_weapon_pool_json)
+        values (#{userId}, #{permanentPoolJson}, #{characterPoolJson}, #{weaponPoolJson}, #{customCharacterPoolJson}, #{customWeaponPoolJson})
+    </insert>
+    <update id="removeGfGachaHistoryByUserId">
+        update gf_gacha_history set is_deleted = 1 where user_id = #{userId}
+    </update>
+    <delete id="deleteGfGachaHistoryByIsDeleted">
+        delete from gf_gacha_history where is_deleted = 1
+    </delete>
+    <select id="getGfGachaHistoryByUserId" resultType="org.example.xkl_java.bean.GfGachaHistory">
+        select * from gf_gacha_history where user_id = #{userId} and is_deleted = 0
+    </select>
+    <select id="getLatestGfGachaHistoryByUserId" resultType="org.example.xkl_java.bean.GfGachaHistory">
+        select * from gf_gacha_history where user_id = #{userId} and is_deleted = 0 order by created_at desc limit 1
+    </select>
+</mapper>
