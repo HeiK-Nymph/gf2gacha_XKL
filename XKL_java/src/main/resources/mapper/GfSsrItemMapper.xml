@@ -24,7 +24,18 @@
     <select id="getGfSsrItemList" resultType="org.example.xkl_java.bean.GfSsrItem">
         select * from gf_ssr_item where is_deleted = 0
     </select>
+    <select id="countSsrItems" resultType="int">
+        select count(*) from gf_ssr_item where is_deleted = 0
+    </select>
     <select id="getGfSsrItemByItemId" resultType="org.example.xkl_java.bean.GfSsrItem">
         select * from gf_ssr_item where item_id = #{itemId} and is_deleted = 0
     </select>
+    <!-- 回收站：查询所有已逻辑删除(is_deleted=1)的记录 -->
+    <select id="getDeletedGfSsrItemList" resultType="org.example.xkl_java.bean.GfSsrItem">
+        select * from gf_ssr_item where is_deleted = 1 order by id desc
+    </select>
+    <!-- 回收站：恢复单条记录 -->
+    <update id="restoreGfSsrItemByItemId">
+        update gf_ssr_item set is_deleted = 0, updated_at = now() where item_id = #{itemId} and is_deleted = 1
+    </update>
 </mapper>

@@ -11,6 +11,8 @@ import java.util.List;
 public interface GfGachaRankingListMapper {
     List<GfGachaRankingListVO> getGfGachaRankingListOrderByLuckValueDesc();
     List<GfGachaRankingListVO> getGfGachaRankingListOrderByTotalDrawsDesc();
+    //统计活跃抽卡用户数（去重）
+    int countActiveUsers();
     void insertGfGachaRankingList(GfGachaRankingList gfGachaRankingList);
     void insertGfGachaRankingListList(List<GfGachaRankingList> gfGachaRankingListList);
     void removeGfGachaRankingListByUserId(@Param("userId") Long userId);

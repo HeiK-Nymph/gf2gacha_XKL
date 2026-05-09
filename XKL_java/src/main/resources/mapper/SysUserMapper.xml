@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.example.xkl_java.mapper.SysUserMapper">
-    <insert id="insertSysUser">
-        insert into sys_user(username, password, last_login_time)
-        values (#{username}, #{password}, #{lastLoginTime})
+    <insert id="insertSysUser" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_user(username, password, role, status, is_deleted,
+                              last_login_time, created_at, updated_at)
+        values (#{username}, #{password}, #{role}, #{status}, #{isDeleted},
+                #{lastLoginTime}, #{createdAt}, #{updatedAt})
     </insert>
     <update id="updatePasswordByUsername">
         update sys_user set password = #{password} where username = #{username}
@@ -24,7 +26,13 @@
         delete from sys_user where is_deleted = 1
     </delete>
     <select id="getSysUserByUsername" resultType="org.example.xkl_java.bean.SysUser">
-        select * from sys_user where username = #{username} and is_deleted = 0
+        select * from sys_user where BINARY username = #{username} and is_deleted = 0
+    </select>
+    <select id="getAllUsers" resultType="org.example.xkl_java.bean.SysUser">
+        select * from sys_user where is_deleted = 0 order by id asc
+    </select>
+    <select id="countUsers" resultType="int">
+        select count(*) from sys_user where is_deleted = 0
     </select>
 
 </mapper>

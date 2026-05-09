@@ -28,7 +28,7 @@
         <result column="draw_order" property="drawOrder" />
     </resultMap>
     <select id="getGachaItemVOListByUid" resultMap="getGachaItemVOListByUidRM">
-        select i.item_id, i.item_name, i.item_type, i.ssr_type, r.cost_draws, r.pool_type, r.draw_order
+        select COALESCE(i.item_id, r.item_id) as item_id, i.item_name, i.item_type, i.ssr_type, r.cost_draws, r.pool_type, r.draw_order
         from gf_user as u
         left join gf_gacha_ssr_record as r on u.id = r.user_id
         left join gf_ssr_item as i on r.item_id = i.id

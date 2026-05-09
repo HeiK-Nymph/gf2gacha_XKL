@@ -4,9 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -20,23 +18,55 @@ wheels/
 .installed.cfg
 *.egg
 
+# PyInstaller 打包产物（体积大，可重建）
+build/
+dist/
+*.spec
+
 # 虚拟环境
 venv/
 env/
 ENV/
 
-# IDE
+# IDE / 编辑器
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-workspace
+*.sublime-project
 
-# 项目特定
+# 项目特定 - 敏感信息（私钥证书，绝对不能上传）
 certs/
-records/*.json
+
+# 项目特定 - 用户个人数据（含用户抽卡记录）
+records/
+
+# 项目特定 - 本地运行配置（含数据库连接信息等）
+mysqlConfig/
+
+# 项目特定 - 前端依赖 & 构建
+node_modules/
 frontend/node_modules/
 frontend/dist/
+
+# UniApp 构建产物
+XKL_uniapp/unpackage/
+XKL_uniapp/unpackage/dist/
+
+# 运行时生成的数据文件
+json/latest_request.json
+backend/ssr_parsed.json
+
+# 临时/测试文件（无业务价值）
+tempCodeRunnerFile.py
+test.py
+test_cert.py
+
+# 已移至独立模块或不再需要的旧文件
+tlv_pb_parser.py
+tlv_pb_parser.spec
 
 # 日志
 *.log
@@ -44,6 +74,9 @@ frontend/dist/
 # 操作系统文件
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# 应用配置文件（含 AppID/AppSecret 等敏感信息）
 XKL_uniapp/manifest.json
 XKL_java/src/main/resources/application.properties
 
@@ -69,7 +102,7 @@ XKL_java/.project
 XKL_java/.settings/
 XKL_java/bin/
 
-# IDE - VS Code (如果有)
+# IDE - VS Code
 XKL_java/.vscode/
 
 # Java 日志
@@ -79,15 +112,10 @@ XKL_java/logs/
 # Java 临时文件
 XKL_java/*.tmp
 XKL_java/*.bak
-XKL_java/*.swp
 
-# Java 操作系统文件
-XKL_java/.DS_Store
-XKL_java/Thumbs.db
-test.py
-tlv_pb_parser.py
-tlv_pb_parser.spec
+# Admin 前端构建产物 & 依赖
+XKL_admin/node_modules/
+XKL_admin/dist/
 
-
-# 数据库
-mysqlConfig/
+# .codebuddy 内部数据（非项目代码）
+.codebuddy/

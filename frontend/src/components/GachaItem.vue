@@ -34,7 +34,7 @@
     </div>
     
     <!-- 显示原始数据按钮 -->
-    <div style="margin-top: 20px; text-align: center;">
+    <div v-if="!hideRawButton" style="margin-top: 20px; text-align: center;">
       <el-button type="info" @click="toggleRawData">
         {{ showRawData ? '隐藏原始数据' : '显示原始数据' }}
       </el-button>
@@ -87,6 +87,10 @@ const props = defineProps({
     required: true,
     default: 'character',
     validator: (val) => ['character', 'weapon', 'permanent', 'custom_character', 'custom_weapon'].includes(val)
+  },
+  hideRawButton: {
+    type: Boolean,
+    default: false
   }
 })
 

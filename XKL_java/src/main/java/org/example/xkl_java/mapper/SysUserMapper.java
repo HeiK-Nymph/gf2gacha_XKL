@@ -16,6 +16,10 @@ public interface SysUserMapper {
     void updateRoleByUsername(@Param("username") String username, @Param("role") Integer role);
     //逻辑删除
     void removeSysUserByUsername(@Param("username") String username);
+    //获取所有未删除用户
+    java.util.List<SysUser> getAllUsers();
+    //统计未删除用户数量
+    int countUsers();
     //物理删除
     void deleteSysUserByIsDeleted();
 }

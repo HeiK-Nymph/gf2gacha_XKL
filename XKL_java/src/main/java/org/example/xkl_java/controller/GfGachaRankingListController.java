@@ -20,4 +20,10 @@ public class GfGachaRankingListController {
         return Result.success(gfGachaRankingListService.getGfGachaRankingList());
     }
 
+    /** 获取活跃抽卡用户数（去重统计） */
+    @GetMapping("/count")
+    public Result<Integer> getActiveUserCount() {
+        return Result.success(gfGachaRankingListService.getActiveUserCount());
+    }
+
 }

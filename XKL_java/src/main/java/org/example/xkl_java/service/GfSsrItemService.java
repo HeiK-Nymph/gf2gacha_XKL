@@ -43,12 +43,39 @@ public class GfSsrItemService {
         return gfSsrItemDTOList;
     }
 
+    /**
+     * 获取 SSR 物品总数
+     */
+    public int getSsrItemCount() {
+        return gfSsrItemMapper.countSsrItems();
+    }
+
     public void removeGfSsrItemByItemId(Integer itemId) {
         gfSsrItemMapper.removeGfSsrItemByItemId(itemId);
     }
 
     public void restoreGfSsrItemAll() {
         gfSsrItemMapper.restoreGfSsrItemAll();
+    }
+
+    /** 回收站：查询所有已删除的SSR物品 */
+    public List<GfSsrItemDTO> getDeletedGfSsrItemList() {
+        List<GfSsrItem> gfSsrItemList = gfSsrItemMapper.getDeletedGfSsrItemList();
+        List<GfSsrItemDTO> gfSsrItemDTOList = new ArrayList<>();
+        for (GfSsrItem gfSsrItem : gfSsrItemList) {
+            GfSsrItemDTO dto = new GfSsrItemDTO();
+            BeanUtils.copyProperties(gfSsrItem, dto);
+            gfSsrItemDTOList.add(dto);
+        }
+        return gfSsrItemDTOList;
+    }
+
+    /** 回收站：恢复单条已删除的SSR物品 */
+    public void restoreGfSsrItemByItemId(Integer itemId) {
+        int rows = gfSsrItemMapper.restoreGfSsrItemByItemId(itemId);
+        if (rows == 0) {
+            throw new RuntimeException("未找到可恢复的物品或该物品未被删除");
+        }
     }
 
     public void deleteGfSsrItemByIsDeleted() {

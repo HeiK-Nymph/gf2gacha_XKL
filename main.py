@@ -788,8 +788,263 @@ class GachaApp:
                 "message": f"获取版本信息失败"
             }
     
+    def create_temp_png_file(self):
+        """创建临时 PNG 文件并返回路径"""
+        import tempfile
+        import os
+        fd, path = tempfile.mkstemp(suffix='.png')
+        os.close(fd)
+        # 确保文件为空（用于后续写入）
+        with open(path, 'wb') as f:
+            pass
+        print(f"[DEBUG] 创建临时文件: {path}")
+        return path
+
+    def write_chunk_to_file(self, file_path, offset, b64_chunk):
+        """将 base64 编码的数据块写入文件指定偏移位置"""
+        try:
+            import base64
+            chunk_bytes = base64.b64decode(b64_chunk)
+            with open(file_path, 'r+b') as f:
+                f.seek(offset)
+                f.write(chunk_bytes)
+            return {"status": "success", "written": len(chunk_bytes)}
+        except Exception as e:
+            print(f"[ERROR] 写入文件块失败 (offset={offset}): {e}")
+            return {"status": "error", "message": str(e)}
+
+    def copy_image_to_clipboard(self, _unused=None):
+        """通过 evaluate_js 从前端获取截图数据并写入系统剪贴板（Python后端预下载图片+8秒延迟）"""
+        try:
+            import os
+            import subprocess
+            import base64
+            import tempfile
+            import time
+            import requests as req_lib
+
+            # ============================================================
+            # 步骤1：Python 后端获取容器内所有图片 URL，逐个下载为 base64
+            #        Python requests 不受浏览器同源策略限制！
+            # ============================================================
+            print("[DEBUG] 步骤1：获取图片列表...")
+
+            # 1a. 从前端获取所有图片的 src 和索引
+            img_list = self.window.evaluate_js("""
+                (function() {
+                    var el = document.querySelector('.screenshot-container');
+                    if (!el) return null;
+                    var imgs = el.querySelectorAll('img');
+                    var list = [];
+                    Array.prototype.forEach.call(imgs, function(img, idx) {
+                        list.push({index: idx, src: img.src || ''});
+                    });
+                    return {total: list.length, images: list};
+                })()
+            """)
+            
+            if not img_list:
+                return {"status": "error", "message": "无法获取图片列表或容器不存在"}
+
+            print(f"  找到 {img_list['total']} 张图片")
+
+            # 1b. Python 端按路径去重 + 并发下载图片（绕过浏览器 CORS）
+            #     相同 URL 只下载一次，多张相同图片复用同一 base64 数据
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+
+            # 先收集所有唯一 URL（去重）
+            unique_srcs = set()
+            for img_info in img_list['images']:
+                src = img_info['src']
+                if not src or src.startswith('data:'):
+                    continue
+                unique_srcs.add(src)
+
+            src_to_datauri = {}  # { src: data_uri }
+
+            def _download_one(src_url):
+                """下载单张图片并返回 (src, data_uri) 或 (src, None)"""
+                try:
+                    resp = req_lib.get(src_url, timeout=15, verify=False)
+                    if resp.status_code == 200 and resp.content:
+                        b64 = base64.b64encode(resp.content).decode('ascii')
+                        content_type = resp.headers.get('Content-Type', 'image/png')
+                        if 'image' not in content_type:
+                            content_type = 'image/png'
+                        return (src_url, f"data:{content_type};base64,{b64}", len(resp.content))
+                    return (src_url, None, 0)
+                except Exception as e:
+                    return (src_url, None, str(e))
+
+            # 并发下载所有唯一图片
+            if not unique_srcs:
+                print("  所有图片已是 data URI，无需重新下载")
+            else:
+                MAX_WORKERS = min(len(unique_srcs), 8)  # 最多8个并发线程
+                print(f"  并发下载 {len(unique_srcs)} 个唯一URL (并发数={MAX_WORKERS})...")
+                with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                    future_map = {executor.submit(_download_one, src): src for src in unique_srcs}
+                    for future in as_completed(future_map):
+                        src_url, data_uri, info = future.result()
+                        if data_uri:
+                            src_to_datauri[src_url] = data_uri
+                            print(f"  OK: {src_url[:50]}... ({info} bytes)")
+                        else:
+                            print(f"  FAIL: {src_url[:50]}... ({info})")
+
+            print(f"  下载完成: {len(src_to_datauri)}/{len(unique_srcs)} 成功 / 共{img_list['total']}张图片")
+
+            # 1c. 将下载好的 base64 数据注入到前端 DOM 中（按 src 匹配复用）
+            print("[DEBUG] 步骤2：注入 base64 图片到 DOM...")
+            if src_to_datauri:
+                # 构造 JS：将每个 img.src 替换为对应的 data URI（相同路径复用同一数据）
+                js_map = json.dumps(src_to_datauri)
+                self.window.evaluate_js(f"""
+                    (function() {{
+                        var map = {js_map};
+                        var el = document.querySelector('.screenshot-container');
+                        if (!el) return;
+                        var imgs = el.querySelectorAll('img');
+                        var injectCount = 0;
+                        Array.prototype.forEach.call(imgs, function(img) {{
+                            if (img.src && map[img.src]) {{
+                                img.src = map[img.src];
+                                injectCount++;
+                            }}
+                        }});
+                        window.__screenshot_injected = injectCount;
+                    }})()
+                """)
+
+                # 验证注入是否成功
+                injected = self.window.evaluate_js("window.__screenshot_injected")
+                print(f"  注入结果: {injected} 张图片已替换")
+
+            # ============================================================
+            # 步骤3：直接执行 html2canvas 截图（所有图片已是 data URI，无跨域）
+            #        后端已确保资源下载完成，无需额外等待
+            # ============================================================
+            print("[DEBUG] 步骤3：执行 html2canvas 截图...")
+            self.window.evaluate_js("""
+                (function() {
+                    window.__screenshot_result = null;
+                    window.__screenshot_error = null;
+
+                    var el = document.querySelector('.screenshot-container');
+                    if (!el) { window.__screenshot_error = '容器不存在'; return; }
+                    var h2c = window.html2canvas;
+                    if (!h2c) { window.__screenshot_error = 'html2canvas未加载'; return; }
+
+                    // 最终检查：统计 data URI 比例
+                    var imgs = el.querySelectorAll('img');
+                    var dataCount = 0;
+                    Array.prototype.forEach.call(imgs, function(img) {
+                        if (img.src && img.src.startsWith('data:')) dataCount++;
+                    });
+                    console.log('[Screenshot] 截图前检查: dataURI=' + dataCount + '/' + imgs.length);
+
+                    h2c(el, {
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        width: el.scrollWidth,
+                        height: el.scrollHeight,
+                        logging: false
+                    }).then(function(canvas) {
+                        console.log('[Screenshot] canvas: ' + canvas.width + 'x' + canvas.height);
+                        return new Promise(function(resolve, reject) {
+                            canvas.toBlob(function(blob) {
+                                if (!blob) { reject('toBlob failed'); return; }
+                                var reader = new FileReader();
+                                reader.onload = function() { resolve(reader.result); };
+                                reader.readAsDataURL(blob);
+                            }, 'image/png');
+                        });
+                    }).then(function(dataUrl) {
+                        console.log('[Screenshot] 完成, 长度:' + dataUrl.length);
+                        window.__screenshot_result = dataUrl;
+                    }).catch(function(e) {
+                        console.error('[Screenshot] 错误:', e);
+                        window.__screenshot_error = e.message || String(e);
+                    });
+                })()
+            """)
+
+            # 步骤5：轮询等待截图完成
+            print("[DEBUG] 等待截图完成...")
+            for i in range(60):  # 最多等 30 秒
+                time.sleep(0.5)
+                result = self.window.evaluate_js("window.__screenshot_result")
+                error = self.window.evaluate_js("window.__screenshot_error")
+                if result and isinstance(result, str) and result.startswith('data:'):
+                    break
+                if error and isinstance(error, str):
+                    return {"status": "error", "message": f"截图失败: {error}"}
+            else:
+                # 超时，检查最终状态
+                result = self.window.evaluate_js("window.__screenshot_result")
+                error = self.window.evaluate_js("window.__screenshot_error")
+                if error:
+                    return {"status": "error", "message": f"截图超时/失败: {error}"}
+                return {"status": "error", "message": f"截图超时 (result={result})"}
+
+            data_url = result
+            print(f"[DEBUG] 截图数据长度: {len(data_url)}")
+
+            if not data_url or not isinstance(data_url, str):
+                return {"status": "error", "message": f"获取截图失败: {data_url}"}
+
+            if data_url.startswith('ERROR:'):
+                return {"status": "error", "message": data_url}
+
+            if ',' not in data_url:
+                return {"status": "error", "message": f"数据格式异常 (len={len(data_url)})"}
+
+            b64_data = data_url.split(',', 1)[1]
+            image_bytes = base64.b64decode(b64_data)
+            print(f"[DEBUG] 截图数据大小: {len(image_bytes)} bytes")
+
+            # 验证 PNG 签名
+            png_sig = bytes([0x89, 0x50, 0x4E, 0x47])
+            if image_bytes[:4] != png_sig:
+                return {"status": "error", "message": f"非PNG格式 (hex: {image_bytes[:4].hex()})"}
+
+            # 写入临时文件
+            fd, file_path = tempfile.mkstemp(suffix='.png')
+            with os.fdopen(fd, 'wb') as f:
+                f.write(image_bytes)
+
+            # PowerShell 写入剪贴板
+            ps_cmd = (
+                'Add-Type -AssemblyName System.Windows.Forms; '
+                'Add-Type -AssemblyName System.Drawing; '
+                f'$img = [System.Drawing.Image]::FromFile("{file_path}"); '
+                '[System.Windows.Forms.Clipboard]::SetImage($img); '
+                '$img.Dispose()'
+            )
+            result = subprocess.run(
+                ['powershell', '-Command', ps_cmd],
+                capture_output=True, text=True, timeout=15
+            )
+            if result.returncode != 0:
+                return {"status": "error", "message": f"PowerShell失败: {result.stderr.strip()}"}
+
+            # 清理临时文件
+            try:
+                os.unlink(file_path)
+            except:
+                pass
+
+            return {"status": "success", "message": "已复制到剪贴板"}
+
+        except Exception as e:
+            print(f"[ERROR] 复制图片到剪贴板失败: {e}")
+            import traceback
+            traceback.print_exc()
+            return {"status": "error", "message": f"复制失败: {str(e)}"}
+
     def open_github(self):
-        """打开GitHub主页"""
         try:
             webbrowser.open("https://github.com/HeiK-Nymph/gf2gacha_XKL")
             return {

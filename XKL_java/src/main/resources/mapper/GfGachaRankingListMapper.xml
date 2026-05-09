@@ -40,4 +40,7 @@
         where r.is_deleted = 0
         order by r.total_draws desc limit 1000
     </select>
+    <select id="countActiveUsers" resultType="int">
+        select count(distinct user_id) from gf_gacha_ranking_list where is_deleted = 0
+    </select>
 </mapper>

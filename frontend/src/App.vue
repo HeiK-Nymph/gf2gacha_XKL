@@ -41,6 +41,9 @@
         </div>
       </div>
       <div class="header-right">
+        <el-button type="primary" size="large" @click="shareScreenshot" :loading="isSharing">
+          <el-icon style="margin-right: 4px;"><Share /></el-icon>分享
+        </el-button>
         <span class="version-info">v{{ currentVersion }}</span>
         <el-button type="info" size="large" @click="checkUpdate">检查更新</el-button>
       </div>
@@ -76,16 +79,43 @@
         </div></el-col>
       </el-row>
     </el-main>
+
+    <!-- 离屏截图容器（用于生成分享图片） -->
+    <div ref="screenshotContainerRef" class="screenshot-container">
+      <div class="screenshot-pools-row">
+        <div class="screenshot-pool-item">
+          <span class="screenshot-pool-title">角色池</span>
+          <GachaItem pool_type="character" :hideRawButton="true" />
+        </div>
+        <div class="screenshot-pool-item">
+          <span class="screenshot-pool-title">武器池</span>
+          <GachaItem pool_type="weapon" :hideRawButton="true" />
+        </div>
+        <div class="screenshot-pool-item">
+          <span class="screenshot-pool-title">常驻池</span>
+          <GachaItem pool_type="permanent" :hideRawButton="true" />
+        </div>
+        <div class="screenshot-pool-item">
+          <span class="screenshot-pool-title">自选角色池</span>
+          <GachaItem pool_type="custom_character" :hideRawButton="true" />
+        </div>
+        <div class="screenshot-pool-item">
+          <span class="screenshot-pool-title">自选武器池</span>
+          <GachaItem pool_type="custom_weapon" :hideRawButton="true" />
+        </div>
+      </div>
+    </div>
   </el-container>
   
 </template>
 
   
 <script setup>
-  import {ref, onMounted} from 'vue'
-  import {Loading} from '@element-plus/icons-vue'
+  import {ref, onMounted, nextTick} from 'vue'
+  import {Loading, Share} from '@element-plus/icons-vue'
   import GachaItem from './components/GachaItem.vue'
   import {ElMessage, ElMessageBox} from 'element-plus'
+  import html2canvas from 'html2canvas'
   import {useGachaRecordStore} from '@/stores/gachaRecord'
   import {useSSRStore} from '@/stores/ssr'
   import versionInfo from '@/../../version.json'
@@ -100,6 +130,11 @@
   const isUpdating = ref(false)
   const isLoading = ref(true)
   const isCustomPurchaseOn = ref(false)
+  const isSharing = ref(false)
+  const screenshotContainerRef = ref(null)
+
+  // 将 html2canvas 暴露到全局，供后端 evaluate_js 调用
+  window.html2canvas = html2canvas
 
   // 显示更新通知
   const showUpdateNotification = (latestVersion) => {
@@ -314,6 +349,32 @@
     isCustomPurchaseOn.value = !isCustomPurchaseOn.value
   }
 
+  // 分享截图功能
+  const shareScreenshot = async () => {
+    if (!screenshotContainerRef.value) {
+      ElMessage.error('截图容器未就绪')
+      return
+    }
+
+    isSharing.value = true
+
+    try {
+      await nextTick()
+      // 截图和剪贴板操作全部由后端通过 evaluate_js 完成（避免大数据通过 api 参数被截断）
+      const res = await window.pywebview.api.copy_image_to_clipboard()
+      if (res && res.status === 'success') {
+        ElMessage.success('截图已复制到剪贴板，可直接粘贴使用')
+      } else {
+        ElMessage.error(`复制失败: ${res?.message || '未知错误'}`)
+      }
+    } catch (e) {
+      console.error('[ERROR] 截图失败:', e)
+      ElMessage.error(`截图失败: ${e.message || e}`)
+    } finally {
+      isSharing.value = false
+    }
+  }
+
   // 组件挂载时加载数据
   onMounted(async () => {
     // 加载记录列表
@@ -418,5 +479,38 @@
   @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+  }
+
+  /* 离屏截图容器样式 */
+  .screenshot-container {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    width: auto;
+    background: #ffffff;
+    padding: 20px 24px;
+    z-index: -1;
+  }
+
+  .screenshot-pools-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .screenshot-pool-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 280px;
+    max-width: 320px;
+    flex: 1;
+  }
+
+  .screenshot-pool-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #303133;
+    margin-bottom: 8px;
   }
 </style>

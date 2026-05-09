@@ -2,8 +2,6 @@ package org.example.xkl_java.config;
 
 
 import com.github.pagehelper.PageInterceptor;
-import org.apache.ibatis.annotations.Mapper;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
