@@ -28,6 +28,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.util.*;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -381,46 +383,94 @@ public class GachaWebService {
         };
     }
 
+    /**
+     * 基于fakeId去重合并记录（参考 gf2gacha_Matcha 项目 MergeRecord.go）
+     *
+     * 算法原理:
+     * 1. 从API原始记录的 time 字段生成 fakeId = time * 100 + order
+     *    (order为同一秒内连抽序号0~9)
+     * 2. 将新旧记录按 fakeId 做 set 去重
+     * 3. 按 fakeId 降序排列（最新在前）
+     *
+     * 优势: 不依赖JSON序列化比对, 不要求连续重叠, 数学上保证唯一性
+     */
     private List<Map<String, Object>> mergeRecords(List<Map<String, Object>> newRecords,
                                                      List<Map<String, Object>> oldRecords) {
         if (newRecords == null) newRecords = new ArrayList<>();
         if (oldRecords == null) oldRecords = new ArrayList<>();
 
-        List<String> newStrRecords = newRecords.stream()
-                .map(r -> {
-                    try {
-                        return objectMapper.writeValueAsString(r);
-                    } catch (Exception e) {
-                        return r.toString();
-                    }
-                })
-                .toList();
+        // 步骤1: 为每条记录生成 fakeId
+        generateFakeId(newRecords);
+        generateFakeId(oldRecords);
 
-        List<String> oldStrRecords = oldRecords.stream()
-                .map(r -> {
-                    try {
-                        return objectMapper.writeValueAsString(r);
-                    } catch (Exception e) {
-                        return r.toString();
-                    }
-                })
-                .toList();
+        // 步骤2: 基于 fakeId 去重合并（新数据优先）
+        Set<Long> seenIds = new HashSet<>();
+        List<Map<String, Object>> merged = new ArrayList<>();
 
-        int overlapCount = 0;
-        for (int i = 0; i < newStrRecords.size(); i++) {
-            List<String> newSuffix = newStrRecords.subList(i, newStrRecords.size());
-            List<String> oldPrefix = oldStrRecords.subList(0, Math.min(newSuffix.size(), oldStrRecords.size()));
-
-            if (newSuffix.equals(oldPrefix)) {
-                overlapCount = newSuffix.size();
-                break;
+        // 先遍历新记录
+        for (Map<String, Object> record : newRecords) {
+            Long fakeId = (Long) record.get("_fake_id");
+            if (fakeId != null && !seenIds.contains(fakeId)) {
+                seenIds.add(fakeId);
+                record.remove("_fake_id");
+                merged.add(record);
             }
         }
 
-        List<Map<String, Object>> merged = new ArrayList<>(newRecords);
-        merged.addAll(oldRecords.subList(overlapCount, oldRecords.size()));
+        // 再遍历旧记录（补充新记录中没有的）
+        for (Map<String, Object> record : oldRecords) {
+            Long fakeId = (Long) record.get("_fake_id");
+            if (fakeId != null && !seenIds.contains(fakeId)) {
+                seenIds.add(fakeId);
+                record.remove("_fake_id");
+                merged.add(record);
+            }
+        }
+
+        // 步骤3: 按 time 降序排序（最新在前）
+        merged.sort((a, b) -> {
+            long timeA = a.containsKey("time") ? ((Number) a.get("time")).longValue() : 0L;
+            long timeB = b.containsKey("time") ? ((Number) b.get("time")).longValue() : 0L;
+            return Long.compare(timeB, timeA); // 降序
+        });
 
         return merged;
+    }
+
+    /**
+     * 为每条抽卡记录生成唯一fakeId。
+     * 算法: fakeId = time * 100 + order
+     * 其中order是同一秒(time)内连抽的序号(0~9)。
+     *
+     * @param records 记录列表（每条记录会被原地添加 _fake_id 字段）
+     */
+    private void generateFakeId(List<Map<String, Object>> records) {
+        if (records == null || records.isEmpty()) return;
+
+        Long preTimestamp = null;
+        int order = -1;
+
+        for (Map<String, Object> record : records) {
+            Long timestamp = record.containsKey("time")
+                    ? ((Number) record.get("time")).longValue() : 0L;
+
+            if (!timestamp.equals(preTimestamp)) {
+                // 时间戳变了 → 新的一抽，order重置为0
+                order = 0;
+            } else {
+                // 同一秒内的连抽 → order递增
+                order++;
+                if (order > 9) {
+                    log.warn("存在时间戳相同但超过十连的数据: time={}", timestamp);
+                }
+            }
+
+            // fakeId = 时间戳 * 100 + 序号（两位数补零）
+            long fakeId = timestamp * 100 + order;
+            record.put("_fake_id", fakeId);
+
+            preTimestamp = timestamp;
+        }
     }
 
     private List<Map<String, Object>> rebuildPages(List<Map<String, Object>> records) {

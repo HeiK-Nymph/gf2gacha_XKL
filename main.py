@@ -421,42 +421,95 @@ class GachaApp:
                 "msg": "保存抽卡记录失败",
             }
     
+    def _generate_fake_id(self, records):
+        """
+        为每条抽卡记录生成唯一fakeId。
+        算法: fakeId = time * 100 + order
+        其中order是同一秒(time)内连抽的序号(0~9)。
+        参考 gf2gacha_Matcha 项目的 MergeRecord.go:addFakeId()
+        """
+        if not records:
+            return records
+
+        pre_timestamp = None
+        order = -1
+
+        for i, record in enumerate(records):
+            timestamp = record.get("time", 0)
+
+            if timestamp != pre_timestamp:
+                # 时间戳变了 → 新的一抽，order重置为0
+                order = 0
+            else:
+                # 同一秒内的连抽 → order递增
+                order += 1
+                if order > 9:
+                    print(f"[警告] 存在时间戳相同但超过十连的数据: time={timestamp}")
+
+            # fakeId = 时间戳 * 100 + 序号（两位数补零）
+            fake_id = timestamp * 100 + order
+            record["_fake_id"] = fake_id
+
+            pre_timestamp = timestamp
+
+        return records
+
     def _merge_pool_data(self, new_pages, old_pages):
-        """合并池子数据，新数据在上，旧数据在下，去除连续重复记录"""
-        # 将页面扁平化为记录列表
+        """
+        合并池子数据，基于 fakeId 去重（参考 gf2gacha_Matcha 项目）。
+        
+        算法原理:
+        1. 从API原始记录的 time 字段生成 fakeId = time * 100 + order
+           (order为同一秒内连抽序号0~9)
+        2. 将新旧记录按 fakeId 做 set 去重
+        3. 按 fakeId 降序排列（最新在前）
+        4. 重建页面结构
+        
+        优势:
+        - 不依赖JSON序列化比对，不受字段顺序/精度影响
+        - 不要求连续重叠，任意位置的重复都能检测到
+        - 数学上保证唯一性（同一条记录无论获取多少次fakeId不变）
+        """
+        # === 步骤1: 扁平化记录列表 ===
         new_records = []
         for page in new_pages:
             for record in page.get("data", {}).get("list", []):
-                new_records.append(record)
+                new_records.append(record.copy())  # copy避免污染原始数据
 
         old_records = []
         for page in old_pages:
             for record in page.get("data", {}).get("list", []):
-                old_records.append(record)
+                old_records.append(record.copy())
 
-        # 将记录转为字符串以便比较
-        new_str_records = [json.dumps(r, sort_keys=True) for r in new_records]
-        old_str_records = [json.dumps(r, sort_keys=True) for r in old_records]
+        # === 步骤2: 为每条记录生成 fakeId ===
+        self._generate_fake_id(new_records)
+        self._generate_fake_id(old_records)
 
-        # 找到新数据尾部和旧数据头部最长的连续重合部分
-        # 遍历新数据的最后一条记录开始向前找
-        overlap_count = 0
-        for i in range(len(new_str_records)):
-            # 检查新数据从第i条到末尾是否匹配旧数据从开始到第(len - i)条
-            new_suffix = new_str_records[i:]
-            old_prefix = old_str_records[:len(new_suffix)]
+        # === 步骤3: 基于 fakeId 去重合并（新数据优先） ===
+        seen_ids = set()
+        all_records = []
 
-            if new_suffix == old_prefix:
-                overlap_count = len(new_suffix)
-                break
+        # 先遍历新记录
+        for record in new_records:
+            fid = record.get("_fake_id")
+            if fid is not None and fid not in seen_ids:
+                seen_ids.add(fid)
+                # 移除内部标记字段再存入
+                del record["_fake_id"]
+                all_records.append(record)
 
-        # 去掉旧数据中的重合部分
-        old_records = old_records[overlap_count:]
+        # 再遍历旧记录（补充新记录中没有的）
+        for record in old_records:
+            fid = record.get("_fake_id")
+            if fid is not None and fid not in seen_ids:
+                seen_ids.add(fid)
+                del record["_fake_id"]
+                all_records.append(record)
 
-        # 合并新旧记录（先新后旧）
-        all_records = new_records + old_records
+        # === 步骤4: 按 time 降序排序（最新在前） ===
+        all_records.sort(key=lambda r: r.get("time", 0), reverse=True)
 
-        # 重建页面结构
+        # === 步骤5: 重建页面结构 ===
         return self._rebuild_pages(all_records)
 
     def _rebuild_pages(self, records):
