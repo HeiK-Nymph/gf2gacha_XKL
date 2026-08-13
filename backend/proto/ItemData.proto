@@ -7,9 +7,12 @@ import "LanguageStringData.proto";
 message ItemDataUnit {
     int64 id = 1;
     LanguageStringData name = 2;
-    int64 type = 5;
+    // 注: 游戏升级后字段号变更
+    // 旧: type=5(道具类型), rank=8(星级), icon=7
+    // 新: type=6(10=人形/20=武器/60=武器皮肤), rank=9(5=SSR/4=SR)
+    int64 type = 6;
     string icon = 7;
-    int64 rank = 8;
+    int64 rank = 9;
 }
 
 message ItemData {

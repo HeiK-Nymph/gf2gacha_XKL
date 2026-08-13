@@ -4,7 +4,7 @@
     <div>共获得五星<span>{{ ssrTotal }}</span>个，歪了<span v-if="props.pool_type !== 'permanent'"><span>{{ waiCount }}</span></span>个，具体如下：</div>
     <div class="ssr-grid" v-if="ssrTotal > 0">
       <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" >
-        <img v-if="props.pool_type !== 'weapon' && props.pool_type !== 'custom_weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
+        <img v-if="!isWeaponItem(item.item)" :src="getImagePath(item.item)" style="width: 35px;"/>
         <span v-else class="weapon-name">{{ item.name }}</span>
       </div>
     </div>
@@ -24,7 +24,7 @@
 
         <div>
 
-          <img v-if="props.pool_type !== 'weapon' && props.pool_type !== 'custom_weapon'" :src="getImagePath(item.item)" style="width: 35px;"/>
+          <img v-if="!isWeaponItem(item.item)" :src="getImagePath(item.item)" style="width: 35px;"/>
           <span v-else class="weapon-name">{{ item.name }}</span>
         </div>
         <el-progress  :text-inside="true" :stroke-width="30" :percentage="item.costDraws * 1.25" :format="ssrListFormat" :color="customColorMethod"/>
@@ -126,6 +126,11 @@ const getImagePath = (itemId) => {
     return 'https://static.gf2gacha-xkl.uk/images/character/question.png'
   }
   return `https://static.gf2gacha-xkl.uk/images/character/${itemId}.png`
+}
+
+// 判断 item 是否为武器（在 SSR_weapon 映射中即为武器，无图片需显示文字）
+const isWeaponItem = (itemId) => {
+  return (ssrStore.SSR_weapon || {}).hasOwnProperty(itemId.toString())
 }
 
 // 3. 动态获取对应卡池数据，兜底空数组
