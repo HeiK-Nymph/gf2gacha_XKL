@@ -128,9 +128,21 @@ const getImagePath = (itemId) => {
   return `https://static.gf2gacha-xkl.uk/images/character/${itemId}.png`
 }
 
-// 判断 item 是否为武器（在 SSR_weapon 映射中即为武器，无图片需显示文字）
+// 判断 item 是否为武器（无图片需显示文字）
+// 判断依据（当前游戏 SSR 数据）：
+//   限定武器表 SSR_weapon 中的 ID 都是武器
+//   限定人形表 SSR_character 中的 ID 都是人形
+//   常驻池物品（可能既不在限定武器表也不在限定人形表）：
+//     人形 ID 为 4 位数字（如 1033），武器 ID 为 5 位数字（如 10493、10433）
+// 优先用映射表判断，映射表查不到再用 ID 位数兜底
 const isWeaponItem = (itemId) => {
-  return (ssrStore.SSR_weapon || {}).hasOwnProperty(itemId.toString())
+  const id = itemId.toString()
+  // 在限定武器表中 → 武器
+  if ((ssrStore.SSR_weapon || {}).hasOwnProperty(id)) return true
+  // 在限定人形表中 → 人形（非武器）
+  if ((ssrStore.SSR_character || {}).hasOwnProperty(id)) return false
+  // 常驻池物品兜底：5 位数字为武器，4 位数字为人形
+  return id.length === 5
 }
 
 // 3. 动态获取对应卡池数据，兜底空数组
@@ -146,21 +158,26 @@ const gachaData = computed(() => {
 })
 
 // 4. 获取对应五星映射表
+// 说明：角色池/武器池的五星判定需包含常驻池物品（因为可能抽出常驻池人形/武器即"歪"）
+// 合并时用 spread 顺序让限定池(character/weapon)优先于常驻池(permanent)
+const permanentMap = computed(() => ssrStore.SSR_permanent || {})
+
 const getSsrMap = computed(() => {
+  const permanent = permanentMap.value
   const ssrMap = {
-    character: ssrStore.SSR_character || {},
-    weapon: ssrStore.SSR_weapon || {},
-    permanent: ssrStore.SSR_permanent || {},
-    custom_character: ssrStore.SSR_custom_character || {},
-    custom_weapon: ssrStore.SSR_custom_weapon || {}
+    character: { ...permanent, ...(ssrStore.SSR_character || {}) },
+    weapon: { ...permanent, ...(ssrStore.SSR_weapon || {}) },
+    permanent: permanent,
+    custom_character: { ...permanent, ...(ssrStore.SSR_custom_character || {}) },
+    custom_weapon: { ...permanent, ...(ssrStore.SSR_custom_weapon || {}) }
   }
   return ssrMap[props.pool_type]
 })
 
 // 4.1 获取常驻池五星ID集合（用于判断歪）
+// item 在常驻池中即为"歪"（即使它被角色/武器池的合并映射算作五星）
 const permanentSSRSet = computed(() => {
-  const permanentMap = ssrStore.SSR_permanent || {}
-  return new Set(Object.keys(permanentMap))
+  return new Set(Object.keys(permanentMap.value))
 })
 
 // 5. 核心重构：给所有抽卡记录添加【绝对原始索引】（所有统计的基础）
