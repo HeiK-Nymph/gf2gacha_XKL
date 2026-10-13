@@ -5,17 +5,99 @@ import asyncio
 import sys
 import os
 import json
+import shutil
+import subprocess
+import time
+from datetime import datetime
 from pathlib import Path
 import requests
 
 # 添加backend路径
 sys.path.insert(0, str(Path(__file__).parent / "backend"))
 
+_log_path = None
+
+
+def _app_root() -> Path:
+    """安装根目录（frozen: exe 所在目录；开发环境: 仓库目录）"""
+    override = os.environ.get("GF2XKL_APP_ROOT", "").strip()
+    if override:
+        return Path(override)
+    if getattr(sys, "frozen", False):
+        return Path(__file__).parent.parent
+    return Path(__file__).parent
+
+
+def _update_state_path() -> Path:
+    """更新状态文件（与 updater.py 共用同一个约定路径）
+
+    GF2XKL_APP_ROOT 只用于本地演练：把"安装目录"指向临时目录。
+    """
+    override = os.environ.get("GF2XKL_APP_ROOT", "").strip()
+    if override:
+        return Path(override) / "_internal" / "logs" / "update_state.json"
+    return Path(__file__).parent / "logs" / "update_state.json"
+
+
+def _read_update_state() -> dict:
+    try:
+        with open(_update_state_path(), "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _write_update_state(**fields) -> dict:
+    state = _read_update_state()
+    state.update(fields)
+    state["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        path = _update_state_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, path)
+    except Exception as e:
+        print(f"[WARNING] 写更新状态失败: {e}")
+    return state
+
+
+def _version_tuple(text) -> tuple:
+    """把 1.2.3 / 1.2.3-beta 这类版本号转成可比较的元组
+
+    旧实现直接 int() 拆分，远端一旦出现 beta 后缀就抛异常、在界面上显示成
+    "检查更新失败"，用户会以为断网。
+    """
+    parts = []
+    for chunk in str(text or "").split("."):
+        digits = "".join(ch for ch in chunk if ch.isdigit())
+        parts.append(int(digits) if digits else 0)
+    return tuple(parts)
+
+
+def _init_logging():
+    """初始化日志：打包后的主程序没有控制台，logs/app.log 是唯一的排障手段"""
+    global _log_path
+    if _log_path is not None:
+        return _log_path
+    try:
+        from backend.applog import setup_logging
+        _log_path = setup_logging()
+    except Exception as e:
+        print(f"[WARNING] 初始化日志失败: {e}")
+        _log_path = Path(__file__).parent / "logs" / "app.log"
+    return _log_path
+
 class GachaApp:
     def __init__(self):
         self.window = None
         self.proxy_thread = None
         self.proxy_running = False  # 新增：代理运行标志
+        self._proxy_lock = threading.Lock()    # 防止重复启动代理
+        self._capture_lock = threading.Lock()
+        self.last_capture = None               # mitmproxy 最近一次捕获（内存里的状态）
+        self._pending_update = {}              # 最近一次"检查更新"的结果（供 start_update 写进状态文件）
         # 新增：版本管理
         self.version = self._load_version()
         # 从本地 version.json 读取远程版本检查地址（R2）
@@ -32,91 +114,180 @@ class GachaApp:
         # 启动时清理旧的更新器
         self._cleanup_old_updater()
         
+    # ------------------------------------------------------------------
+    # 抽卡记录
+    # ------------------------------------------------------------------
     def get_gacha(self):
-        from backend.api.getGacha import get_gacha_data_all
-        from backend.proxy import close_proxy
-        import requests
+        """重放捕获到的抽卡请求，取回五个池子的记录
 
-        # 检查 latest_request.json 是否为空
-        json_path = Path(__file__).parent / "json" / "latest_request.json"
-        if not json_path.exists() or json_path.stat().st_size == 0:
-            
-            return {
-                "status": "error",
-                "msg": "获取抽卡记录失败",
-            }
+        失败一律带 code 字段，方便前端给出「怎么修」的提示：
+            no_capture  还没抓到游戏请求（最常见：没在游戏里打开抽卡记录页面）
+            no_auth     抓到的是同域名下的其它请求，不带 Authorization
+            network / http / parse / api / pagination   重放阶段的具体失败原因
+        """
+        from backend import capture
 
-        # 读取 Authorization
-        try:
-            with open(json_path, "r", encoding="utf-8") as f:
-                latest_request = json.load(f)
-            authorization = latest_request.get("headers", {}).get("Authorization", "")
-            
-            if not authorization:
-                print("[ERROR] 未找到Authorization字段")
+        info = capture.describe_capture()
+        print(f"[GACHA] 捕获状态: exists={info['exists']} size={info['size']} "
+              f"replayable={info['replayable']} captured_at={info['captured_at']}")
+
+        if not info["replayable"]:
+            if not info["exists"] or not info["size"]:
                 return {
                     "status": "error",
-                    "msg": "获取抽卡记录失败",
+                    "code": "no_capture",
+                    "msg": "还没有抓到游戏请求。" + capture.HINT_OPEN_GACHA_PAGE,
+                    "capture": info,
                 }
-        except Exception as e:
-            print(f"[ERROR] 读取Authorization失败: {e}")
+            if not info["has_authorization"]:
+                return {
+                    "status": "error",
+                    "code": "no_auth",
+                    "msg": "捕获到的请求里没有 Authorization（多半是同域名下的其它请求，不是抽卡记录）。"
+                           + capture.HINT_OPEN_GACHA_PAGE,
+                    "capture": info,
+                }
             return {
                 "status": "error",
-                "msg": "获取抽卡记录失败",
+                "code": "bad_capture",
+                "msg": "捕获到的请求不完整（缺少请求体）。" + capture.HINT_OPEN_GACHA_PAGE,
+                "capture": info,
             }
 
-        self.enable_system_proxy()
-
-        # 获取用户uid
-        uid = None
+        # 依赖放在真正要发请求之前再 import：组件缺失时也能给出人话提示，
+        # 而不是在用户刚点按钮时抛一个 ModuleNotFoundError
         try:
-            account_url = "https://gf2-zoneinfo.sunborngame.com/account/info"
-            account_headers = {
-                "Host": "gf2-zoneinfo.sunborngame.com",
-                "User-Agent": "UnityPlayer/2019.4.40f1 (UnityWebRequest/1.0, libcurl/7.80.0-DEV)",
-                "Accept": "*/*",
-                "Accept-Encoding": "deflate, gzip",
-                "Authorization": authorization,
-                "Content-Type": "application/json",
-                "X-Unity-Version": "2019.4.40f1"
+            from backend.api.getGacha import get_gacha_data_all_ex
+        except Exception as e:
+            print(f"[ERROR] 加载抽卡接口模块失败: {e}")
+            return {
+                "status": "error",
+                "code": "module_missing",
+                "msg": f"程序组件缺失，无法发起请求：{e}",
+                "capture": info,
             }
-            
-            response = requests.post(account_url, headers=account_headers, json={}, verify=False)
-            
+
+        # 重放本身不走系统代理；顺手确保代理在跑，用户接着进游戏就能刷新一份新捕获
+        proxy_status = self._ensure_proxy_for_capture()
+
+        uid = self._fetch_uid()
+
+        result = get_gacha_data_all_ex()
+        if not result.get("ok"):
+            error = result.get("error") or {}
+            msg = self._describe_replay_error(error, info)
+            print(f"[ERROR] 重放抽卡请求失败: {error}")
+            return {
+                "status": "error",
+                "code": error.get("kind", "unknown"),
+                "msg": msg,
+                "detail": error,
+                "capture": info,
+                "proxy": proxy_status,
+            }
+
+        print("=" * 50)
+        print(f"[OK] 抽卡记录获取成功，uid={uid}")
+        return {
+            "status": "success",
+            "msg": "获取抽卡记录成功",
+            "data": {
+                "uid": uid,
+                "gacha": result["data"],
+            },
+            "capture": info,
+            "proxy": proxy_status,
+        }
+
+    def _describe_replay_error(self, error, info):
+        """把结构化错误翻译成用户能照做的提示"""
+        kind = error.get("kind")
+        pool = error.get("pool")
+        prefix = {
+            "network": "网络请求失败",
+            "http": "服务器返回异常状态码",
+            "parse": "接口返回内容异常",
+            "api": "接口返回错误",
+            "pagination": "分页数据异常",
+            "internal": "内部异常",
+        }.get(kind, "获取抽卡记录失败")
+
+        msg = f"{prefix}：{error.get('msg') or '无描述'}"
+        if pool:
+            msg = f"{pool}：{msg}"
+        if error.get("page"):
+            msg += f"（中断于第 {error['page']} 页，之前已成功 {error.get('ok_pages', 0)} 页）"
+
+        hints = []
+        if kind == "api":
+            hints.append("Authorization 可能已过期，请在游戏里重新打开一次「招募 · 访问详情」页面，再点『更新记录』")
+        elif kind == "http":
+            hints.append("请先在游戏里重新打开「招募 · 访问详情」页面刷新 token；若仍失败，可能是接口有变动")
+        elif kind == "network":
+            hints.append("请检查网络；如果开了其它代理 / 加速器 / VPN，请先关掉")
+        if info.get("age_text"):
+            hints.append(f"当前这份请求捕获于 {info['age_text']}")
+
+        return msg + ("（" + "；".join(hints) + "）" if hints else "")
+
+    def _fetch_uid(self):
+        """按捕获到的 Authorization 取一次 uid（失败不影响取记录）"""
+        from backend import capture as capture_module
+
+        data = capture_module.load_capture() or {}
+        authorization = ""
+        for key, value in (data.get("headers") or {}).items():
+            if str(key).lower() == "authorization":
+                authorization = str(value or "")
+                break
+        if not authorization:
+            return None
+
+        account_url = "https://gf2-zoneinfo.sunborngame.com/account/info"
+        headers = {
+            "Host": "gf2-zoneinfo.sunborngame.com",
+            "User-Agent": "UnityPlayer/2019.4.40f1 (UnityWebRequest/1.0, libcurl/7.80.0-DEV)",
+            "Accept": "*/*",
+            "Accept-Encoding": "deflate, gzip",
+            "Authorization": authorization,
+            "Content-Type": "application/json",
+            "X-Unity-Version": "2019.4.40f1",
+        }
+        try:
+            response = requests.post(account_url, headers=headers, json={}, timeout=10, verify=False)
             if response.status_code == 200:
                 account_data = response.json()
                 if account_data.get("code") == 0:
                     uid = account_data.get("data", {}).get("uid")
                     print(f"[INFO] 获取到用户UID: {uid}")
-                else:
-                    print(f"[ERROR] 获取UID失败: {account_data.get('msg')}")
+                    return uid
+                print(f"[ERROR] 获取UID失败: {account_data.get('msg')}")
             else:
-                print(f"[ERROR] 请求失败，状态码: {response.status_code}")
+                print(f"[ERROR] 获取UID失败，状态码: {response.status_code}")
         except Exception as e:
             print(f"[ERROR] 获取UID失败: {e}")
+        return None
 
-        gacha = get_gacha_data_all()
+    def _ensure_proxy_for_capture(self):
+        """确保 mitmproxy 在跑（没在跑就拉起来），返回代理状态供界面提示"""
+        from backend.proxy import get_proxy_status
 
-        if gacha is not None:
-            print("=" * 50)
-            print(gacha)
-            
-            # 将uid和gacha数据一起返回
-            return {
-                "status": "success",
-                "msg": "获取抽卡记录成功",
-                "data": {
-                    "uid": uid,
-                    "gacha": gacha
-                }
-            }
-        else:
-            # 只要有一个池子获取失败，就返回错误，而不是返回空数据
-            return {
-                "status": "error",
-                "msg": "获取抽卡记录失败：请检查token是否过期或网络连接",
-            }
-        
+        status = get_proxy_status()
+        if status.get("ready"):
+            return status
+
+        print("[WARN] mitmproxy 未就绪，尝试重新启动代理...")
+        self.start_proxy()
+        deadline = time.time() + 6.0
+        while time.time() < deadline:
+            status = get_proxy_status()
+            if status.get("ready"):
+                break
+            time.sleep(0.2)
+
+        self.enable_system_proxy()
+        return get_proxy_status()
+
     def install_cert(self):
         """安装证书 - 首次运行自动生成用户专属证书并自动安装到系统"""
         try:
@@ -542,90 +713,87 @@ class GachaApp:
                 return json.load(f)
         return {"current_version": "1.0.0"}
 
-    def _load_ssr_data(self):
-        """启动时加载SSR数据：优先从本地游戏数据(protobuf)解析，降级到远程/本地json"""
-        print("[SSR] 开始加载SSR角色数据...")
+    # R2 上的五星数据（开发者维护，比内置 json 新；本地游戏数据解析失败时用它兜底）
+    SSR_REMOTE_URL = "https://r2.gf2gacha-xkl.uk/ssr.json"
 
-        # 优先：从本地游戏数据解析（protobuf）
+    def _load_ssr_data_impl(self):
+        """按优先级加载五星数据，返回 (data, source)
+
+        source 取值（前端据此显示不同提示）：
+            local-proto  本地游戏数据（最准，跟着游戏版本走） -> 绿色「正在使用最新五星数据」
+            remote       R2 远端数据（开发者维护的兜底）      -> 绿色「正在使用远端五星数据」
+            local-json   随程序内置的 json（可能不是最新）    -> 黄色「正在使用本地五星数据(可能不是最新)」
+            none         一个都拿不到
+        """
+        # 1. 本地游戏数据（protobuf）
         try:
             from backend.ssr_parser import load_ssr_from_local
             local_result = load_ssr_from_local()
             if local_result is not None:
-                print(f"[SSR] ★★★ 从本地游戏数据解析成功！版本: {local_result.get('version')} ★★★")
-                return local_result
+                print(f"[SSR] ★★★ 使用本地游戏数据，版本: {local_result.get('version')} ★★★")
+                return dict(local_result), "local-proto"
         except Exception as e:
             print(f"[SSR] 本地protobuf解析失败: {e}")
 
-        # 降级1: 读取本地 ssr.json
+        # 2. R2 远端（兜底）
+        remote = self._fetch_remote_ssr()
+        if remote is not None:
+            print(f"[SSR] ★★★ 使用 R2 远端数据，版本: {remote.get('version')} ★★★")
+            return remote, "remote"
+
+        # 3. 内置 json（最后兜底）
         try:
             local_ssr_path = Path(__file__).parent / "json" / "ssr.json"
             if local_ssr_path.exists():
                 with open(local_ssr_path, "r", encoding="utf-8") as f:
                     local_data = json.load(f)
-                print(f"[SSR] 使用本地ssr.json，版本: {local_data.get('version', 'unknown')}")
-                return local_data
+                print(f"[SSR] 使用内置ssr.json（可能不是最新），版本: {local_data.get('version', 'unknown')}")
+                return local_data, "local-json"
         except Exception as e:
-            print(f"[SSR] 读取本地ssr.json失败: {e}")
+            print(f"[SSR] 读取内置ssr.json失败: {e}")
 
-        # 返回空数据结构
         print("[SSR] 无法获取SSR数据，返回空结构")
         return {
             "version": "none",
             "SSR_character": {},
             "SSR_weapon": {},
-            "SSR_permanent": {}
-        }
+            "SSR_permanent": {},
+        }, "none"
+
+    def _fetch_remote_ssr(self, timeout=5):
+        """从 R2 拉取 ssr.json（超时/断网/格式异常一律返回 None，不影响主流程）"""
+        try:
+            print(f"[SSR] 尝试从 R2 获取五星数据: {self.SSR_REMOTE_URL}")
+            response = requests.get(self.SSR_REMOTE_URL, timeout=timeout)
+            if response.status_code != 200:
+                print(f"[SSR] R2 返回 HTTP {response.status_code}，忽略")
+                return None
+            data = response.json()
+            if not isinstance(data, dict) or not data.get("SSR_character"):
+                print("[SSR] R2 数据格式异常，忽略")
+                return None
+            return data
+        except Exception as e:
+            print(f"[SSR] R2 获取失败: {e}")
+            return None
+
+    def _load_ssr_data(self):
+        """启动时加载SSR数据（兼容旧接口：只返回数据）"""
+        data, source = self._load_ssr_data_impl()
+        print(f"[SSR] 数据来源: {source}")
+        return data
 
     def load_ssr_data(self):
-        """前端调用加载SSR数据：优先从本地游戏数据(protobuf)解析"""
+        """前端调用加载SSR数据：返回 {status, source, data}"""
         print("[SSR] 前端请求加载SSR数据...")
-
-        # 优先：从本地游戏数据解析（protobuf）
-        try:
-            from backend.ssr_parser import load_ssr_from_local
-            local_result = load_ssr_from_local()
-            if local_result is not None:
-                self.ssr_data = dict(local_result)
-                self.ssr_data['_fromRemote'] = False
-                print(f"[SSR] ★★★ 从本地游戏数据解析成功！版本: {self.ssr_data.get('version')} ★★★")
-                return {
-                    "status": "success",
-                    "source": "local-proto",
-                    "data": self.ssr_data
-                }
-        except Exception as e:
-            print(f"[SSR] 本地protobuf解析失败: {e}")
-
-        # 降级1: 读取本地 ssr.json
-        try:
-            local_ssr_path = Path(__file__).parent / "json" / "ssr.json"
-            if local_ssr_path.exists():
-                with open(local_ssr_path, "r", encoding="utf-8") as f:
-                    self.ssr_data = json.load(f)
-                self.ssr_data['_fromRemote'] = False
-                print(f"[SSR] 使用本地ssr.json，版本: {self.ssr_data.get('version', 'unknown')}")
-                return {
-                    "status": "success",
-                    "source": "local-json",
-                    "data": self.ssr_data
-                }
-        except Exception as e:
-            print(f"[SSR] 读取本地ssr.json失败: {e}")
-
-        # 全部失败
-        print("[SSR] 所有数据源都不可用")
-        self.ssr_data = {
-            "version": "none",
-            "SSR_character": {},
-            "SSR_weapon": {},
-            "SSR_permanent": {},
-            "_fromRemote": False
-        }
-        return {
-            "status": "error",
-            "source": "none",
-            "data": self.ssr_data
-        }
+        data, source = self._load_ssr_data_impl()
+        data = dict(data)
+        data['_fromRemote'] = source in ("local-proto", "remote")
+        self.ssr_data = data
+        print(f"[SSR] 数据来源: {source}")
+        if source == "none":
+            return {"status": "error", "source": "none", "data": self.ssr_data}
+        return {"status": "success", "source": source, "data": self.ssr_data}
 
     def get_ssr_data(self):
         """供前端调用获取SSR数据（仅返回当前数据）"""
@@ -649,6 +817,18 @@ class GachaApp:
             if old_updater.exists():
                 old_updater.unlink()
                 print(f"[INFO] 已清理旧更新器: {old_updater}")
+            # 新布局：更新器在安装根目录，残留的 updater_old.exe 也在那儿
+            root_old = _app_root() / "updater_old.exe"
+            if root_old.exists() and root_old != old_updater:
+                root_old.unlink()
+                print(f"[INFO] 已清理旧更新器: {root_old}")
+            # 一次性迁移：老版本把 updater.exe 放在 _internal 里，新布局用它外面那份；
+            # 里面那份留着也没用了（还占 12MB），根目录有新的就删掉
+            root_updater = _app_root() / "updater.exe"
+            internal_updater = base_path / "updater.exe"
+            if root_updater.exists() and internal_updater.exists():
+                internal_updater.unlink()
+                print(f"[INFO] 已清理 _internal 里多余的更新器: {internal_updater}")
         except Exception as e:
             print(f"[WARNING] 清理旧更新器失败: {e}")
     
@@ -664,9 +844,12 @@ class GachaApp:
         close_proxy()
 
         try:
-            # 从 GitHub 获取最新版本
             print("[UPDATE] 正在请求 r2...")
-            response = requests.get(self.version_url, timeout=5)
+            # 关键：关掉 trust_env，避免走注册表里"本工具自己设的代理"
+            # （主程序被强杀后那个代理是死的，走它就必然"检查更新失败"）
+            session = requests.Session()
+            session.trust_env = False
+            response = session.get(self.version_url, timeout=8)
             print(f"[UPDATE] HTTP状态码: {response.status_code}")
 
             remote_data = response.json()
@@ -678,17 +861,17 @@ class GachaApp:
             local_version = self.version.get("current_version", "1.0.0")
             print(f"[UPDATE] local_version: {local_version}")
 
-            # 比较版本号
-            remote_list = [int(x) for x in remote_version.split(".")]
-            local_list = [int(x) for x in local_version.split(".")]
-
-            if remote_list > local_list:
+            if _version_tuple(remote_version) > _version_tuple(local_version):
                 print("[UPDATE] 发现新版本！")
                 # 发现新版本，不恢复代理
                 return {
                     "status": "success",
                     "has_update": True,
                     "latest_version": remote_version,
+                    "download_url": remote_data.get("download_url", ""),
+                    "sha256": remote_data.get("sha256", ""),
+                    "size": remote_data.get("size", 0),
+                    "notes": remote_data.get("update_info", ""),
                     "message": f"发现新版本 v{remote_version}"
                 }
             else:
@@ -752,23 +935,31 @@ class GachaApp:
         try:
             import subprocess
             
-            # 确定 updater.exe 的路径
-            if getattr(sys, 'frozen', False):
-                # 打包后的环境
-                base_path = Path(sys.executable).parent / "_internal"
-            else:
-                # 开发环境
-                base_path = Path(__file__).parent
-            
-            updater_path = base_path / "updater.exe"
-            
-            if not updater_path.exists():
-                print(f"[ERROR] 更新器不存在: {updater_path}")
+            # 更新器位置：新布局在安装根目录，老布局在 _internal 里（兼容）
+            candidates = [_app_root() / "updater.exe", _app_root() / "_internal" / "updater.exe"]
+            updater_path = next((path for path in candidates if path.exists()), None)
+            if updater_path is None:
+                print(f"[ERROR] 更新器不存在: {candidates}")
                 return {
                     "status": "error",
                     "message": "更新器文件不存在"
                 }
-            
+
+            # 把"要更新到什么版本、包在哪、sha256 是多少"先写进状态文件，
+            # 更新器读它来干活（也方便下次启动时判断上次更新走到哪一步）
+            info = self._pending_update or {}
+            _write_update_state(
+                phase="starting",
+                **{
+                    "from": self.version.get("current_version", ""),
+                    "to": info.get("latest_version", ""),
+                    "download_url": info.get("download_url", ""),
+                    "sha256": info.get("sha256", ""),
+                    "size": info.get("size", 0),
+                    "error": "",
+                },
+            )
+            print(f"[UPDATE] 更新意图已写入状态文件: {_update_state_path()}")
             print(f"[UPDATE] 更新器路径: {updater_path}")
             
             # 启动更新器（独立进程）
@@ -818,6 +1009,7 @@ class GachaApp:
             # 检查更新
             update_result = self.check_update()
             local_version = self.version.get("current_version", "1.0.0")
+            self._pending_update = update_result if update_result.get("has_update") else {}
             
             if update_result.get("status") != "success":
                 return {
@@ -833,6 +1025,9 @@ class GachaApp:
                 "current_version": local_version,
                 "has_update": update_result.get("has_update", False),
                 "latest_version": update_result.get("latest_version", ""),
+                "sha256": update_result.get("sha256", ""),
+                "size": update_result.get("size", 0),
+                "notes": update_result.get("notes", ""),
                 "message": update_result.get("message", "")
             }
         except Exception as e:
@@ -866,91 +1061,124 @@ class GachaApp:
             print(f"[ERROR] 写入文件块失败 (offset={offset}): {e}")
             return {"status": "error", "message": str(e)}
 
-    def copy_image_to_clipboard(self, _unused=None):
-        """通过 evaluate_js 从前端获取截图数据并写入系统剪贴板（Python后端预下载图片+8秒延迟）"""
+    def prefetch_share_images(self, urls=None):
+        """预热分享用的图标缓存（前端在数据加载完后调用，后台线程执行）
+
+        分享真正慢的是「每张图标都要重新下载」，所以数据一到位就先把图标拉下来
+        存进缓存，用户点「分享」时基本是纯本地操作。
+        """
         try:
-            import os
-            import subprocess
+            from backend import icon_cache
+
+            url_list = [u for u in (urls or []) if isinstance(u, str) and u.startswith("http")]
+            url_list = list(dict.fromkeys(url_list))[:500]
+            if not url_list:
+                return {"status": "success", "msg": "没有需要预热的图标", "count": 0}
+
+            def run():
+                try:
+                    icon_cache.prefetch(url_list, workers=8)
+                except Exception as exc:
+                    print(f"[分享] 图标预热失败: {exc}")
+
+            threading.Thread(target=run, daemon=True).start()
+            print(f"[分享] 已开始后台预热 {len(url_list)} 个图标")
+            return {"status": "success", "msg": f"已开始预热 {len(url_list)} 个图标", "count": len(url_list)}
+        except Exception as e:
+            print(f"[ERROR] 预热图标失败: {e}")
+            return {"status": "error", "msg": f"预热图标失败: {e}"}
+
+    def copy_image_to_clipboard(self, _unused=None):
+        """把分享图生成好并复制到剪贴板
+
+        步骤：
+            ① 收集离屏分享容器里的图标 -> 统一转成 data URI
+               （走 backend/icon_cache：内存 + 磁盘缓存，预热过就几乎零耗时）
+            ② 注入容器（html2canvas 只能画同源的 data URI）
+            ③ html2canvas 出图
+            ④ 写入系统剪贴板
+
+        相对旧版的优化：
+            * 图标不再每次重新下载（旧版分享一次要下载一百多张，实测每张 1.6s）；
+            * 轮询只读一个小标志位，最后才取一次大 base64
+              （旧版每 0.5 秒就把整张图通过 JS 桥拉一次）；
+            * PowerShell 加 -NoProfile -NonInteractive，省掉几百毫秒启动开销；
+            * 全程打点，日志里能直接看到每一步花了多久。
+        """
+        try:
             import base64
+            import subprocess
             import tempfile
             import time
-            import requests as req_lib
+
+            from backend import icon_cache
+
+            started = time.time()
 
             # ============================================================
-            # 步骤1：Python 后端获取容器内所有图片 URL，逐个下载为 base64
-            #        Python requests 不受浏览器同源策略限制！
+            # 步骤1：收集图片并转成 data URI（带缓存）
             # ============================================================
-            print("[DEBUG] 步骤1：获取图片列表...")
-
-            # 1a. 从前端获取所有图片的 src 和索引
+            # 只收集「这次会被拍进去」的图片：未勾选的池子用 v-show 隐藏了
+            # （display:none），它们的图标不必参与（预热时仍然会下载，不影响）
             img_list = self.window.evaluate_js("""
                 (function() {
                     var el = document.querySelector('.screenshot-container');
                     if (!el) return null;
                     var imgs = el.querySelectorAll('img');
                     var list = [];
+                    var skipped = 0;
                     Array.prototype.forEach.call(imgs, function(img, idx) {
+                        if (!img.offsetParent) { skipped++; return; }
                         list.push({index: idx, src: img.src || ''});
                     });
-                    return {total: list.length, images: list};
+                    return {total: list.length, skipped: skipped, images: list};
                 })()
             """)
-            
+
             if not img_list:
                 return {"status": "error", "message": "无法获取图片列表或容器不存在"}
 
-            print(f"  找到 {img_list['total']} 张图片")
+            unique_srcs = []
+            for img_info in img_list["images"]:
+                src = img_info.get("src") or ""
+                if src and not src.startswith("data:") and src not in unique_srcs:
+                    unique_srcs.append(src)
 
-            # 1b. Python 端按路径去重 + 并发下载图片（绕过浏览器 CORS）
-            #     相同 URL 只下载一次，多张相同图片复用同一 base64 数据
-            from concurrent.futures import ThreadPoolExecutor, as_completed
+            cached_hits = sum(1 for src in unique_srcs if icon_cache.is_cached(src))
+            print(
+                f"[分享] 参与出图的图片 {img_list['total']} 张"
+                f"（未勾选池子跳过 {img_list.get('skipped', 0)} 张）"
+                f" / {len(unique_srcs)} 个唯一地址，其中缓存命中 {cached_hits} 个"
+            )
 
-            # 先收集所有唯一 URL（去重）
-            unique_srcs = set()
-            for img_info in img_list['images']:
-                src = img_info['src']
-                if not src or src.startswith('data:'):
-                    continue
-                unique_srcs.add(src)
+            src_to_datauri = {}
+            failed = []
+            for src in unique_srcs:
+                data_uri = icon_cache.get_data_uri(src)
+                if data_uri:
+                    src_to_datauri[src] = data_uri
+                else:
+                    failed.append(src)
 
-            src_to_datauri = {}  # { src: data_uri }
+            print(
+                f"[分享] 图标就绪 {len(src_to_datauri)}/{len(unique_srcs)}"
+                f"（缓存命中 {cached_hits}，新下载 {len(src_to_datauri) - cached_hits}），"
+                f"用时 {time.time() - started:.2f}s"
+            )
 
-            def _download_one(src_url):
-                """下载单张图片并返回 (src, data_uri) 或 (src, None)"""
-                try:
-                    resp = req_lib.get(src_url, timeout=15, verify=False)
-                    if resp.status_code == 200 and resp.content:
-                        b64 = base64.b64encode(resp.content).decode('ascii')
-                        content_type = resp.headers.get('Content-Type', 'image/png')
-                        if 'image' not in content_type:
-                            content_type = 'image/png'
-                        return (src_url, f"data:{content_type};base64,{b64}", len(resp.content))
-                    return (src_url, None, 0)
-                except Exception as e:
-                    return (src_url, None, str(e))
+            if failed:
+                # 有图没拿到就不要往下走了：留着 https 地址会让 canvas 被污染，
+                # 最后只会抛一句看不懂的 SecurityError
+                print(f"[ERROR] 以下图标未取到，无法生成分享图: {failed[:5]}")
+                return {
+                    "status": "error",
+                    "message": f"有 {len(failed)} 张图标没有取到（网络问题？），请稍后重试",
+                }
 
-            # 并发下载所有唯一图片
-            if not unique_srcs:
-                print("  所有图片已是 data URI，无需重新下载")
-            else:
-                MAX_WORKERS = min(len(unique_srcs), 8)  # 最多8个并发线程
-                print(f"  并发下载 {len(unique_srcs)} 个唯一URL (并发数={MAX_WORKERS})...")
-                with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-                    future_map = {executor.submit(_download_one, src): src for src in unique_srcs}
-                    for future in as_completed(future_map):
-                        src_url, data_uri, info = future.result()
-                        if data_uri:
-                            src_to_datauri[src_url] = data_uri
-                            print(f"  OK: {src_url[:50]}... ({info} bytes)")
-                        else:
-                            print(f"  FAIL: {src_url[:50]}... ({info})")
-
-            print(f"  下载完成: {len(src_to_datauri)}/{len(unique_srcs)} 成功 / 共{img_list['total']}张图片")
-
-            # 1c. 将下载好的 base64 数据注入到前端 DOM 中（按 src 匹配复用）
-            print("[DEBUG] 步骤2：注入 base64 图片到 DOM...")
+            # ============================================================
+            # 步骤2：注入 data URI
+            # ============================================================
             if src_to_datauri:
-                # 构造 JS：将每个 img.src 替换为对应的 data URI（相同路径复用同一数据）
                 js_map = json.dumps(src_to_datauri)
                 self.window.evaluate_js(f"""
                     (function() {{
@@ -958,54 +1186,37 @@ class GachaApp:
                         var el = document.querySelector('.screenshot-container');
                         if (!el) return;
                         var imgs = el.querySelectorAll('img');
-                        var injectCount = 0;
+                        var n = 0;
                         Array.prototype.forEach.call(imgs, function(img) {{
-                            if (img.src && map[img.src]) {{
-                                img.src = map[img.src];
-                                injectCount++;
-                            }}
+                            if (img.src && map[img.src]) {{ img.src = map[img.src]; n++; }}
                         }});
-                        window.__screenshot_injected = injectCount;
+                        window.__screenshot_injected = n;
                     }})()
                 """)
 
-                # 验证注入是否成功
-                injected = self.window.evaluate_js("window.__screenshot_injected")
-                print(f"  注入结果: {injected} 张图片已替换")
-
             # ============================================================
-            # 步骤3：直接执行 html2canvas 截图（所有图片已是 data URI，无跨域）
-            #        后端已确保资源下载完成，无需额外等待
+            # 步骤3：html2canvas 出图（完成时只置一个标志位）
             # ============================================================
-            print("[DEBUG] 步骤3：执行 html2canvas 截图...")
             self.window.evaluate_js("""
                 (function() {
+                    window.__screenshot_ready = false;
                     window.__screenshot_result = null;
                     window.__screenshot_error = null;
 
                     var el = document.querySelector('.screenshot-container');
-                    if (!el) { window.__screenshot_error = '容器不存在'; return; }
+                    if (!el) { window.__screenshot_error = '容器不存在'; window.__screenshot_ready = true; return; }
                     var h2c = window.html2canvas;
-                    if (!h2c) { window.__screenshot_error = 'html2canvas未加载'; return; }
-
-                    // 最终检查：统计 data URI 比例
-                    var imgs = el.querySelectorAll('img');
-                    var dataCount = 0;
-                    Array.prototype.forEach.call(imgs, function(img) {
-                        if (img.src && img.src.startsWith('data:')) dataCount++;
-                    });
-                    console.log('[Screenshot] 截图前检查: dataURI=' + dataCount + '/' + imgs.length);
+                    if (!h2c) { window.__screenshot_error = 'html2canvas未加载'; window.__screenshot_ready = true; return; }
 
                     h2c(el, {
                         scale: 2,
                         useCORS: true,
-                        allowTaint: true,
+                        allowTaint: false,
                         backgroundColor: '#ffffff',
                         width: el.scrollWidth,
                         height: el.scrollHeight,
                         logging: false
                     }).then(function(canvas) {
-                        console.log('[Screenshot] canvas: ' + canvas.width + 'x' + canvas.height);
                         return new Promise(function(resolve, reject) {
                             canvas.toBlob(function(blob) {
                                 if (!blob) { reject('toBlob failed'); return; }
@@ -1015,60 +1226,47 @@ class GachaApp:
                             }, 'image/png');
                         });
                     }).then(function(dataUrl) {
-                        console.log('[Screenshot] 完成, 长度:' + dataUrl.length);
                         window.__screenshot_result = dataUrl;
+                        window.__screenshot_ready = true;
                     }).catch(function(e) {
-                        console.error('[Screenshot] 错误:', e);
-                        window.__screenshot_error = e.message || String(e);
+                        window.__screenshot_error = (e && e.message) ? e.message : String(e);
+                        window.__screenshot_ready = true;
                     });
                 })()
             """)
 
-            # 步骤5：轮询等待截图完成
-            print("[DEBUG] 等待截图完成...")
-            for i in range(60):  # 最多等 30 秒
-                time.sleep(0.5)
-                result = self.window.evaluate_js("window.__screenshot_result")
-                error = self.window.evaluate_js("window.__screenshot_error")
-                if result and isinstance(result, str) and result.startswith('data:'):
+            # ============================================================
+            # 步骤4：等完成标志（每 0.25s 只读一个布尔值，很便宜）
+            # ============================================================
+            ready = False
+            for _ in range(160):  # 最多 40 秒
+                time.sleep(0.25)
+                if self.window.evaluate_js("window.__screenshot_ready === true"):
+                    ready = True
                     break
-                if error and isinstance(error, str):
-                    return {"status": "error", "message": f"截图失败: {error}"}
-            else:
-                # 超时，检查最终状态
-                result = self.window.evaluate_js("window.__screenshot_result")
-                error = self.window.evaluate_js("window.__screenshot_error")
-                if error:
-                    return {"status": "error", "message": f"截图超时/失败: {error}"}
-                return {"status": "error", "message": f"截图超时 (result={result})"}
 
-            data_url = result
-            print(f"[DEBUG] 截图数据长度: {len(data_url)}")
+            error = self.window.evaluate_js("window.__screenshot_error")
+            if error:
+                return {"status": "error", "message": f"截图失败: {error}"}
+            if not ready:
+                return {"status": "error", "message": "截图超时"}
 
-            if not data_url or not isinstance(data_url, str):
-                return {"status": "error", "message": f"获取截图失败: {data_url}"}
+            data_url = self.window.evaluate_js("window.__screenshot_result")
+            if not data_url or not isinstance(data_url, str) or "," not in data_url:
+                return {"status": "error", "message": f"获取截图失败 (result={str(data_url)[:60]})"}
 
-            if data_url.startswith('ERROR:'):
-                return {"status": "error", "message": data_url}
-
-            if ',' not in data_url:
-                return {"status": "error", "message": f"数据格式异常 (len={len(data_url)})"}
-
-            b64_data = data_url.split(',', 1)[1]
-            image_bytes = base64.b64decode(b64_data)
-            print(f"[DEBUG] 截图数据大小: {len(image_bytes)} bytes")
-
-            # 验证 PNG 签名
-            png_sig = bytes([0x89, 0x50, 0x4E, 0x47])
-            if image_bytes[:4] != png_sig:
+            image_bytes = base64.b64decode(data_url.split(",", 1)[1])
+            if image_bytes[:4] != bytes([0x89, 0x50, 0x4E, 0x47]):
                 return {"status": "error", "message": f"非PNG格式 (hex: {image_bytes[:4].hex()})"}
+            print(f"[分享] 截图完成 {len(image_bytes)} bytes，用时 {time.time() - started:.2f}s")
 
-            # 写入临时文件
-            fd, file_path = tempfile.mkstemp(suffix='.png')
-            with os.fdopen(fd, 'wb') as f:
-                f.write(image_bytes)
+            # ============================================================
+            # 步骤5：写剪贴板
+            # ============================================================
+            fd, file_path = tempfile.mkstemp(suffix=".png")
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(image_bytes)
 
-            # PowerShell 写入剪贴板
             ps_cmd = (
                 'Add-Type -AssemblyName System.Windows.Forms; '
                 'Add-Type -AssemblyName System.Drawing; '
@@ -1076,23 +1274,24 @@ class GachaApp:
                 '[System.Windows.Forms.Clipboard]::SetImage($img); '
                 '$img.Dispose()'
             )
-            result = subprocess.run(
-                ['powershell', '-Command', ps_cmd],
-                capture_output=True, text=True, timeout=15
-            )
-            if result.returncode != 0:
-                return {"status": "error", "message": f"PowerShell失败: {result.stderr.strip()}"}
-
-            # 清理临时文件
             try:
-                os.unlink(file_path)
-            except:
-                pass
+                result = subprocess.run(
+                    ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
+                    capture_output=True, text=True, timeout=20,
+                )
+                if result.returncode != 0:
+                    return {"status": "error", "message": f"PowerShell失败: {result.stderr.strip()}"}
+            finally:
+                try:
+                    os.unlink(file_path)
+                except OSError:
+                    pass
 
+            print(f"[分享] 已复制到剪贴板，总用时 {time.time() - started:.2f}s")
             return {"status": "success", "message": "已复制到剪贴板"}
 
         except Exception as e:
-            print(f"[ERROR] 复制图片到剪贴板失败: {e}")
+            print(f"[ERROR] 复制图片失败: {e}")
             import traceback
             traceback.print_exc()
             return {"status": "error", "message": f"复制失败: {str(e)}"}
@@ -1111,18 +1310,25 @@ class GachaApp:
             }
         
     def enable_system_proxy(self):
-        """开启系统代理(不启动mitmproxy)"""
-        from backend.proxy import set_proxy, actual_port
+        """把系统代理指向本工具的 mitmproxy
 
-        # 使用 mitmproxy 实际监听的端口
-        port = actual_port if actual_port is not None else 8080
+        代理没就绪时绝不能乱设：那会让用户整台机器断网，而且依然抓不到请求。
+        """
+        from backend.proxy import set_proxy, get_proxy_status
 
+        status = get_proxy_status()
+        port = status.get("port")
+        if not status.get("ready") or not port:
+            print(f"[WARN] mitmproxy 未就绪，跳过系统代理设置 (state={status})")
+            return False
         try:
             set_proxy('127.0.0.1', port)
-            print(f"[OK] 开启系统代理成功，端口: {port}")
+            print(f"[OK] 系统代理已指向 127.0.0.1:{port}，游戏流量会被捕获")
+            return True
         except Exception as e:
             print(f"[ERROR] 开启系统代理失败: {e}")
-    
+            return False
+
     def load_frontend(self):
         """加载Vue前端"""
         # 获取前端构建目录
@@ -1139,50 +1345,209 @@ class GachaApp:
         return url
     
     def start_proxy(self):
-        """在子线程中启动mitmproxy"""
-        if self.proxy_running:
-            print("[ERROR] 代理已运行")
-            return
+        """在子线程中启动mitmproxy（幂等：重复调用不会起第二个实例）"""
+        with self._proxy_lock:
+            if self.proxy_thread is not None and self.proxy_thread.is_alive():
+                print("[INFO] mitmproxy 已在运行，跳过重复启动")
+                return False
 
-        from backend.proxy import run_proxy
-        from backend.addons.addons import set_event_handler
-        
-        def run():
-            # 设置事件处理器
-            set_event_handler(self)
+            from backend.proxy import run_proxy
+            from backend.addons.addons import set_event_handler
 
-            # 启动mitmproxy（在后台线程）
-            print("[INFO] 启动mitmproxy代理...")
-            try:
-                self.proxy_running = True
-                asyncio.run(run_proxy(8080))
-            except Exception as e:
-                print(f"[ERROR] 代理启动失败: {e}")
-            finally:
-                self.proxy_running = False
-        
-        self.proxy_thread = threading.Thread(target=run, daemon=True)
-        self.proxy_thread.start()
-    
+            def run():
+                # 设置事件处理器：捕获到游戏请求时回调本对象的 on_request
+                set_event_handler(self)
+
+                print("[INFO] 启动mitmproxy代理...")
+                try:
+                    self.proxy_running = True
+                    asyncio.run(run_proxy(8080))
+                except Exception as e:
+                    print(f"[ERROR] 代理启动失败: {e}")
+                finally:
+                    self.proxy_running = False
+
+            self.proxy_thread = threading.Thread(target=run, daemon=True)
+            self.proxy_thread.start()
+            return True
+
     def on_closed(self):
-        """窗口关闭时的处理"""
+        """窗口关闭：恢复系统代理 + 清除捕获的请求
+
+        捕获文件里有 Authorization，所以按「关掉软件就自动清除」的行为处理
+        （界面上不再需要「清除捕获」按钮）。
+        """
         from backend.proxy import close_proxy
         close_proxy()
         self.proxy_running = False
-        
-        # 清除 latest_request.json 内容
+
         try:
-            json_path = Path(__file__).parent / "json" / "latest_request.json"
-            if json_path.exists():
-                json_path.write_text("", encoding="utf-8")
-                print("[INFO] 已清除 latest_request.json")
+            from backend import capture
+            result = capture.clear_capture()
+            info = capture.describe_capture()
+            print(f"[INFO] 退出时已清除捕获: {result.get('status')} / size={info['size']}")
         except Exception as e:
-            print(f"[WARNING] 清除 latest_request.json 失败: {e}")
-        
+            print(f"[WARNING] 清除捕获失败: {e}")
+
         print("[INFO] 应用关闭")
 
-    
-    
+    def on_request(self, request_data):
+        """mitmproxy 捕获到游戏请求时的回调（运行在代理线程里）"""
+        try:
+            with self._capture_lock:
+                self.last_capture = {
+                    "at": datetime.now().strftime("%H:%M:%S"),
+                    "url": request_data.get("url"),
+                }
+            print("[INFO] 已捕获游戏抽卡请求，现在可以点『更新记录』了")
+        except Exception as e:
+            print(f"[WARNING] 记录捕获状态失败: {e}")
+
+    def get_capture_status(self):
+        """给界面用的状态：代理是否就绪 + 最后一次捕获（前端定时轮询）"""
+        from backend import capture
+        from backend.proxy import get_proxy_status
+
+        try:
+            info = capture.describe_capture()
+        except Exception as e:
+            info = {"exists": False, "error": str(e)}
+        try:
+            proxy = get_proxy_status()
+        except Exception as e:
+            proxy = {"error": str(e)}
+        with self._capture_lock:
+            last_seen = self.last_capture
+
+        return {
+            "status": "success",
+            "proxy": proxy,
+            "proxy_running": self.proxy_running,
+            "capture": info,
+            "last_seen": last_seen,
+            "hint": capture.HINT_OPEN_GACHA_PAGE,
+            "log_path": str(_log_path) if _log_path else "",
+        }
+
+    def get_update_status(self):
+        """给界面用：上次更新走到哪一步、要不要提示用户"""
+        state = _read_update_state()
+        phase = state.get("phase") or ""
+        needs_attention = phase in (
+            "starting", "downloading", "verified", "extracted", "switching",
+            "switched", "failed", "rolled_back",
+        )
+        # 回滚备份还在 -> 可以一键回滚（新版已经被换掉了就没有了）
+        can_rollback = (_app_root() / "_internal_old").exists() and phase not in ("rolled_back",)
+        if needs_attention:
+            print(f"[UPDATE] 上次更新未完成: phase={phase} error={state.get('error') or '无'}")
+        return {
+            "status": "success",
+            "phase": phase,
+            "needs_attention": needs_attention,
+            "rolled_back": phase == "rolled_back",
+            "can_rollback": can_rollback,
+            "from": state.get("from") or "",
+            "to": state.get("to") or "",
+            "error": state.get("error") or "",
+            "updated_at": state.get("updated_at") or "",
+            "updater_log": str(Path(__file__).parent / "logs" / "updater.log"),
+        }
+
+    def rollback_update(self):
+        """一键回滚：拉起 updater.exe --rollback，然后关掉自己（不然 _internal 改不了名）"""
+        try:
+            candidates = [_app_root() / "updater.exe", _app_root() / "_internal" / "updater.exe"]
+            updater_path = next((path for path in candidates if path.exists()), None)
+            if updater_path is None:
+                return {"status": "error", "msg": "找不到更新器，无法回滚"}
+            if not (_app_root() / "_internal_old").exists():
+                return {"status": "error", "msg": "没有可用的回滚备份"}
+
+            _write_update_state(phase="rollback_requested")
+            subprocess.Popen(
+                [str(updater_path), "--rollback", "--reason", "用户在界面上选择回滚"],
+                cwd=str(_app_root()),
+                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+            )
+            print("[UPDATE] 已启动回滚流程，主程序即将退出")
+            from backend.proxy import close_proxy
+
+            close_proxy()
+            if self.window:
+                self.window.destroy()
+            return {"status": "success", "msg": "正在回滚"}
+        except Exception as e:
+            print(f"[ERROR] 启动回滚失败: {e}")
+            return {"status": "error", "msg": f"启动回滚失败: {e}"}
+
+    def mark_update_ok(self):
+        """主程序界面成功启动时调用：更新流程收尾（写 ok + 清理备份/临时文件）"""
+        state = _read_update_state()
+        if not state or state.get("phase") == "ok":
+            return {"status": "success", "cleaned": []}
+
+        app_root = _app_root()
+        # 先落 ok：万一下面清理到一半崩了，也不会让用户下次启动看到"更新未完成"
+        _write_update_state(phase="ok", error="")
+
+        cleaned = []
+        # 回滚备份：新版已经成功跑起来，可以删了（不占用户空间）
+        for leftover in (app_root / "_internal_old", app_root / "_internal_broken",
+                         app_root / "_update_tmp", app_root / "update_temp",
+                         app_root / "records_backup_temp", app_root / "certs_backup_temp",
+                         app_root / "updater_old.exe"):
+            if leftover.exists():
+                try:
+                    if leftover.is_dir():
+                        shutil.rmtree(leftover, ignore_errors=True)
+                    else:
+                        leftover.unlink()
+                    cleaned.append(leftover.name)
+                except Exception as e:
+                    print(f"[WARNING] 清理 {leftover} 失败: {e}")
+
+        if cleaned:
+            print(f"[UPDATE] 更新流程收尾完成，已清理: {', '.join(cleaned)}")
+        else:
+            print("[UPDATE] 更新流程收尾完成（没有需要清理的残留）")
+        return {"status": "success", "cleaned": cleaned}
+
+    def dismiss_update_status(self):
+        """用户点了"我知道了"：不要再重复提示同一次未完成的更新"""
+        _write_update_state(phase="acknowledged")
+        return {"status": "success"}
+
+    def open_log_file(self, which="app"):
+        """用系统默认程序直接打开日志文件（logs/app.log）
+
+        界面上「日志」窗口里的「打开日志文件」按钮走这里：不再另开 HTML 窗口，
+        就是让 Windows 用它默认的程序（通常是记事本）打开这个文件。
+        """
+        try:
+            from backend import applog
+
+            log_path = Path(applog.get_log_path() or (Path(__file__).parent / "logs" / "app.log"))
+            if which == "updater":
+                log_path = Path(__file__).parent / "logs" / "updater.log"
+            if not log_path.exists():
+                log_path.parent.mkdir(parents=True, exist_ok=True)
+                log_path.touch(exist_ok=True)
+            if os.name == "nt":
+                os.startfile(str(log_path))  # noqa: S606 - 固定路径，非用户输入
+            else:
+                webbrowser.open(f"file://{log_path.absolute()}")
+            print(f"[INFO] 已打开日志文件: {log_path}")
+            return {"status": "success", "msg": "已打开日志文件", "path": str(log_path)}
+        except Exception as e:
+            print(f"[ERROR] 打开日志文件失败: {e}")
+            return {"status": "error", "msg": f"打开日志文件失败: {e}"}
+
+    def clear_capture(self):
+        """清空捕获文件（里面有 Authorization，允许用户手动抹掉）"""
+        from backend import capture
+        return capture.clear_capture()
+
     def test_api(self, message):
         """测试API - 供前端调用"""
         print(f"[INFO] 收到前端消息: {message}")
@@ -1190,11 +1555,22 @@ class GachaApp:
     
     def run(self):
         """启动应用"""
+        _init_logging()
+
         print("=" * 50)
         print("少女前线抽卡记录工具")
         print(f"[INFO] 当前版本: v{self.version.get('current_version', '1.0.0')}")
         print("=" * 50)
-        
+
+        # 启动时先把捕获状态写进日志，排障时一眼能看到「到底有没有抓到过」
+        try:
+            from backend import capture
+            info = capture.describe_capture()
+            print(f"[INFO] 捕获文件: {info['path']} (exists={info['exists']}, size={info['size']}, "
+                  f"replayable={info['replayable']}, captured_at={info['captured_at']})")
+        except Exception as e:
+            print(f"[WARNING] 读取捕获状态失败: {e}")
+
         # 首次运行时检查并生成证书
         self._check_and_generate_certificate()
         
@@ -1247,8 +1623,44 @@ class GachaApp:
             import traceback
             traceback.print_exc()
 
+_single_instance_mutex = None
+
+
 def check_single_instance():
-    """检查程序是否已在运行"""
+    """检查程序是否已在运行
+
+    优先用 Windows 命名互斥体：旧实现按「进程名」判断，复制一份 exe 再运行就
+    绕过去了，改名运行又会误判。互斥体随进程结束自动释放，崩溃了也不会残留。
+
+    两个坑：
+      * 互斥体错误码必须用 ctypes.get_last_error() 读（配 use_last_error=True）。
+        直接调 kernel32.GetLastError() 会被 ctypes 自己的内部调用覆盖，结果时对时错
+        —— 会把「首次启动」误判成「已在运行」，用户就起不来了。
+      * 同一进程里重复调用要直接返回 True（否则第二次调用会看到
+        ERROR_ALREADY_EXISTS，把自己当成另一个实例）。
+    """
+    global _single_instance_mutex
+
+    if _single_instance_mutex is not None:
+        return True
+
+    if os.name == "nt":
+        try:
+            import ctypes
+
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            handle = kernel32.CreateMutexW(None, False, "gf2gacha_XKL_single_instance")
+            last_error = ctypes.get_last_error()
+            if handle:
+                if last_error == 183:  # ERROR_ALREADY_EXISTS
+                    kernel32.CloseHandle(handle)
+                    return False
+                _single_instance_mutex = handle  # 保持引用，进程存活期间不释放
+                return True
+            print(f"[WARNING] 创建互斥体失败(last_error={last_error})，回退到进程名检查")
+        except Exception as e:
+            print(f"[WARNING] 互斥体单实例检查失败，回退到进程名检查: {e}")
+
     try:
         import psutil
         current_pid = os.getpid()
@@ -1276,11 +1688,12 @@ def check_single_instance():
         return True
 
 if __name__ == "__main__":
+    _init_logging()
+
     # 检查单实例
     if not check_single_instance():
         print("[ERROR] 程序已在运行，请勿重复打开！")
         import ctypes
-        import time
         # 显示错误提示
         ctypes.windll.user32.MessageBoxW(0, "程序已在运行，请勿重复打开！", "错误", 0)
         sys.exit(1)
