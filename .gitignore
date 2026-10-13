@@ -119,3 +119,12 @@ XKL_admin/dist/
 
 # .codebuddy 内部数据（非项目代码）
 .codebuddy/
+
+# 运行期产物（日志、捕获的请求）
+/logs/
+
+# 分享图标缓存
+/cache/
+
+# 发布产物（zip + version.json，上传到 R2 / GitHub Releases）
+/release/
