@@ -1,4 +1,4 @@
-"""
+r"""
 SSR 表解析模块 - 从游戏本地 .bytes 文件(protobuf) 解析 SSR 数据
 完全复刻 Matcha 项目 (D:\myproject\gf2gacha_Matcha\matcha\gf2gacha) preload/init.go 的逻辑
 
@@ -26,6 +26,38 @@ def _ensure_pb_imports():
     _pb_path = str(_pb_dir)
     if _pb_path not in sys.path:
         sys.path.insert(0, _pb_path)
+
+
+def _tolerate_protobuf_version_mismatch():
+    """把 protobuf 的「生成版本 > 运行期版本」校验降级成警告
+
+    仓库里的 *_pb2.py 是用较新的 protoc 生成的（例如 Protobuf Python 7.35.1），
+    而运行环境可能装着更旧的 protobuf 运行期（例如 6.33.6）。这种情况下
+    import 阶段就会抛 VersionError，整条本地解析链路直接失败、静默降级到
+    内置 json，用户只看到「可能不是最新」的黄色提示，非常难查。
+
+    本项目的 .proto 都是最简单的 message 定义（id/content 之类的基本字段），
+    旧运行期完全可以正确解析，所以这里只报警告，不让它整条链路失败。
+    """
+    try:
+        from google.protobuf import runtime_version as _runtime_version
+    except Exception as exc:  # 更老的 protobuf 没有这个模块，同样不需要校验
+        print(f"[SSR-Proto] 当前 protobuf 无 runtime_version 模块，跳过版本校验 ({exc})")
+        return
+
+    if getattr(_runtime_version, "_xkl_lenient", False):
+        return
+
+    _original = _runtime_version.ValidateProtobufRuntimeVersion
+
+    def _lenient_validate(*args, **kwargs):
+        try:
+            return _original(*args, **kwargs)
+        except Exception as exc:
+            print(f"[SSR-Proto] 跳过 protobuf 版本校验（运行期比生成版本旧）: {exc}")
+
+    _runtime_version.ValidateProtobufRuntimeVersion = _lenient_validate
+    _runtime_version._xkl_lenient = True
 
 
 # ============================================================
@@ -107,6 +139,7 @@ class SSRTabler:
     def load_all(self, table_dir: str):
         """加载4个核心表，构建所有映射"""
         _ensure_pb_imports()
+        _tolerate_protobuf_version_mismatch()
 
         import LangPackageTableCnData_pb2 as LangPb
         import ItemData_pb2 as ItemPb

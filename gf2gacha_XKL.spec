@@ -35,6 +35,9 @@ a_main = Analysis(
     hiddenimports=[
         'clr',
         'pythonnet',
+        'backend.capture',
+        'backend.applog',
+        'backend.icon_cache',
         'webview.platforms.winforms',
         'clr_loader',
         'google.protobuf',
