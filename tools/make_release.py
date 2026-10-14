@@ -9,26 +9,40 @@ sha256，所有用户的自动更新都会失败；手工算 hash 又容易出�
     python tools/make_release.py --version 1.1.5
     python tools/make_release.py --version 1.1.5 --notes "新增分享多选；修复日志噪声"
 
+    # 安卓端（固定文件名，客户端「检查更新」按这个约定读）
+    python tools/make_release.py --android --version 0.1.1 --notes "修了 xxx"
+
 默认：
     源目录   dist/gf2gacha_XKL        （PyInstaller 的 COLLECT 输出）
     输出目录 release/                 （把这两个文件传到 R2 即可）
 
-产出：
+产出（PC）：
     release/gf2gacha_XKL.zip          发布包（内部顶层目录为 gf2gacha_XKL/）
     release/version.json              客户端"检查更新"读的文件，含 sha256 / size
 
-上传顺序很重要：**先传 zip，最后传 version.json**。
-否则用户在 zip 还没上传完时就会读到新版本号，下载 404 / 校验失败。
+产出（安卓，--android）：
+    release/gf2gacha_XKL_android.apk        固定文件名，对应的下载地址就是它
+    release/version_android.json            安卓端"检查更新"读的文件，含 sha256 / size
+
+上传顺序很重要：**先传包（zip / apk），最后传 json**。
+否则用户在包还没上传完时就会读到新版本号，下载 404 / 校验失败。
 """
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import sys
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# ---- 安卓端约定（客户端 UpdateChecker 里写死的地址，改这里也要改那里）
+ANDROID_VERSION_URL = "https://r2.gf2gacha-xkl.uk/version_android.json"
+ANDROID_APK_URL = "https://r2.gf2gacha-xkl.uk/gf2gacha_XKL_android.apk"
+ANDROID_APK_NAME = "gf2gacha_XKL_android.apk"
+ANDROID_GRADLE = ROOT / "XKL_android" / "app" / "build.gradle.kts"
 
 
 def fail(msg: str):
@@ -37,7 +51,7 @@ def fail(msg: str):
 
 
 def relocate_updater(source: Path):
-    """确保 updater.exe 在包顶层
+    r"""确保 updater.exe 在包顶层
 
     更新器必须放在被替换的目录之外（也就是包顶层），否则它自己就锁着
     _internal，没法原子替换这个目录。不同 PyInstaller 版本放置位置不同：
@@ -117,13 +131,78 @@ def make_zip(source: Path, zip_path: Path) -> tuple[int, str]:
     return size, digest.hexdigest()
 
 
+def _sha256_of(path: Path) -> tuple[int, str]:
+    digest = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return path.stat().st_size, digest.hexdigest()
+
+
+def build_android(args) -> None:
+    """安卓发布：APK 拷成固定名 + 生成 version_android.json"""
+    apk = Path(args.apk)
+    if not apk.is_file():
+        fail(f"找不到 APK: {apk}\n       先在 XKL_android 目录里执行 gradle assembleRelease")
+
+    built_version = None
+    if ANDROID_GRADLE.is_file():
+        m = re.search(r'versionName\s*=\s*"([^"]+)"', ANDROID_GRADLE.read_text(encoding="utf-8"))
+        built_version = m.group(1) if m else None
+    if built_version and built_version != args.version:
+        fail(f"APK 里的版本号是 {built_version}，但命令行传的是 {args.version}"
+             f"（先改 XKL_android/app/build.gradle.kts 再重新构建）")
+
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    print("[1/2] 拷贝 APK 成固定文件名 ...")
+    dest = out_dir / ANDROID_APK_NAME
+    shutil.copy2(str(apk), str(dest))
+    size, sha256 = _sha256_of(dest)
+    print(f"[OK] {dest}  ({size / 1024 / 1024:.2f} MB, versionName {built_version or '?'})")
+
+    print("[2/2] 生成 version_android.json ...")
+    remote = {
+        "current_version": args.version,
+        "version_url": ANDROID_VERSION_URL,
+        "download_url": ANDROID_APK_URL,
+        "sha256": sha256,
+        "size": size,
+    }
+    if args.notes:
+        remote["update_info"] = args.notes
+    json_path = out_dir / "version_android.json"
+    json_path.write_text(json.dumps(remote, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print("\n完成，待上传文件（传到 R2 根目录）：")
+    print(f"  {dest}")
+    print(f"      -> {ANDROID_APK_URL}")
+    print(f"  {json_path}")
+    print(f"      -> {ANDROID_VERSION_URL}")
+    print(f"\n  sha256 = {sha256}")
+    print(f"  size   = {size} 字节")
+    print("\n上传顺序：先传 apk，最后传 version_android.json"
+          "（否则用户在 apk 还没传完时就会读到新版本号，下载 404 / 校验失败）")
+
+
 def main():
     parser = argparse.ArgumentParser(description="gf2gacha_XKL 发布助手")
     parser.add_argument("--version", required=True, help="要发布的版本号，例如 1.1.5")
     parser.add_argument("--dist", default=str(ROOT / "dist" / "gf2gacha_XKL"), help="构建产物目录")
     parser.add_argument("--out", default=str(ROOT / "release"), help="输出目录")
-    parser.add_argument("--notes", default="", help="更新说明（会写进 version.json 的 update_info，客户端弹窗里展示）")
+    parser.add_argument("--notes", default="", help="更新说明（会写进 json 的 update_info，客户端弹窗里展示）")
+    parser.add_argument("--android", action="store_true", help="发布安卓端（APK 固定名 + version_android.json）")
+    parser.add_argument(
+        "--apk",
+        default=str(ROOT / "XKL_android" / "app" / "build" / "outputs" / "apk" / "release" / "app-release.apk"),
+        help="安卓构建产物路径",
+    )
     args = parser.parse_args()
+
+    if args.android:
+        build_android(args)
+        return
 
     source = Path(args.dist)
     if not source.is_dir():

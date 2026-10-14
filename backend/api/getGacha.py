@@ -88,21 +88,18 @@ def set_gacha_Banner(id, json_path=None):
     return save_capture(base_request, source="set_gacha_Banner").get("saved", False)
 
 
+# 每页条数：官方接口默认只给 6 条，实测 limit 最大有效值 20。
+# 加上它，五池并发拉取的总耗时从 ~12s 降到 ~3s。
+PAGE_SIZE = "20"
+
+
 def _set_gacha_banner_dict(request_data, pool_type_id):
     """设置抽卡池类型（内存版本）"""
-    request_data.setdefault("body", {})["type_id"] = pool_type_id
-    request_data["body"].pop("next", None)
+    body = request_data.setdefault("body", {})
+    body["type_id"] = pool_type_id
+    body["limit"] = PAGE_SIZE
+    body.pop("next", None)
     return request_data
-
-
-def _content_length(body: dict) -> int:
-    """按 x-www-form-urlencoded 重算 Content-Length
-
-    改了 type_id / next 之后长度一定变，沿用游戏原值会被服务器判为坏请求。
-    """
-    if "next" in body:
-        return len(f"next={body['next']}&type_id={body['type_id']}")
-    return len(f"type_id={body['type_id']}")
 
 
 async def _request_page_async(request_data, session) -> dict:
@@ -110,7 +107,8 @@ async def _request_page_async(request_data, session) -> dict:
     body = request_data.setdefault("body", {})
     params = request_data.get("params") or {}
     headers = dict(request_data.get("headers") or {})
-    headers["Content-Length"] = str(_content_length(body))
+    # 说明：Content-Length 交给 aiohttp 按真实表单体计算（手算版本在加了 limit 后会算错）
+    headers.pop("Content-Length", None)
 
     try:
         async with session.post(
@@ -141,7 +139,9 @@ async def _request_page_async(request_data, session) -> dict:
 
     code = payload.get("code")
     if code != 0:
-        return {"ok": False, "error": _error("api", f"接口返回 code={code}：{payload.get('msg') or '无描述'}", status=status, code=code)}
+        # 注意：接口的真实字段是 message，msg 只是某些接口的别名（原来只读 msg，导致错误全变成"无描述"）
+        detail = payload.get("msg") or payload.get("message") or "无描述"
+        return {"ok": False, "error": _error("api", f"接口返回 code={code}：{detail}", status=status, code=code)}
 
     data = payload.get("data")
     if not isinstance(data, dict) or "next" not in data:

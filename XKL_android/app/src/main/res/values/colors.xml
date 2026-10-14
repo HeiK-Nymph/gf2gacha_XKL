@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#0E0E11</color>
+    <color name="card">#17171C</color>
+    <color name="card_stroke">#2A2A32</color>
+    <color name="pill">#23232B</color>
+    <color name="gold">#E8C170</color>
+    <color name="gold_bright">#FFD98A</color>
+    <color name="text">#F2F2F5</color>
+    <color name="text_dim">#8E8E99</color>
+
+    <!-- 彩条：深底 + 同色系浅条（照例图标定；红/绿取自例图实测 #C00000/#C24146、#00B050/#92D050） -->
+    <color name="bar_green">#00B050</color>
+    <color name="bar_green_light">#92D050</color>
+    <color name="bar_yellow">#FFC000</color>
+    <color name="bar_yellow_light">#FFD966</color>
+    <color name="bar_red">#C00000</color>
+    <color name="bar_red_light">#C24146</color>
+    <color name="bar_gold">#D9A93C</color>
+    <color name="bar_gold_light">#EFC964</color>
+    <!-- 抽数文字用亮色（彩条是深色，数字在黑底上要亮才看得清；档位语义不变） -->
+    <color name="bar_green_text">#5FD97F</color>
+    <color name="bar_yellow_text">#FFD166</color>
+    <color name="bar_red_text">#FF8078</color>
+    <color name="bar_track">#232329</color>
+    <color name="wai_tag">#D05A4A</color>
+</resources>

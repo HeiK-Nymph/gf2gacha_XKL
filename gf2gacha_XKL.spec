@@ -51,7 +51,16 @@ a_main = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    # 主程序曾经是空的 → conda 环境里的 numpy(26MB)/jedi(12MB)/IPython 全被打进包里，
+    # 包从 42MB 涨到 77MB。这里排掉明显无关的；
+    # 注意：webview / pythonnet / clr / mitmproxy / OpenSSL / cryptography / PIL 是本程序要用的，不能排。
+    excludes=[
+        'numpy', 'pandas', 'scipy', 'matplotlib', 'pygame',
+        'jedi', 'IPython', 'ipykernel', 'ipython_genutils',
+        'tkinter', 'PyQt5', 'PyQt6', 'PySide2', 'PySide6', 'wx',
+        'pip', 'wheel', 'pytest', 'nose', 'sphinx', 'docutils',
+        'sqlalchemy', 'bs4', 'lxml', 'notebook', 'jupyter',
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,

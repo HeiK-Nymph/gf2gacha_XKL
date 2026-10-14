@@ -15,7 +15,7 @@ class GfUserMapperTest {
     @Test
     void testGetGfUserByUid() {
         // 测试获取存在的用户
-        Integer testUid = 3898920;
+        Integer testUid = 1000000;   // 换成你自己的 uid 再跑
         GfUser user = gfUserMapper.getGfUserByUid(testUid);
         if (user != null) {
             System.out.println("找到用户:");

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.XKL" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <!-- 系统栏颜色跟着 App 深色底走，否则底部会露出一条系统默认的白条 -->
+        <item name="android:statusBarColor">@color/bg</item>
+        <!-- false = 在深色栏上画亮色图标/手势条（windowLightNavigationBar 需要 API 27+，低版本自动忽略） -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="colorPrimary">@color/gold</item>
+        <item name="colorPrimaryDark">@color/bg</item>
+        <item name="colorAccent">@color/gold</item>
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/text</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColorSecondary">@color/text_dim</item>
+        <item name="android:textColorHint">@color/text_dim</item>
+        <!-- 弹窗统一用暗金卡片风（与抽卡页一致） -->
+        <item name="materialAlertDialogTheme">@style/Theme.XKL.Dialog</item>
+        <item name="alertDialogTheme">@style/Theme.XKL.Dialog</item>
+        <item name="android:alertDialogTheme">@style/Theme.XKL.Dialog</item>
+    </style>
+
+    <style name="Theme.XKL.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/text</item>
+        <item name="colorPrimary">@color/gold</item>
+        <item name="android:textColorPrimary">@color/text</item>
+        <item name="android:textColorSecondary">@color/text_dim</item>
+        <item name="android:textColorAlertDialogListItem">@color/text</item>
+        <item name="shapeAppearanceOverlay">@style/Shape.XKL.Dialog</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/XklDialogTitle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/XklDialogBody</item>
+    </style>
+
+    <style name="Shape.XKL.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">14dp</item>
+    </style>
+
+    <style name="XklDialogTitle" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/gold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="XklDialogBody" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <style name="XklButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_btn</item>
+        <item name="android:textColor">@color/gold</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
+</resources>

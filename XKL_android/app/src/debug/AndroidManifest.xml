@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 只有调试包允许明文 HTTP：自测更新链路时用 adb reverse 把手机 127.0.0.1:8000 转到电脑。
+         发布包（release）保持 usesCleartextTraffic=false 不变。 -->
+    <application
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic" />
+</manifest>

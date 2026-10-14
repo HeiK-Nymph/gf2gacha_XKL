@@ -16,7 +16,7 @@ class GfGachaSsrRecordMapperTest {
 
     @Test
     void testGetGachaItemVOListByUid() {
-        Integer testUid = 3898920;
+        Integer testUid = 1000000;   // 换成你自己的 uid 再跑
         List<GachaItemVO> items = gfGachaSsrRecordMapper.getGachaItemVOListByUid(testUid);
 
         System.out.println("查询结果:");

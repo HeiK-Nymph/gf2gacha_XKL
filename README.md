@@ -1,8 +1,20 @@
 # 少女前线抽卡记录工具
 
-一个用于获取和管理《少女前线2追放》抽卡记录的桌面应用。
+《少女前线2：追放》抽卡记录工具，**两个客户端任选**：
 
-## 📖 使用教程
+| 客户端 | 下载文件 | 需要什么 | 怎么拿记录 |
+|---|---|---|---|
+| **PC 版（Windows）** | `gf2gacha_XKL.zip` | 电脑 + 装一次 mitmproxy 证书 | 内置代理抓一次游戏请求，之后重放 |
+| **安卓版 0.1.0（新）** | `gf2gacha_XKL_android.apk` | **只要手机** | 手机号 + 短信验证码登录后直接查（不用电脑 / root / 证书 / VPN） |
+
+下载：**[GitHub Releases](https://github.com/HeiK-Nymph/gf2gacha_XKL/releases)**
+· R2 直链：[PC 版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL.zip) / [安卓版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL_android.apk)
+
+两个客户端都自带「检查更新」（PC 读 `version.json`、安卓读 `version_android.json`，都是先校验 sha256 再安装）。
+
+---
+
+## 📖 PC 版使用教程
 
 [点击观看详细视频教程](https://www.bilibili.com/video/BV1oaz2BsEPo/)
 
@@ -58,6 +70,39 @@
 - 点击「检查更新」按钮可查看是否有新版本
 - 如有更新，可跳转到 GitHub 下载
 
+## 📱 安卓版 0.1.0
+
+**只要一台安卓手机**：不需要电脑、不需要 root、不需要装证书、不需要 VPN，也不用账号密码。
+
+1. 装 `gf2gacha_XKL_android.apk`（首次会提示「未知来源」，允许即可）
+2. 打开 App → `添加账号` → 填手机号 → 收短信验证码 → `登录并查询`
+   （短信由你自己收、自己输；**手机号、令牌、抽卡记录全部只存在本机**，不上传任何服务器）
+3. 之后直接进抽卡页：`管理账号` 可多账号切换/删除；`刷新` 在令牌失效时会自动重发验证码让你续期
+4. `分享` 出竖版长图，可直接发微信 / QQ / 存相册；标题右边的 `检查更新` 用来更新版本
+
+- 源码与实现说明：[`XKL_android/README.md`](XKL_android/README.md)
+- 接口协议（登录、签名、分页，逆向自官方客户端）：[`GF2_SMS_LOGIN_PROTOCOL.md`](GF2_SMS_LOGIN_PROTOCOL.md)
+- 已知限制：令牌是**单会话**的 —— 同一账号在游戏内或别处再登录一次，旧令牌立刻作废，App 会提示重新收码（记录不会丢）；
+  官方记录接口只保留一段时间的记录，所以本地记录**只增不减**（按 fakeId 合并，和 PC 版同一套算法）。
+
+## 🔄 版本与更新
+
+| 客户端 | 本地版本 | 远端检查地址 | 安装包 |
+|---|---|---|---|
+| PC | `version.json`（随包分发） | `https://r2.gf2gacha-xkl.uk/version.json` | `gf2gacha_XKL.zip` |
+| 安卓 | 读 APK 的 `versionName` | `https://r2.gf2gacha-xkl.uk/version_android.json` | `gf2gacha_XKL_android.apk`（固定文件名） |
+
+发版用发布助手一条命令搞定（自动算 sha256 / size，避免手工算错）：
+
+```powershell
+# PC 版
+python tools\make_release.py --version 1.1.6 --notes "这次改了什么"
+# 安卓版（先改 XKL_android/app/build.gradle.kts 的 versionCode/versionName 并 assembleRelease）
+python tools\make_release.py --android --version 0.1.0 --notes "这次改了什么"
+```
+
+**上传顺序：先传包（zip / apk），最后传 json** —— 反了会让用户读到新版本号却下不到包。
+
 ## ⚠️ 注意事项
 
 1. **程序单实例运行**：不要重复打开程序，否则可能导致代理冲突
@@ -67,6 +112,7 @@
 
 3. **网络要求**：
    - 需要保持网络连接
+   - 安卓版同理；它自带「检查更新」，更新包会先校验 sha256 再交给系统安装器
 
 4. **记录管理**：
    - 导出记录会合并已存在的同 ID 记录
@@ -90,6 +136,12 @@ A: 内置代理没起来（端口被占用或被杀软拦截）。先看 `logs/a
 
 **Q: 重复打开程序会怎样？**
 A: 程序会提示已运行并自动退出，这是正常行为。
+
+**Q: 安卓版要装证书或者开 VPN 吗？**
+A: 都不要。安卓版是模拟官方客户端的「手机号 + 短信验证码」登录去调官方接口，不走抓包，所以不需要代理和证书。
+
+**Q: 安卓版提示令牌失效 / 要重新收验证码？**
+A: 令牌是单会话的：同一账号在游戏内或别处登录过，旧令牌立刻作废。按提示重新收码即可，本地记录不会丢。
 
 ## 📞 反馈与支持
 

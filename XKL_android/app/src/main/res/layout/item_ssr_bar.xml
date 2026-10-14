@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
+
+    <ImageView
+        android:id="@+id/ssr_avatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_avatar"
+        android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/ssr_avatar_text"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_avatar"
+        android:gravity="center"
+        android:textColor="@color/text_dim"
+        android:textSize="10sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/ssr_cost"
+        android:layout_width="44dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="22dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/ssr_bar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <View
+            android:id="@+id/ssr_bar_rest"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0" />
+    </LinearLayout>
+
+    <!-- 歪标签：固定 26dp 槽位（不歪时用 invisible 占位），保证彩条长度只由抽数决定 -->
+    <TextView
+        android:id="@+id/ssr_wai"
+        android:layout_width="26dp"
+        android:layout_height="18dp"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/bg_wai"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="@string/records_wai"
+        android:textColor="@color/text"
+        android:textSize="10sp"
+        android:visibility="invisible" />
+
+    <!-- 名字：固定 68dp 槽位（够放 5 个汉字），同样保证彩条长度恒定 -->
+    <TextView
+        android:id="@+id/ssr_name"
+        android:layout_width="68dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/gold"
+        android:textSize="12sp" />
+</LinearLayout>

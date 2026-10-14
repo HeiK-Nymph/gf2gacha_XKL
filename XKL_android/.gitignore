@@ -1,0 +1,17 @@
+.runtime/
+__pycache__/
+*.pyc
+local.properties
+.gradle/
+build/
+app/build/
+captures/
+*.apk
+*.iml
+.idea/
+docs/capture_kit/flows/
+docs/capture_kit/hosts.txt
+docs/capture_kit/*_out.txt
+docs/capture_kit/*_err.txt
+keystore.properties
+keystore/

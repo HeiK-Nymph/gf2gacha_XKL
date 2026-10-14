@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path
+        name="share"
+        path="share/" />
+    <!-- 下载好的新版本 APK 放在 cache/update/，要交给系统安装器读 -->
+    <cache-path
+        name="update"
+        path="update/" />
+</paths>

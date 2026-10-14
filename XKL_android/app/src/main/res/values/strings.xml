@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">追放夏克里工具</string>
+    <string name="login_title_add">添加账号</string>
+    <string name="login_hint">用绑定游戏的手机号收短信验证码登录。手机号只用于发码与登录，不上传自建服务器；令牌与记录都只存本机。</string>
+    <string name="login_phone_hint">手机号</string>
+    <string name="login_send_code">发送验证码</string>
+    <string name="login_code_hint">6 位短信验证码</string>
+    <string name="login_submit">登录并查询</string>
+    <string name="login_cancel">取消</string>
+    <string name="main_total">总抽卡数</string>
+    <string name="main_average">平均出金</string>
+    <string name="main_not_wai">小保不歪</string>
+    <string name="main_add_account">添加账号</string>
+    <string name="main_pick_account">管理账号</string>
+    <string name="main_refresh">刷新</string>
+    <string name="main_check_update">检查更新</string>
+    <string name="main_footer">数据来自官方接口 · 令牌与记录仅存本机</string>
+    <string name="records_wai">歪</string>
+    <string name="account_delete">删除</string>
+    <string name="main_share">分享</string>
+    <string name="share_pick_title">选择要分享的卡池</string>
+    <string name="share_generate">生成分享图</string>
+    <string name="share_done_title">分享图已生成</string>
+    <string name="share_wechat">分享到微信</string>
+    <string name="share_qq">分享到 QQ</string>
+    <string name="share_save">保存图片</string>
+    <string name="share_more">更多分享</string>
+    <string name="share_no_records">（无记录）</string>
+</resources>
