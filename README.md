@@ -10,6 +10,9 @@
 下载：**[GitHub Releases](https://github.com/HeiK-Nymph/gf2gacha_XKL/releases)**
 · R2 直链：[PC 版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL.zip) / [安卓版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL_android.apk)
 
+官网落地页（夏克里助手，PC / 安卓 R2 下载 + 使用说明）：<https://heik-nymph.github.io/gf2gacha_XKL/>
+· 源码在 `XKL_site/`，push 到 `main` 会由 `.github/workflows/pages.yml` 自动发布，本地 `npm run dev` 预览。
+
 两个客户端都自带「检查更新」（PC 读 `version.json`、安卓读 `version_android.json`，都是先校验 sha256 再安装）。
 
 ---

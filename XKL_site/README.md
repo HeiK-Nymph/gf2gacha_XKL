@@ -22,6 +22,23 @@ npm run build    # 产物在 dist/，纯静态，可直接丢到任意托管 / C
 ```
 
 `base` 是 `./`，所有资源用相对路径，放到子目录（例如 `https://example.com/gf2/`）也能正常显示。
+构建产物是扁平的（`assetsDir: ''`），`index.html` 旁边直接放 js/css，方便整包拖到任意托管。
+
+## 线上部署
+
+项目站点：**https://heik-nymph.github.io/gf2gacha_XKL/**
+
+`.github/workflows/pages.yml` 会在 `XKL_site/**` 有推送时自动构建并发布到 GitHub Pages
+（`workflow_dispatch` 也能手动触发）。本地不用构建、也不用提交产物，push 到 `main` 等两分钟即可。
+
+发版流程：
+
+```powershell
+git add XKL_site && git commit -m "feat(site): 改了什么" && git push
+```
+
+Pages 的 `Source` 已经设成 **GitHub Actions**；首次启用必须去仓库 Settings → Pages 手动选一次，
+工作流里的 `configure-pages ... enablement: true` 在权限不足时无法代替这一步。
 
 ## 下载信息从哪来
 
