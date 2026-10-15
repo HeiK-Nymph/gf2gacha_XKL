@@ -63,7 +63,7 @@ onBeforeUnmount(() => {
     <div class="header-inner shell">
       <a class="brand" href="#home" aria-label="回到首页">
         <img class="brand-mark" :src="assetUrl('favicon.png')" alt="" width="32" height="32" />
-        <span class="brand-text">夏克里助手<span class="brand-dot">.</span></span>
+        <span class="brand-text">夏克里助手</span>
       </a>
 
       <nav class="nav" aria-label="主导航">
@@ -158,10 +158,6 @@ onBeforeUnmount(() => {
   font-weight: 800;
   letter-spacing: -0.01em;
   white-space: nowrap;
-}
-
-.brand-dot {
-  color: var(--accent);
 }
 
 .nav {

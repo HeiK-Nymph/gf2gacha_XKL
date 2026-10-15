@@ -19,7 +19,7 @@ const year = new Date().getFullYear()
     <div class="shell">
       <div class="footer-top">
         <div class="footer-brand">
-          <a class="footer-name" href="#home">夏克里助手<span>.</span></a>
+          <a class="footer-name" href="#home">夏克里助手</a>
           <p>记录每次招募，留住每一份运气。</p>
         </div>
         <nav class="footer-nav" aria-label="页脚导航">
@@ -58,10 +58,6 @@ const year = new Date().getFullYear()
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.01em;
-}
-
-.footer-name span {
-  color: var(--accent);
 }
 
 .footer-brand p {
