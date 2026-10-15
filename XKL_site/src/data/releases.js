@@ -6,7 +6,7 @@ export const GUIDE_URL = 'https://www.bilibili.com/video/BV1oaz2BsEPo/'
 
 /**
  * 两个平台的发布信息。
- * version / size / sha256 / notes 是 R2 读不到时的兜底值，
+ * version / size / sha256 是 R2 读不到时的兜底值，
  * 页面加载后会尝试用远端 version.json 覆盖。
  */
 export const platforms = [
@@ -22,7 +22,6 @@ export const platforms = [
     version: '1.1.6',
     size: 62019006,
     sha256: 'ee2fd701d4b0cc5b07804d51afe103e3752d6a9f7bfcd4124413563f4cd31d6d',
-    notes: '抽卡记录拉取提速约 4.8 倍（接口 limit=20 + 五池并发）；修复接口报错只显示「无描述」的问题。',
     summary: '内置代理抓一次游戏请求，之后反复重放。五个池子一起统计。',
     requirements: ['系统：Windows 10 / 11', '首次需装一次 mitmproxy 证书', '进一次「招募 · 访问详情」完成捕获'],
     steps: [
@@ -43,7 +42,6 @@ export const platforms = [
     version: '0.1.0',
     size: 5297387,
     sha256: 'bb5c7e0f4da19ae6362e9a27e40f076c594c5bf4a8665218aeb92a898a00eecc',
-    notes: '首个公开版本：手机号 + 短信验证码登录，五池并发拉取后按 fakeId 合并，暗金界面、分享长图、检查更新。',
     summary: '只要一部安卓手机：不用电脑、不用 root、不用证书、不用 VPN。',
     requirements: ['系统：Android 7.0 及以上', '手机号 + 短信验证码登录', '无需 root / 证书 / VPN'],
     steps: [

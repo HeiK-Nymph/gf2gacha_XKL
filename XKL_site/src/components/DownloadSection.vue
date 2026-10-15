@@ -113,8 +113,6 @@ async function copy(value, key) {
               <span>{{ req }}</span>
             </li>
           </ul>
-
-          <p class="dl-notes"><span class="dl-notes-label">本次更新</span>{{ item.notes }}</p>
         </article>
       </div>
 
@@ -341,23 +339,6 @@ async function copy(value, key) {
   flex-shrink: 0;
   margin-top: 3px;
   color: var(--card-accent);
-}
-
-.dl-notes {
-  display: flex;
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 14px;
-  border-top: 1px dashed var(--stroke);
-  color: var(--text-faint);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.dl-notes-label {
-  flex-shrink: 0;
-  color: var(--text-dim);
-  font-weight: 600;
 }
 
 .dl-foot {

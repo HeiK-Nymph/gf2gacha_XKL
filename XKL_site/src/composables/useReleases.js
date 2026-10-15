@@ -30,7 +30,6 @@ function merge(platform, remote) {
     version: remote.current_version || platform.version,
     size: Number.isFinite(remote.size) ? remote.size : platform.size,
     sha256: remote.sha256 || platform.sha256,
-    notes: remote.update_info || platform.notes,
     live: true,
   }
 }
