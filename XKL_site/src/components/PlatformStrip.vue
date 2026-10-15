@@ -24,7 +24,7 @@ function pick(id) {
           v-for="item in platforms"
           :key="item.id"
           class="strip-link"
-          href="#download"
+          :href="`#dl-${item.id}`"
           @click="pick(item.id)"
         >
           <component :is="iconMap[item.icon]" :size="18" :stroke-width="2" />
@@ -111,6 +111,12 @@ function pick(id) {
 
   .strip-system {
     display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .strip-link {
+    min-height: 44px;
   }
 }
 </style>

@@ -15,7 +15,7 @@ import { assetUrl } from '@/utils/asset'
           <span class="accent-word">看得明明白白。</span>
         </h1>
         <p class="lead hero-lead">
-          从口袋里的手机，到桌面上的电脑。<br />
+          从口袋里的手机，到桌面上的电脑。<br class="lead-break" />
           五个池子的抽数、保底与出金，一次算清。
         </p>
         <div class="hero-actions">
@@ -84,6 +84,7 @@ import { assetUrl } from '@/utils/asset'
 
 .hero-lead {
   max-width: 44ch;
+  text-wrap: pretty;
 }
 
 .hero-actions {
@@ -206,11 +207,52 @@ import { assetUrl } from '@/utils/asset'
 @media (max-width: 700px) {
   .hero-art {
     max-width: none;
-    padding: 14px;
+    padding: 12px;
+    gap: 10px;
   }
 
   .hero-actions .btn {
     flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero-copy {
+    gap: 12px;
+  }
+
+  .hero-lead {
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  /* 窄屏不再强制换行，避免断出孤字 */
+  .lead-break {
+    display: none;
+  }
+
+  .hero-actions {
+    gap: 10px;
+  }
+
+  .hero-actions .btn {
+    min-height: 48px;
+    padding: 0 18px;
+  }
+
+  .hero-meta {
+    gap: 6px 16px;
+    font-size: 12.5px;
+  }
+
+  .mascot {
+    aspect-ratio: 5 / 4;
+    max-height: 260px;
+    object-position: center 32%;
+  }
+
+  .art-bottom {
+    font-size: 13px;
   }
 }
 </style>

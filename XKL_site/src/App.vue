@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 import DownloadSection from '@/components/DownloadSection.vue'
 import FeatureGrid from '@/components/FeatureGrid.vue'
@@ -37,7 +37,29 @@ function focusPlatform(id) {
   window.clearTimeout(highlightTimer)
   highlightTimer = window.setTimeout(() => {
     highlight.value = ''
-  }, 2400)
+  }, 3000)
+}
+
+/**
+ * 页内锚点统一自己接管滚动。
+ * 浏览器原生行为有个坑：hash 已经是同一个值时再点不会滚动
+ * （「下载工具」和平台条「手机版」都指向 #download），
+ * 而且平台条需要落到具体那张卡片，而不是区块顶部。
+ */
+function onPageClick(event) {
+  if (event.defaultPrevented || event.button !== 0) return
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+  const link = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null
+  if (!link) return
+  const hash = link.getAttribute('href') || ''
+  if (hash.length < 2) return
+  const target = document.getElementById(decodeURIComponent(hash.slice(1)))
+  if (!target) return
+
+  event.preventDefault()
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+  window.history.replaceState(null, '', hash)
 }
 
 onMounted(() => {
@@ -49,6 +71,11 @@ onMounted(() => {
   }
   applyTheme(saved === 'light' ? 'light' : 'dark')
   loadReleases()
+  document.addEventListener('click', onPageClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onPageClick)
 })
 </script>
 

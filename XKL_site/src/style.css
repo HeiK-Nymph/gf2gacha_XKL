@@ -74,6 +74,7 @@ body {
   font-size: 16px;
   line-height: 1.6;
   letter-spacing: 0;
+  -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
 }
@@ -278,13 +279,46 @@ button {
   }
 }
 
-@media (max-width: 700px) {
+/* 与底部标签栏同一个断点，避免 701–760px 出现「有底栏但没触摸尺寸」的缝 */
+@media (max-width: 760px) {
   .section {
     padding: 52px 0;
   }
 
+  .section--hero {
+    padding-top: 16px;
+  }
+
   body {
-    padding-bottom: 76px; /* 给移动端底部导航留位 */
+    padding-bottom: 88px; /* 给移动端底部导航 + 安全区留位 */
+  }
+
+}
+
+/* 横屏手机：顶部胶囊导航更省纵向空间，不用底部标签栏 */
+@media (max-width: 760px) and (orientation: landscape) {
+  body {
+    padding-bottom: 0;
+  }
+}
+
+/* 触摸设备按 44px 起给命中区，跟屏幕宽度无关（横屏手机、平板都覆盖） */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 46px;
+  }
+
+  .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .chip {
+    min-height: 34px;
+  }
+
+  .nav-link {
+    min-height: 44px;
   }
 }
 

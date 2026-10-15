@@ -52,6 +52,7 @@ async function copy(value, key) {
         <article
           v-for="item in releases"
           :key="item.id"
+          :id="`dl-${item.id}`"
           class="dl-card"
           :class="[`dl-card--${item.accent}`, { 'is-highlight': highlight === item.id }]"
         >
@@ -160,6 +161,8 @@ async function copy(value, key) {
 }
 
 .dl-card {
+  /* 平台条直接落到卡片时，别被吸顶头部挡住 */
+  scroll-margin-top: calc(var(--header-h) + 16px);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -271,6 +274,7 @@ async function copy(value, key) {
 }
 
 .copy-inline {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -388,7 +392,7 @@ async function copy(value, key) {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .dl-card {
     padding: 20px;
   }
@@ -397,6 +401,28 @@ async function copy(value, key) {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+}
+
+@media (pointer: coarse) {
+  .dl-btn,
+  .dl-actions .icon-btn {
+    min-height: 48px;
+  }
+
+  .copy-inline {
+    padding: 6px 10px;
+  }
+
+  /* 视觉上保持小巧，触摸区域撑到 44px 高 */
+  .copy-inline::after {
+    content: '';
+    position: absolute;
+    inset: -6px -8px;
+  }
+
+  .dl-more {
+    min-height: 44px;
   }
 }
 </style>

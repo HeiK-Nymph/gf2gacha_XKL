@@ -75,7 +75,7 @@ const year = new Date().getFullYear()
 .footer-nav a {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   color: var(--text-dim);
   font-size: 14px;
 }
@@ -88,7 +88,7 @@ const year = new Date().getFullYear()
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--stroke);
   border-radius: var(--r-pill);
@@ -125,12 +125,29 @@ const year = new Date().getFullYear()
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .footer-bottom {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
     padding-bottom: 16px;
+  }
+}
+
+@media (pointer: coarse) {
+  .footer-name {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* 短标签加横向内边距，把触摸区域撑到 44px 以上 */
+  .footer-nav a {
+    padding: 0 10px;
+  }
+
+  .footer-repo {
+    min-height: 46px;
   }
 }
 </style>

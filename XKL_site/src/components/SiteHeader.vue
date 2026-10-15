@@ -313,4 +313,21 @@ onBeforeUnmount(() => {
     background: var(--accent-soft);
   }
 }
+
+/* 横屏手机：恢复顶部胶囊导航，避免 71px 的底部标签栏吃掉宝贵的纵向空间 */
+@media (max-width: 760px) and (orientation: landscape) {
+  .nav {
+    display: flex;
+  }
+
+  .mobile-nav {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .brand {
+    min-height: 44px;
+  }
+}
 </style>
