@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>夏克里助手 - 少女前线2：追放抽卡记录工具（电脑版 / 手机版下载）</title>
+    <meta
+      name="description"
+      content="夏克里助手是《少女前线2：追放》的抽卡记录工具，提供电脑版（Windows）与手机版（Android）安装包下载、版本更新与使用说明。"
+    />
+    <meta name="keywords" content="夏克里助手,少女前线2,追放,GF2,抽卡记录,抽卡统计,保底,下载" />
+    <meta name="theme-color" content="#0e0e11" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="夏克里助手" />
+    <meta property="og:title" content="夏克里助手 - 少女前线2：追放抽卡记录工具（电脑版 / 手机版下载）" />
+    <meta
+      property="og:description"
+      content="电脑版内置代理抓包，手机版只要一部安卓手机。五个池子的记录、保底与分享长图，都在这里。"
+    />
+    <meta property="og:image" content="./mascot.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <script>
+      try {
+        const saved = localStorage.getItem('xkl-theme')
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.setAttribute('data-theme', saved)
+        }
+      } catch (error) {}
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

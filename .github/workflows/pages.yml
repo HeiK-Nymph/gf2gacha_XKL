@@ -1,0 +1,62 @@
+# 构建 XKL_site（夏克里助手官网）并发布到 GitHub Pages 项目站点：
+# https://heik-nymph.github.io/gf2gacha_XKL/
+# 站点是纯静态的，构建不需要任何密钥或后端进程。
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'XKL_site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: XKL_site/package-lock.json
+
+      - name: Install dependencies
+        working-directory: XKL_site
+        run: npm ci
+
+      # 站点用 base: './'，资源全是相对路径，项目站点子路径可直接用
+      - name: Build static site
+        working-directory: XKL_site
+        run: npm run build
+
+      # enablement: true —— 首次运行由 workflow 自己把 Pages 打开，
+      # 省掉「去 Settings 把 Source 改成 GitHub Actions」这一步
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: XKL_site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
