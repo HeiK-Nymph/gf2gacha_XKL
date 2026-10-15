@@ -50,14 +50,21 @@ Pages 的 `Source` 已经设成 **GitHub Actions**；首次启用必须去仓库
 | 电脑版 | `https://r2.gf2gacha-xkl.uk/version.json` | `https://r2.gf2gacha-xkl.uk/gf2gacha_XKL.zip` |
 | 手机版 | `https://r2.gf2gacha-xkl.uk/version_android.json` | `https://r2.gf2gacha-xkl.uk/gf2gacha_XKL_android.apk` |
 
-目前 R2 没配 CORS，浏览器跨域读这两个 json 会被拦掉，页面会自动用内置的兜底值（浏览器控制台会
-看到两条 CORS 报错，属预期）。想让它自动跟随最新版本，给 R2 桶加一条 CORS 规则允许 `GET` 即可：
+R2 桶 `gf2gachaxkl` 已配好 CORS 策略，所以页面加载时会直接读到最新的版本号（页脚会显示
+「版本信息已从 R2 读取」）。当前规则：
 
 ```json
-[{ "AllowedOrigins": ["*"], "AllowedMethods": ["GET"], "AllowedHeaders": ["*"] }]
+[{
+  "AllowedOrigins": ["*"],
+  "AllowedMethods": ["GET", "HEAD"],
+  "AllowedHeaders": ["*"],
+  "ExposeHeaders": ["ETag", "Content-Length"],
+  "MaxAgeSeconds": 3600
+}]
 ```
 
-下载按钮是普通 `<a download>`，不需要 CORS，两种情况下都能正常下载。
+读到的只是版本 / 体积 / sha256 三个值；万一哪天读不到（桶被改、网络抖动），页面会自动退回
+`releases.js` 里的内置值，不会开天窗。下载按钮始终是普通 `<a download>`，本来就不依赖 CORS。
 
 ## 目录
 
