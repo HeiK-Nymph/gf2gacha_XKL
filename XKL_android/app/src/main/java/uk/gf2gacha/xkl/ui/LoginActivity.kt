@@ -1,6 +1,7 @@
 package uk.gf2gacha.xkl.ui
 
 import android.os.Bundle
+import android.view.View
 import android.os.CountDownTimer
 import android.widget.Button
 import android.widget.EditText
@@ -15,7 +16,10 @@ import uk.gf2gacha.xkl.data.Gf2Api
 import uk.gf2gacha.xkl.data.Gf2Exception
 
 /**
- * 添加账号：手机号 + 短信验证码登录。
+ * 添加账号：手机号 + 短信验证码登录（默认），也可切到账号密码登录。
+ *
+ * 密码登录是对"收不到短信"的兜底：密码只在本机算一次 MD5，用于官方 phone/login 接口，
+ * 不落盘、不上传，登录成功后立刻清空输入框。
  *
  * 登录成功只做两件事：把账号（uid/手机号/令牌）写进 AccountStore，然后关掉本页回主界面。
  * **不会碰其它账号的数据**；用户中途取消/失败，主界面状态原样保留。
@@ -27,7 +31,13 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var sendButton: Button
     private lateinit var loginButton: Button
     private lateinit var statusView: TextView
+    private lateinit var pwdInput: EditText
+    private lateinit var pwdNote: TextView
+    private lateinit var modeSwitch: TextView
     private var timer: CountDownTimer? = null
+
+    /** false = 短信验证码登录（默认）；true = 账号密码登录 */
+    private var pwdMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,10 +48,34 @@ class LoginActivity : AppCompatActivity() {
         sendButton = findViewById(R.id.send_button)
         loginButton = findViewById(R.id.login_button)
         statusView = findViewById(R.id.status_view)
+        pwdInput = findViewById(R.id.pwd_input)
+        pwdNote = findViewById(R.id.pwd_note)
+        modeSwitch = findViewById(R.id.mode_switch)
 
         sendButton.setOnClickListener { sendCode() }
         loginButton.setOnClickListener { login() }
         findViewById<Button>(R.id.cancel_button).setOnClickListener { finish() }
+        modeSwitch.setOnClickListener { switchMode(!pwdMode) }
+    }
+
+    /** 在「短信验证码」和「账号密码」两种登录方式之间切换 */
+    private fun switchMode(toPwd: Boolean) {
+        pwdMode = toPwd
+        sendButton.visibility = if (toPwd) View.GONE else View.VISIBLE
+        codeInput.visibility = if (toPwd) View.GONE else View.VISIBLE
+        pwdInput.visibility = if (toPwd) View.VISIBLE else View.GONE
+        pwdNote.visibility = if (toPwd) View.VISIBLE else View.GONE
+        // 密码模式下这个框填的是「账号」（还是手机号，但语义不同），短信模式下才叫「手机号」
+        phoneInput.hint = getString(
+            if (toPwd) R.string.login_account_hint else R.string.login_phone_hint
+        )
+        modeSwitch.text = getString(
+            if (toPwd) R.string.login_switch_to_sms else R.string.login_switch_to_pwd
+        )
+        loginButton.text = getString(
+            if (toPwd) R.string.login_submit_pwd else R.string.login_submit
+        )
+        setStatus("")
     }
 
     override fun onDestroy() {
@@ -70,11 +104,15 @@ class LoginActivity : AppCompatActivity() {
 
     private fun login() {
         val phone = phoneInput.text.toString().trim()
-        val code = codeInput.text.toString().trim()
         if (phone.length != 11 || !phone.all { it.isDigit() }) {
             toast("请输入 11 位手机号")
             return
         }
+        if (pwdMode) loginWithPassword(phone) else loginWithSms(phone)
+    }
+
+    private fun loginWithSms(phone: String) {
+        val code = codeInput.text.toString().trim()
         if (code.length != 6 || !code.all { it.isDigit() }) {
             toast("请输入 6 位验证码")
             return
@@ -84,15 +122,45 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val result = Gf2Api.smsLogin(this@LoginActivity, phone, code)
-                AccountStore(this@LoginActivity).upsert(result.uid, phone, result.accessToken)
-                toast("账号已添加：uid=" + result.uid)
-                finish()
+                onLoggedIn(result.uid, phone, result.accessToken)
             } catch (e: Exception) {
                 setStatus("登录失败：" + describe(e))
             } finally {
                 loginButton.isEnabled = true
             }
         }
+    }
+
+    /**
+     * 密码登录：明文密码只在这一次调用里存在，交给 Gf2Api 算完 MD5 后立刻清空输入框。
+     * 只做长度校验（官方客户端是 6–20 位、需含字母和数字），具体格式由服务器判定，
+     * 免得因为客户端校验过严把能用的密码挡在外面。
+     */
+    private fun loginWithPassword(phone: String) {
+        val pwd = pwdInput.text.toString()
+        if (pwd.length < 6 || pwd.length > 20) {
+            toast("密码长度应为 6–20 位")
+            return
+        }
+        loginButton.isEnabled = false
+        setStatus("正在登录…")
+        lifecycleScope.launch {
+            try {
+                val result = Gf2Api.passwordLogin(this@LoginActivity, phone, pwd)
+                pwdInput.setText("")
+                onLoggedIn(result.uid, phone, result.accessToken)
+            } catch (e: Exception) {
+                setStatus("登录失败：" + describe(e))
+            } finally {
+                loginButton.isEnabled = true
+            }
+        }
+    }
+
+    private fun onLoggedIn(uid: String, phone: String, accessToken: String) {
+        AccountStore(this@LoginActivity).upsert(uid, phone, accessToken)
+        toast("账号已添加：uid=" + uid)
+        finish()
     }
 
     private fun startCountdown() {

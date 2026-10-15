@@ -1581,7 +1581,7 @@ class GachaApp:
         
         # 创建窗口
         self.window = webview.create_window(
-            title="少前2抽卡记录工具_XKL",
+            title="夏克里助手",
             url=url,
             width=1200,
             height=800,

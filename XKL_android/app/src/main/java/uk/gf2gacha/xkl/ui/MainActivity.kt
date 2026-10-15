@@ -903,7 +903,7 @@ class MainActivity : AppCompatActivity() {
                     put(MediaStore.Images.Media.MIME_TYPE, "image/png")
                     put(
                         MediaStore.Images.Media.RELATIVE_PATH,
-                        Environment.DIRECTORY_PICTURES + "/追放夏克里工具"
+                        Environment.DIRECTORY_PICTURES + "/夏克里助手"
                     )
                     put(MediaStore.Images.Media.IS_PENDING, 1)
                 }
@@ -915,17 +915,17 @@ class MainActivity : AppCompatActivity() {
                 values.clear()
                 values.put(MediaStore.Images.Media.IS_PENDING, 0)
                 contentResolver.update(target, values, null, null)
-                toast("已保存到相册：Pictures/追放夏克里工具")
+                toast("已保存到相册：Pictures/夏克里助手")
             } else {
                 val dir = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    "追放夏克里工具"
+                    "夏克里助手"
                 )
                 if (!dir.exists()) dir.mkdirs()
                 val file = File(dir, name)
                 FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
                 MediaScannerConnection.scanFile(this, arrayOf(file.absolutePath), arrayOf("image/png"), null)
-                toast("已保存到相册：Pictures/追放夏克里工具")
+                toast("已保存到相册：Pictures/夏克里助手")
             }
         } catch (e: Exception) {
             toast("保存失败：" + describe(e))

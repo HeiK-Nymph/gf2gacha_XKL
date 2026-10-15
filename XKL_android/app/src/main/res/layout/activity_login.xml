@@ -64,6 +64,21 @@
             android:textColor="@color/text"
             android:textSize="15sp" />
 
+        <EditText
+            android:id="@+id/pwd_input"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="@string/login_pwd_hint"
+            android:inputType="textPassword"
+            android:maxLength="32"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:textColor="@color/text"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/login_button"
             style="@style/XklButton"
@@ -79,6 +94,28 @@
             android:layout_height="46dp"
             android:layout_marginTop="10dp"
             android:text="@string/login_cancel" />
+
+        <TextView
+            android:id="@+id/pwd_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/login_pwd_note"
+            android:textColor="@color/text_dim"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/mode_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="@string/login_switch_to_pwd"
+            android:textColor="@color/gold"
+            android:textSize="13sp" />
 
         <TextView
             android:id="@+id/status_view"

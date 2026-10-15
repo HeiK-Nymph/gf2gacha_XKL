@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">追放夏克里工具</string>
+    <string name="app_name">夏克里助手</string>
     <string name="login_title_add">添加账号</string>
     <string name="login_hint">用绑定游戏的手机号收短信验证码登录。手机号只用于发码与登录，不上传自建服务器；令牌与记录都只存本机。</string>
     <string name="login_phone_hint">手机号</string>
     <string name="login_send_code">发送验证码</string>
     <string name="login_code_hint">6 位短信验证码</string>
+    <string name="login_pwd_hint">密码</string>
+    <string name="login_account_hint">账号</string>
+    <string name="login_submit_pwd">登录</string>
+    <string name="login_switch_to_pwd">收不到短信？改用账号密码登录</string>
+    <string name="login_switch_to_sms">改用短信验证码登录</string>
+    <string name="login_pwd_note">密码只在本机算一次 MD5 用于官方登录接口，不保存、不上传自建服务器，登录成功后立即丢弃。</string>
     <string name="login_submit">登录并查询</string>
     <string name="login_cancel">取消</string>
     <string name="main_total">总抽卡数</string>

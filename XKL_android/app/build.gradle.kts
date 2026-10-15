@@ -13,8 +13,8 @@ android {
         applicationId = "uk.gf2gacha.xkl"
         minSdk = 24
         targetSdk = 34
-        versionCode = 8
-        versionName = "0.1.0"
+        versionCode = 9
+        versionName = "0.1.1"
         resourceConfigurations += listOf("zh", "en")
 
         // 「检查更新」读的远端文件（发布包写死线上地址；调试包在下面 buildTypes.debug 里覆盖成

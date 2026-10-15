@@ -91,6 +91,12 @@ object Gf2Api {
 
     private const val SMS_URL = "https://gf2-cn-plateuser.sunborngame.com/sms/phone_login"
     private const val LOGIN_URL = "https://gf2-zoneinfo.sunborngame.com/phone/sms_login"
+
+    /**
+     * 账号密码登录（官方 com.mica.micasdk.repository.http.ApiMethod.PHONE_LOGIN = "phone/login"）。
+     * 和短信登录**同一个 host**，但 body 里不带 sign / timestamp。
+     */
+    private const val PWD_LOGIN_URL = "https://gf2-zoneinfo.sunborngame.com/phone/login"
     private const val LIST_URL = "https://gf2-gacha-record.sunborngame.com/list"
 
     private const val USER_AGENT = "UnityPlayer/2019.4.40f1 (UnityWebRequest/1.0, libcurl/7.80.0-DEV)"
@@ -124,16 +130,55 @@ object Gf2Api {
             body.put("verify_code", verifyCode)
             val json = postJson(LOGIN_URL, body)
             checkOk(json)
-            val data = json.optJSONObject("data")
-                ?: throw Gf2Exception(-1, "登录返回缺少 data 字段")
-            val token = data.optString("access_token", "")
-            if (token.isEmpty()) throw Gf2Exception(-1, "登录返回缺少 access_token")
-            LoginResult(
-                uid = data.optString("uid", ""),
-                accessToken = token,
-                isGuest = data.optInt("is_guest", 0) == 1
-            )
+            parseLogin(json)
         }
+
+    /**
+     * 账号密码登录。
+     *
+     * 逆向自官方 MicaSDK（`LoginP.phoneLogin` → `MD5U.encrypt` → `ApiClientAccount.phoneLogin`）：
+     *
+     *   1. 密码提交的是 **`md5(明文密码)` 的 32 位小写 hex**（`MD5U.encrypt`，无盐、无密钥）
+     *   2. 请求体**只有公共参数 + phone_number / area_code / passwd** —— 和短信登录不同，
+     *      **不加 `sign`、不加 `timestamp`**（`phoneLogin` 没调 `simpleSign`）
+     *   3. 返回结构和 `phone/sms_login` 完全一致
+     *
+     * 明文密码只在本方法内存里活一次：算完 MD5 就丢掉，不写日志、不落盘。
+     */
+    suspend fun passwordLogin(context: Context, phone: String, password: String): LoginResult =
+        withContext(Dispatchers.IO) {
+            require(password.isNotEmpty()) { "密码不能为空" }
+            val deviceNum = Gf2Sign.deviceNum(context)
+            val body = JSONObject().apply {
+                // ---- 公共参数（与短信登录同源，取自官方 ApiCommon.addCommonParams） ----
+                put("os", 3)
+                put("reyun_channel_id", "1029")
+                put("game_channel_id", 5)
+                put("device_num", deviceNum)
+                put("language", "cn")
+                put("area_code", "+86")
+                put("mac", "")
+                // ---- 本条登录专有 ----
+                put("phone_number", phone)
+                put("passwd", Gf2Sign.md5(password))   // 官方就是裸 MD5
+            }
+            val json = postJson(PWD_LOGIN_URL, body)
+            checkOk(json)
+            parseLogin(json)
+        }
+
+    /** 两种登录（短信 / 密码）的返回结构一致，解析共用 */
+    private fun parseLogin(json: JSONObject): LoginResult {
+        val data = json.optJSONObject("data")
+            ?: throw Gf2Exception(-1, "登录返回缺少 data 字段")
+        val token = data.optString("access_token", "")
+        if (token.isEmpty()) throw Gf2Exception(-1, "登录返回缺少 access_token")
+        return LoginResult(
+            uid = data.optString("uid", ""),
+            accessToken = token,
+            isGuest = data.optInt("is_guest", 0) == 1
+        )
+    }
 
     private fun commonBody(deviceNum: String, phone: String, timestamp: Long): JSONObject {
         val sign = Gf2Sign.sign(deviceNum, phone, timestamp)
