@@ -22,8 +22,21 @@ App **没有"必须先登录"这一步**：
 3. 想加账号 → `添加账号` → 手机号 + 验证码（收不到短信就点底部「改用账号密码登录」）
    → 成功后自动成为当前账号并拉一次记录
 4. 想换/删账号 → `管理账号` → 列出所有本地账号（各自独立的凭证 + 记录）：**点一行=切换**，行尾 `删除`=删掉该账号（带二次确认）
-5. `刷新`：**token 还能用就直接拉**；失效就**自动重新发验证码 + 弹框让你输码续期**
+5. `刷新`：**token 还能用就直接拉**；失效就**先询问是否发送验证码，确认后才发码**，输入验证码后继续刷新
    （续期过程中当前页面的记录一直在，不会清空）
+
+### 导出到微信小程序
+
+主页点击 **导出到小程序 → 核验并复制**，然后进入小程序的「抽卡分析」粘贴。
+导出前仅调用官方账号接口核验当前 UID，不重新登录、不自动发送短信、不拉取抽卡记录。
+凭证失效时与刷新相同：先确认发送验证码，在当前页输入验证码续登后继续导出，不跳转登录页。没有账号时，刷新和导出都会提示先添加账号并登录，取消不跳转。
+
+钥匙遵循 `XKL1.{Base64URL(UTF-8 JSON)}`，JSON 只包含
+`version: 1`、`uid`、`credential`（Authorization 请求头原值），
+与 `XKL_WeChat/docs/IMPORT_KEY_PROTOCOL.md` 对齐。不含手机号、密码或本地历史记录。
+小程序云函数会使用凭证核验 UID，并从官方接口同步记录；本地保存的更早历史不会随钥匙传入。
+钥匙含账号访问凭证，请勿转发，复制后尽快使用。应用不把生成的钥匙写入文件或日志，
+Android 13+ 的剪贴板预览隐藏具体内容。
 
 ### 多账号数据模型（`files/accounts.json`）
 
@@ -38,7 +51,7 @@ App **没有"必须先登录"这一步**：
 - 每个账号**各自保存** token 和五池原始记录
 - 切账号**只切"当前账号"**，其它账号的凭证和记录原样保留（切回来可直接刷新）
 - 全部数据只在本机 App 私有目录，不上传任何服务器
-- 手机号也存本地 —— 因为"刷新时自动发验证码"需要知道发给谁
+- 手机号也存本地 —— 因为"用户确认续登后发送验证码"需要知道发给谁
 
 ## 界面（暗金风格，语义对齐 PC 版）
 
@@ -179,10 +192,25 @@ D:\gradle-8.7\bin\gradle.bat assembleRelease
 D:\android-sdk\build-tools\34.0.0\apksigner.bat verify --print-certs app\build\outputs\apk\release\app-release.apk
 ```
 
-**发新版本时**：改 `app/build.gradle.kts` 的 `versionCode`（必须**递增**，否则装不上）+ `versionName`，再 `assembleRelease`。
+**开始下一版更新时**：将 `app/build.gradle.kts` 的 `versionCode` 和 `versionName` 升到下一个版本，再 `assembleRelease`，让旧版用户能检测到更新。
+**正式提交前的真机 / MuMu 调试固定使用该下一版本**，当前为 `versionName=0.1.2`、`versionCode=10`，不为方便覆盖安装而反复递增。
+同签名、同版本先尝试 `adb install -r`；如果系统拒绝安装，请用户手动安装，
+不要递增版本、卸载原应用或清除账号数据来绕过问题。
 
-⚠️ debug 版与 release 版**签名不同**：互相覆盖安装会报 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`，必须先卸载；
-卸载会连同 App 私有的 `files/accounts.json`（账号 + 令牌 + 本地记录）一起清掉，需要重新短信登录一次。
+不连接手机 USB 时，可以使用 MuMu 模拟器，详见 [MuMu ADB 调试指南](docs/MUMU_ADB_DEBUG.md)。已验证连接、覆盖安装和启动流程。
+
+钥匙协议的无网络真机测试（不读取真实账号、不改剪贴板）：
+
+```powershell
+D:\gradle-8.7\bin\gradle.bat :app:assembleReleaseAndroidTest
+D:\android-sdk\platform-tools\adb.exe install -r app\build\outputs\apk\androidTest\release\app-release-androidTest.apk
+D:\android-sdk\platform-tools\adb.exe shell am instrument -w uk.gf2gacha.xkl.test/uk.gf2gacha.xkl.MiniProgramKeyInstrumentation
+# 续登界面回归：使用隔离账号，只点取消，不发送短信、不修改真实账号
+D:\android-sdk\platform-tools\adb.exe shell am instrument -w -e verifyReauth true uk.gf2gacha.xkl.test/uk.gf2gacha.xkl.MiniProgramKeyInstrumentation
+```
+
+debug 版使用独立包名 `uk.gf2gacha.xkl.test`，与 release 版 `uk.gf2gacha.xkl` 分开安装，账号数据也独立。
+如果已有同包名应用但签名不同，覆盖安装会报 `INSTALL_FAILED_UPDATE_INCOMPATIBLE`；停止自动安装并交由用户处理，不自动卸载或清数据。
 
 ## 检查更新（App 内）
 

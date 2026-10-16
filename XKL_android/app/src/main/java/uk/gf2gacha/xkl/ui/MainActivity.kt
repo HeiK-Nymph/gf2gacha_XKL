@@ -2,6 +2,7 @@ package uk.gf2gacha.xkl.ui
 
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.ClipboardManager
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -47,6 +48,7 @@ import uk.gf2gacha.xkl.data.Account
 import uk.gf2gacha.xkl.data.AccountStore
 import uk.gf2gacha.xkl.data.Gf2Api
 import uk.gf2gacha.xkl.data.Gf2Exception
+import uk.gf2gacha.xkl.data.MiniProgramKey
 import uk.gf2gacha.xkl.data.PoolResult
 import uk.gf2gacha.xkl.data.SsrHit
 import uk.gf2gacha.xkl.data.SsrTable
@@ -66,7 +68,7 @@ import java.util.Locale
  * 顶部三个按钮：添加账号 / 选择账号 / 刷新。
  *
  * - 切账号只切"当前账号"，每个账号各自的 token 和记录都不动（可随时切回、直接刷新）
- * - 刷新：token 还能用就直接拉；不能用就自动发验证码，弹框让用户输码续期
+ * - 刷新：token 还能用就直接拉；不能用就先确认是否发验证码，登录后继续原操作
  */
 class MainActivity : AppCompatActivity() {
 
@@ -86,7 +88,6 @@ class MainActivity : AppCompatActivity() {
     private var current: Gf2Api.Pool = Gf2Api.POOLS[0]
     private var loading = false
     private var renderedUid: String? = null
-    private var loginAutoShown = false
     private var pendingSave: Bitmap? = null
 
     /** 五星表来源（底部那行要显示） */
@@ -96,6 +97,11 @@ class MainActivity : AppCompatActivity() {
     private var updateJob: Job? = null
     private var downloadJob: Job? = null
     private var autoUpdateChecked = false
+    private var exportKeyJob: Job? = null
+    private var reauthDialog: AlertDialog? = null
+    private var reauthBusy = false
+    private enum class PendingAction { REFRESH, EXPORT }
+
 
     // 五星行右侧「歪 + 名字」的固定槽位宽度，必须与 item_ssr_bar.xml 一致
     // （6dp 歪的 marginStart + 26dp 歪 + 8dp 名字的 marginStart + 68dp 名字）。
@@ -149,6 +155,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.share_button).setOnClickListener { showShare() }
         findViewById<Button>(R.id.refresh_button).setOnClickListener { smartRefresh() }
         findViewById<Button>(R.id.update_button).setOnClickListener { checkUpdate(manual = true) }
+        findViewById<Button>(R.id.export_key_button).setOnClickListener { showExportKey() }
 
         // 后台把五星表换成 R2 上的最新版，拿到后重算一次（表更新不用发版）
         lifecycleScope.launch {
@@ -163,12 +170,9 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         store.reload()
         if (store.isEmpty) {
-            // 只在第一次自动弹登录页；用户取消后不再反复弹（避免登录页套娃）
-            showEmptyState(openLogin = !loginAutoShown)
-            loginAutoShown = true
+            showEmptyState()
             return
         }
-        loginAutoShown = false
         applyCurrentAccount()
     }
 
@@ -185,6 +189,9 @@ class MainActivity : AppCompatActivity() {
         results.clear()
         if (account.hasRecords) {
             renderFromCache(account)
+        } else if (account.token.isBlank()) {
+            renderHeader()
+            renderPool()
         } else {
             titleView.text = "正在查询…"
             fetchAndCache(account)
@@ -228,13 +235,14 @@ class MainActivity : AppCompatActivity() {
 
     // ---------------------------------------------------------------- 刷新
 
-    /** 刷新：token 能用就直接拉；不能用就自动发码让用户续期 */
+    /** 刷新和导出共用续登流程，只有用户明确确认后才发验证码。 */
     private fun smartRefresh() {
-        val account = store.current() ?: return
+        if (loading || exportKeyJob?.isActive == true || reauthBusy || reauthDialog?.isShowing == true) return
+        val account = store.current() ?: run { showAddAccountPrompt(); return }
         if (account.token.isNotEmpty()) {
             fetchAndCache(account)
         } else {
-            autoSendCode(account)
+            confirmReauthentication(account, PendingAction.REFRESH)
         }
     }
 
@@ -248,25 +256,31 @@ class MainActivity : AppCompatActivity() {
             try {
                 val table = withContext(Dispatchers.IO) { SsrTable.refresh(this@MainActivity) }
                 tableSource = table.source
-            renderFooter()
+                renderFooter()
                 // 把本地已有记录交给接口层：拉回来的全量记录会与它按 fakeId 合并（历史只增不减）
                 Gf2Api.fetchAllPools(this@MainActivity, account.token, account.records) { result ->
-                    results[result.poolType] = result
                     store.putRecords(account.uid, result.poolType, result.records)
-                    renderHeader()
-                    if (current.typeId == result.poolType) renderPool()
+                    if (store.current()?.uid == account.uid) {
+                        results[result.poolType] = result
+                        renderHeader()
+                        if (current.typeId == result.poolType) renderPool()
+                    }
                 }
-                renderHeader()
-                renderPool()
-                // 刷新成功了，「更新 HH:mm」那行也要跟着变（否则看着像没刷上）
-                renderAccountHeader(account)
+                if (store.current()?.uid == account.uid) {
+                    renderHeader()
+                    renderPool()
+                    store.current()?.let { renderAccountHeader(it) }
+                }
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 if (e is Gf2Exception && e.isTokenError) {
                     ok = false
-                    store.invalidateToken(account.uid)
-                    store.reload()
-                    store.current()?.let { renderAccountHeader(it) }
-                    autoSendCode(account)
+                    val saved = store.accounts().find { it.uid == account.uid }
+                    if (saved?.token == account.token) {
+                        store.invalidateToken(account.uid)
+                        store.current()?.let { renderAccountHeader(it) }
+                        confirmReauthentication(saved, PendingAction.REFRESH)
+                    }
                 } else {
                     handleError(e)
                 }
@@ -275,7 +289,7 @@ class MainActivity : AppCompatActivity() {
                 progress.visibility = View.GONE
                 if (ok) store.save()
                 if (results.isEmpty()) {
-                    emptyView.text = "还没有记录，点「刷新」拉一次"
+                    emptyView.text = if (store.current() == null) "请先点击「添加账号」并登录" else "暂无抽卡记录"
                     emptyView.visibility = View.VISIBLE
                 } else {
                     emptyView.visibility = View.GONE
@@ -284,24 +298,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** 自动重新发送验证码，弹框让用户输入（任务要求：不丢当前页面状态） */
-    private fun autoSendCode(account: Account) {
+    private fun showAddAccountPrompt() {
+        if (reauthDialog?.isShowing == true) return
+        reauthDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("尚无数据")
+            .setMessage("请先添加账号并登录。")
+            .setPositiveButton("添加账号") { _, _ -> openLogin() }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun confirmReauthentication(account: Account, action: PendingAction) {
+        if (store.current()?.uid != account.uid || reauthBusy || reauthDialog?.isShowing == true) return
         if (account.phone.length != 11) {
-            toast("该账号没有保存手机号，请用「添加账号」重新登录")
+            showAddAccountPrompt()
             return
         }
-        toast("登录已过期，正在重新发送验证码…")
+        reauthDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("登录已过期")
+            .setMessage("是否向 " + maskPhone(account.phone) + " 发送验证码？")
+            .setPositiveButton("发送验证码") { _, _ -> sendCode(account, action) }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun sendCode(account: Account, action: PendingAction) {
+        if (reauthBusy || store.current()?.uid != account.uid) return
+        reauthBusy = true
         lifecycleScope.launch {
             try {
                 Gf2Api.sendSmsCode(this@MainActivity, account.phone)
-                showCodeDialog(account)
+                if (store.current()?.uid == account.uid) showCodeDialog(account, action)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                toast("自动发送验证码失败：" + describe(e))
+                toast("验证码发送失败，请重试")
+            } finally {
+                reauthBusy = false
             }
         }
     }
 
-    private fun showCodeDialog(account: Account) {
+    private fun showCodeDialog(account: Account, action: PendingAction) {
         val input = EditText(this)
         input.inputType = InputType.TYPE_CLASS_NUMBER
         input.hint = "6 位验证码"
@@ -317,33 +355,58 @@ class MainActivity : AppCompatActivity() {
             input,
             FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         )
-        MaterialAlertDialogBuilder(this)
-            .setTitle("登录已过期")
-            .setMessage("已向 " + maskPhone(account.phone) + " 发送验证码，输入后即可继续刷新（当前记录不会丢）")
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle("验证码登录")
+            .setMessage("验证码已发送至 " + maskPhone(account.phone))
             .setView(container)
-            .setPositiveButton("确定") { _, _ -> loginWithCode(account, input.text.toString().trim()) }
+            .setPositiveButton("登录", null)
             .setNegativeButton("取消", null)
-            .show()
+            .create()
+        reauthDialog = dialog
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val code = input.text.toString().trim()
+            if (code.length != 6) {
+                input.error = "请输入 6 位验证码"
+            } else {
+                dialog.dismiss()
+                loginWithCode(account, code, action)
+            }
+        }
     }
 
-    private fun loginWithCode(account: Account, code: String) {
+    private fun loginWithCode(account: Account, code: String, action: PendingAction) {
         if (code.length != 6) {
             toast("请输入 6 位验证码")
             return
         }
+        if (reauthBusy || store.current()?.uid != account.uid) return
+        reauthBusy = true
         progress.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
                 val result = Gf2Api.smsLogin(this@MainActivity, account.phone, code)
+                if (store.current()?.uid != account.uid) return@launch
+                if (result.uid != account.uid) {
+                    toast("登录账号不一致，请重新添加账号")
+                    return@launch
+                }
                 store.upsert(result.uid, account.phone, result.accessToken)
                 store.reload()
-                renderedUid = null
-                applyCurrentAccount()
-                fetchAndCache(store.current() ?: account)
+                val renewed = store.current() ?: return@launch
+                renderAccountHeader(renewed)
+                // 先释放续登锁，再恢复用户原先选择的操作，避免额外刷新或重复发码。
+                reauthBusy = false
+                when (action) {
+                    PendingAction.REFRESH -> fetchAndCache(renewed)
+                    PendingAction.EXPORT -> showExportKey()
+                }
             } catch (e: Exception) {
-                toast("登录失败：" + describe(e))
+                if (e is CancellationException) throw e
+                toast("登录失败，请重试")
             } finally {
-                progress.visibility = View.GONE
+                reauthBusy = false
+                if (!loading) progress.visibility = View.GONE
             }
         }
     }
@@ -440,12 +503,12 @@ class MainActivity : AppCompatActivity() {
     /** 账号被删/切换后重新绑定界面；一个账号都不剩时回到空态 */
     private fun afterAccountsChanged() {
         if (store.isEmpty) {
-            showEmptyState(openLogin = false)
+            showEmptyState()
             return
         }
         val account = store.current()
         if (account == null) {
-            showEmptyState(openLogin = false)
+            showEmptyState()
             return
         }
         if (account.uid == renderedUid) {
@@ -456,7 +519,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showEmptyState(openLogin: Boolean) {
+    private fun showEmptyState() {
         renderedUid = null
         results.clear()
         uidView.text = "还没有账号"
@@ -466,9 +529,8 @@ class MainActivity : AppCompatActivity() {
         statsRow.removeAllViews()
         ssrList.removeAllViews()
         poolStatView.text = ""
-        emptyView.text = "点「添加账号」用手机号 + 短信验证码登录，记录会存在本机"
+        emptyView.text = "请先点击「添加账号」并登录"
         emptyView.visibility = View.VISIBLE
-        if (openLogin) startActivity(Intent(this, LoginActivity::class.java))
     }
 
     // ---------------------------------------------------------------- 渲染
@@ -808,6 +870,74 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 dialog.dismiss()
                 toast("更新失败：" + (e.message ?: e.javaClass.simpleName))
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------- 小程序导入钥匙
+
+    private fun showExportKey() {
+        if (loading || exportKeyJob?.isActive == true || reauthBusy || reauthDialog?.isShowing == true) return
+        val account = store.current() ?: run { showAddAccountPrompt(); return }
+        if (account.token.isBlank()) {
+            confirmReauthentication(account, PendingAction.EXPORT)
+            return
+        }
+        // 固定本次导出的账号与凭证，核验中切换账号时不能把旧钥匙复制出去。
+        val uid = account.uid
+        val token = account.token
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.export_key_title)
+            .setMessage(getString(R.string.export_key_explanation, maskUid(uid)))
+            .setPositiveButton(R.string.export_key_copy) { _, _ -> verifyAndCopyKey(uid, token) }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun verifyAndCopyKey(uid: String, token: String) {
+        if (exportKeyJob?.isActive == true) return
+        val button = findViewById<Button>(R.id.export_key_button)
+        button.isEnabled = false
+        button.setText(R.string.export_key_checking)
+        exportKeyJob = lifecycleScope.launch {
+            try {
+                // 在发请求前校验格式；错误内容不回显凭证。
+                val key = MiniProgramKey.encode(uid, token)
+                val officialUid = Gf2Api.fetchAccountUid(token)
+                if (officialUid != uid) {
+                    toast(getString(R.string.export_key_uid_mismatch))
+                    return@launch
+                }
+                val selected = store.current()
+                if (selected?.uid != uid || selected.token != token) {
+                    toast(getString(R.string.export_key_account_changed))
+                    return@launch
+                }
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
+                if (clipboard == null) {
+                    toast(getString(R.string.export_key_copy_failed))
+                    return@launch
+                }
+                clipboard.setPrimaryClip(MiniProgramKey.clip(key))
+                toast(getString(R.string.export_key_copied))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // 凭证过期与刷新使用同一套续登确认，不跳转登录页、不自动发码。
+                val selected = store.current()
+                if (e is Gf2Exception && e.isTokenError && selected?.uid == uid && selected.token == token) {
+                    store.invalidateToken(uid)
+                    store.reload()
+                    store.current()?.let {
+                        renderAccountHeader(it)
+                        confirmReauthentication(it, PendingAction.EXPORT)
+                    }
+                } else {
+                    toast(getString(R.string.export_key_failed))
+                }
+            } finally {
+                button.isEnabled = true
+                button.setText(R.string.main_export_key)
             }
         }
     }

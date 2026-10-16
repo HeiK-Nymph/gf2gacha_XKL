@@ -13,8 +13,9 @@ android {
         applicationId = "uk.gf2gacha.xkl"
         minSdk = 24
         targetSdk = 34
-        versionCode = 9
-        versionName = "0.1.1"
+        versionCode = 10
+        versionName = "0.1.2"
+        testInstrumentationRunner = "uk.gf2gacha.xkl.MiniProgramKeyInstrumentation"
         resourceConfigurations += listOf("zh", "en")
 
         // 「检查更新」读的远端文件（发布包写死线上地址；调试包在下面 buildTypes.debug 里覆盖成
@@ -44,6 +45,9 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+    // 真机协议测试使用与已安装应用相同的 release 变体，不递增版本号。
+    testBuildType = "release"
 
     buildTypes {
         debug {

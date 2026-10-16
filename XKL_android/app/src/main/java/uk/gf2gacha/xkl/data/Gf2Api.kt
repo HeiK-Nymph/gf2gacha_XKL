@@ -21,7 +21,9 @@ import java.util.concurrent.TimeUnit
 /** 接口返回 code != 0 或网络异常 */
 class Gf2Exception(val code: Int, message: String) : Exception(message) {
     /** 令牌失效（同账号在别处重新登录会让旧令牌作废） */
-    val isTokenError: Boolean get() = message?.contains("token", ignoreCase = true) == true
+    val isTokenError: Boolean get() = code == 401 ||
+        message?.contains("token", ignoreCase = true) == true ||
+        Regex("(登录|凭证).*(过期|失效)").containsMatchIn(message.orEmpty())
 }
 
 data class GachaRecord(val poolId: Int, val itemId: Int, val time: Long, val itemNum: Int)
@@ -98,6 +100,7 @@ object Gf2Api {
      */
     private const val PWD_LOGIN_URL = "https://gf2-zoneinfo.sunborngame.com/phone/login"
     private const val LIST_URL = "https://gf2-gacha-record.sunborngame.com/list"
+    private const val ACCOUNT_INFO_URL = "https://gf2-zoneinfo.sunborngame.com/account/info"
 
     private const val USER_AGENT = "UnityPlayer/2019.4.40f1 (UnityWebRequest/1.0, libcurl/7.80.0-DEV)"
     private const val UNITY_VERSION = "2019.4.40f1"
@@ -113,6 +116,22 @@ object Gf2Api {
         .build()
 
     // ------------------------------------------------------------------ 登录
+
+    /** 导出前只核验凭证对应的 UID，不重新登录、不拉取抽卡记录。 */
+    suspend fun fetchAccountUid(token: String): String = withContext(Dispatchers.IO) {
+        val request = Request.Builder()
+            .url(ACCOUNT_INFO_URL)
+            .post("{}".toRequestBody(JSON_TYPE))
+            .header("User-Agent", USER_AGENT)
+            .header("X-Unity-Version", UNITY_VERSION)
+            .header("Authorization", token)
+            .build()
+        val json = execute(request)
+        checkOk(json)
+        val uid = json.optJSONObject("data")?.optString("uid", "").orEmpty()
+        if (!uid.matches(Regex("[0-9]{4,32}"))) throw Gf2Exception(-1, "官方返回的 UID 不合法")
+        uid
+    }
 
     suspend fun sendSmsCode(context: Context, phone: String) = withContext(Dispatchers.IO) {
         val deviceNum = Gf2Sign.deviceNum(context)
