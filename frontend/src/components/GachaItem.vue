@@ -1,78 +1,39 @@
 <template>
-  <div class="gacha-item-container">
-    <div>一共<span>{{ totalDrawCount }}</span>条抽卡记录，已垫<span>{{ currentPadCount }}</span>抽</div>
-    <div>共获得五星<span>{{ ssrTotal }}</span>个，歪了<span v-if="props.pool_type !== 'permanent'"><span>{{ waiCount }}</span></span>个，具体如下：</div>
+  <div class="gacha-item-container" :class="{ 'is-share': shareMode }">
+    <div class="gacha-summary">一共<span>{{ totalDrawCount }}</span>条抽卡记录，已垫<span>{{ currentPadCount }}</span>抽</div>
+    <div class="gacha-summary">共获得五星<span>{{ ssrTotal }}</span>个，歪了<span v-if="props.pool_type !== 'permanent'"><span>{{ waiCount }}</span></span>个，具体如下：</div>
     <div class="ssr-grid" v-if="ssrTotal > 0">
-      <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" >
-        <img v-if="!isWeaponItem(item.item)" :src="getImagePath(item.item)" style="width: 35px;"/>
-        <span v-else class="weapon-name">{{ item.name }}</span>
+      <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" class="ssr-grid-avatar" :title="item.name">
+        <img v-if="!imageFailures[item.item]" :src="getImagePath(item.item)" :alt="item.name" @error="imageFailures[item.item] = true" />
+        <span v-else class="grid-avatar-fallback">{{ isWeaponItem(item.item) ? '武' : item.name.slice(0, 1) }}</span>
       </div>
     </div>
-    <div>
-      <div class="ssr-item">
-
-
-
- 
-        <div v-if="totalDrawCount > 0">
-          <img :src="getImagePath('question')" style="width: 35px;"/>
+    <div class="ssr-details">
+      <div v-if="totalDrawCount > 0" class="ssr-item pity-row tone-gold">
+        <div class="record-avatar question-avatar" aria-label="当前垫抽">?</div>
+        <span class="draw-cost">{{ currentPadCount }}</span>
+        <div class="draw-bar" role="progressbar" aria-label="当前垫抽" :aria-valuenow="currentPadCount" aria-valuemin="0" :aria-valuemax="Math.max(80, currentPadCount)">
+          <div class="bar-fill" :style="{ width: progressWidth(currentPadCount) }"></div>
         </div>
-        <el-progress  :text-inside="true" :stroke-width="26" :percentage="currentPadCount * 1.25" :format="ssrListFormat" :color="customColorMethod"/>
-        <span class="wai-tag" style="background-color: white; padding: 0;"></span>
+        <span class="wai-tag wai-hidden" aria-hidden="true">歪</span>
+        <span class="ssr-name pity-name" :title="`已垫 ${currentPadCount} 抽`">已垫 {{ currentPadCount }} 抽</span>
       </div>
-      <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" class="ssr-item">
-
-        <div>
-
-          <img v-if="!isWeaponItem(item.item)" :src="getImagePath(item.item)" style="width: 35px;"/>
-          <span v-else class="weapon-name">{{ item.name }}</span>
+      <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" class="ssr-item" :class="progressTone(item.costDraws)">
+        <div class="record-avatar" :title="item.name">
+          <img v-if="!imageFailures[item.item]" :src="getImagePath(item.item)" :alt="item.name" @error="imageFailures[item.item] = true" />
+          <span v-else class="avatar-fallback">{{ isWeaponItem(item.item) ? '武' : item.name.slice(0, 1) }}</span>
         </div>
-        <el-progress  :text-inside="true" :stroke-width="30" :percentage="item.costDraws * 1.25" :format="ssrListFormat" :color="customColorMethod"/>
-        <span v-if="item.isWai && props.pool_type !== 'permanent'" class="wai-tag">歪</span>
-        <span v-else class="wai-tag" style="background-color: white; padding: 0;"></span>
-      </div>
-    </div>
-    
-    <!-- 显示原始数据按钮 -->
-    <div v-if="!hideRawButton" style="margin-top: 20px; text-align: center;">
-      <el-button type="info" @click="toggleRawData">
-        {{ showRawData ? '隐藏原始数据' : '显示原始数据' }}
-      </el-button>
-    </div>
-    
-    <!-- 原始数据显示区域 -->
-    <div v-if="showRawData" class="raw-data-container" style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-      <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-        <span>原始数据 (共{{ totalPages }}页)</span>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <el-input-number
-            v-model="inputPage"
-            :min="1"
-            :max="totalPages"
-            size="small"
-            style="width: 120px;"
-            controls-position="right"
-            @change="jumpToPage"
-          />
-          <el-button size="small" @click="jumpToPage">跳转</el-button>
+        <span class="draw-cost" :title="`${item.costDraws} 抽`">{{ item.costDraws }}</span>
+        <div class="draw-bar" role="progressbar" :aria-label="`${item.name}出金抽数`" :aria-valuenow="item.costDraws" aria-valuemin="0" :aria-valuemax="Math.max(80, item.costDraws)">
+          <div class="bar-fill" :style="{ width: progressWidth(item.costDraws) }"></div>
         </div>
-      </div>
-      <div class="raw-data-list">
-        <div v-if="currentPageData.length === 0" style="text-align: center; padding: 20px; color: #999;">
-          暂无数据
-        </div>
-        <div v-else>
-          <div style="text-align: center; margin-bottom: 10px; color: #666; font-size: 14px;">
-            当前显示：第 {{ currentPage }} 页
-          </div>
-          <div v-for="(item, index) in currentPageData" :key="index" class="raw-data-item">
-            <span>{{ index + 1 + (currentPage - 1) * 6 }}. {{ item }}</span>
-          </div>
-        </div>
+        <span class="wai-tag" :class="{ 'wai-hidden': !item.isWai || props.pool_type === 'permanent' }" :aria-hidden="!item.isWai || props.pool_type === 'permanent'">歪</span>
+        <span class="ssr-name" :title="item.name">{{ item.name }}</span>
       </div>
     </div>
+
   </div>
-  
+
 </template>
 
 <script setup>
@@ -88,7 +49,7 @@ const props = defineProps({
     default: 'character',
     validator: (val) => ['character', 'weapon', 'permanent', 'custom_character', 'custom_weapon'].includes(val)
   },
-  hideRawButton: {
+  shareMode: {
     type: Boolean,
     default: false
   }
@@ -98,37 +59,20 @@ const props = defineProps({
 const gachaRecordStore = useGachaRecordStore()
 const ssrStore = useSSRStore()
 
-// 原始数据相关
-const showRawData = ref(false)
-const currentPage = ref(1)
-const inputPage = ref(1)
-const pageSize = 6
-
-// 自定义进度条格式化函数
-const ssrListFormat = (percentage) => {
-  return percentage * 0.8 + '抽'
-}
-
-// 自定义进度条颜色函数
-const customColorMethod = (percentage) => {
-  if (percentage * 0.8 < 30){
-    return '#66ad68'
-  }
-  if (percentage * 0.8 < 60){
-    return '#F0C044'
-  }
-  return '#D66555'
-}
+// 所有行共用相同的80抽标尺；保留实际抽数，视觉宽度最多100%。
+const imageFailures = ref({})
+const progressWidth = (draws) => `${Math.max(0, Math.min(100, draws * 1.25))}%`
+const progressTone = (draws) => draws < 30 ? 'tone-green' : draws < 60 ? 'tone-yellow' : 'tone-red'
 
 // 动态获取图片路径（R2）
 const getImagePath = (itemId) => {
   if (itemId === 'question') {
     return 'https://static.gf2gacha-xkl.uk/images/character/question.png'
   }
-  return `https://static.gf2gacha-xkl.uk/images/character/${itemId}.png`
+  return `https://static.gf2gacha-xkl.uk/images/${isWeaponItem(itemId) ? 'weapon' : 'character'}/${itemId}.png`
 }
 
-// 判断 item 是否为武器（无图片需显示文字）
+// 判断道具类型，以选择图片目录和加载失败时的占位文字。
 // 判断依据（当前游戏 SSR 数据）：
 //   限定武器表 SSR_weapon 中的 ID 都是武器
 //   限定人形表 SSR_character 中的 ID 都是人形
@@ -321,45 +265,6 @@ const ssrIntervals = computed(() => {
   return intervals
 })
 
-// 10. 原始数据相关计算属性
-// 获取所有原始数据（按原始页面顺序，即数组顺序）
-const rawData = computed(() => {
-  return gachaData.value.flatMap((page) =>
-    (page.data?.list || []).map((draw) => draw.item)
-  )
-})
-
-// 总页数
-const totalPages = computed(() => {
-  return Math.ceil(rawData.value.length / pageSize) || 1
-})
-
-// 当前页的数据
-const currentPageData = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  const end = start + pageSize
-  return rawData.value.slice(start, end)
-})
-
-// 切换显示/隐藏原始数据
-const toggleRawData = () => {
-  showRawData.value = !showRawData.value
-  if (showRawData.value) {
-    currentPage.value = 1 // 显示时重置到第一页
-    inputPage.value = 1 // 重置输入框为第一页
-  }
-}
-
-// 跳转到指定页面
-const jumpToPage = () => {
-  if (inputPage.value >= 1 && inputPage.value <= totalPages.value) {
-    currentPage.value = inputPage.value
-  } else {
-    // 如果输入超出范围，自动修正
-    inputPage.value = Math.max(1, Math.min(inputPage.value, totalPages.value))
-    currentPage.value = inputPage.value
-  }
-}
 </script>
 
 <style scoped>
@@ -372,83 +277,137 @@ const jumpToPage = () => {
   background: #EBEEF5;
  
 }
-.gacha-item-container span{
+.gacha-summary span{
   color: red;
 }
 .ssr-grid {
   display: grid;
   margin: 30px 0;
   margin-top: 15px;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
   padding: 5px;
   background-color: gold;
   border-radius: 15px;
 }
-.ssr-item {
+.ssr-grid > div { min-width: 0; }
+.ssr-grid-avatar {
   display: flex;
   align-items: center;
-  gap: 16px; /* 名称和进度条之间的间距 */
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+}
+.ssr-grid-avatar img {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+}
+.ssr-item {
+  display: grid;
+  grid-template-columns: 34px 32px minmax(0, 1fr) 20px 72px;
+  align-items: center;
+  column-gap: 6px;
+  min-height: 38px;
   margin: 10px 0;
 }
-.ssr-item .el-progress {
-  flex: 1; /* 让进度条占据剩余空间 */
-}
-:deep(.ssr-item span) {
-  color: #9C27B0;
-  /* 可追加其他样式，比如字体加粗、字号等 */
-  font-weight: bold;
-
-}
-.wai-tag {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 6px;
-  font-size: 12px;
-  width: 20px;
-  color: #fff;
-  background-color: #ff4757;
-  border-radius: 4px;
-  text-align: center;
-}
-
-.weapon-name {
-  display: inline-block;
-  padding: 5px;
-  font-size: 12px;
-  color: #fff;
-  background-color: #2196F3;
-  border-radius: 4px;
-  text-align: center;
-  white-space: nowrap;
-  max-width: 80px;
+.record-avatar {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   overflow: hidden;
-  text-overflow: ellipsis;
-
+  border-radius: 50%;
+  background: #dce1e9;
 }
-
-.raw-data-container {
-  font-family: monospace;
+.record-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
-
-.raw-data-list {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  background: white;
-}
-
-.raw-data-item {
-  padding: 4px 8px;
-  border-bottom: 1px solid #eee;
+.avatar-fallback {
   font-size: 13px;
-  color: #333;
+  color: #626977;
+}
+.question-avatar {
+  color: #9b741d;
+  font-size: 23px;
+  font-weight: bold;
+}
+.draw-cost {
+  text-align: center;
+  color: var(--draw-color);
+  font-size: 15px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+.draw-bar {
+  min-width: 0;
+  height: 22px;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background-color: var(--bar-base);
+  /* 普通线性渐变平铺，兼容 html2canvas 的静态分享图。 */
+  background-image: linear-gradient(45deg,
+    var(--bar-light) 25%, var(--bar-base) 25%, var(--bar-base) 50%,
+    var(--bar-light) 50%, var(--bar-light) 75%, var(--bar-base) 75%);
+  background-size: 28px 28px;
+  animation: stripe-move 1.8s linear infinite;
+}
+@keyframes stripe-move {
+  from { background-position: 0 0; }
+  to { background-position: 28px 0; }
+}
+.tone-green { --bar-base: #00b050; --bar-light: #92d050; --draw-color: #278747; }
+.tone-yellow { --bar-base: #ffc000; --bar-light: #ffd966; --draw-color: #936a00; }
+.tone-red { --bar-base: #c00000; --bar-light: #c24146; --draw-color: #c00000; }
+.tone-gold { --bar-base: #d9a93c; --bar-light: #efc964; --draw-color: #946c14; }
+.wai-tag {
+  box-sizing: border-box;
+  width: 20px;
+  padding: 2px 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: #fff;
+  background: #e15d65;
+  border-radius: 4px;
+  text-align: center;
+}
+.wai-hidden { visibility: hidden; }
+.ssr-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #514d40;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pity-name { color: #946c14; }
+.is-share .ssr-name {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.is-share .bar-fill { animation: none; background-position: 0 0; }
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill { animation: none; }
 }
 
-.raw-data-item:last-child {
-  border-bottom: none;
+.grid-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  color: #626977;
+  background: #dce1e9;
 }
 
 </style>

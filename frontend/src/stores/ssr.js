@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { waitForApi, withTimeout } from '../utils/bridge.js'
 
 export const useSSRStore = defineStore('ssr', () => {
   const SSR_character = ref({})
@@ -10,57 +11,68 @@ export const useSSRStore = defineStore('ssr', () => {
   const SSR_version = ref('')
   const SSR_fromRemote = ref(false)
   const isLoaded = ref(false)
+  const source = ref('error')
+  const isRefreshing = ref(false)
+  let refreshTimer = null
+  let stopped = false
+
+  function apply(result) {
+    if (stopped) return false
+    isRefreshing.value = !!result?.refreshing
+    if (stopped || result?.status !== 'success' || !result.data?.SSR_character) return false
+    const data = result.data
+    SSR_character.value = data.SSR_character || {}
+    SSR_weapon.value = data.SSR_weapon || {}
+    SSR_permanent.value = data.SSR_permanent || {}
+    SSR_custom_character.value = SSR_character.value
+    SSR_custom_weapon.value = SSR_weapon.value
+    SSR_version.value = data.version || ''
+    SSR_fromRemote.value = ['remote', 'local-proto'].includes(result.source)
+    source.value = result.source
+    isLoaded.value = true
+    return true
+  }
+
+  function scheduleRefresh(deadline) {
+    if (stopped) return
+    if (Date.now() >= deadline) {
+      isRefreshing.value = false
+      return
+    }
+    refreshTimer = setTimeout(async () => {
+      try {
+        const result = await withTimeout(window.pywebview.api.get_startup_ssr_data())
+        apply(result)
+        if (result?.refreshing) scheduleRefresh(deadline)
+      } catch (error) {
+        isRefreshing.value = false
+        console.error('[SSR] 后台刷新状态获取失败', error)
+      }
+    }, 1000)
+  }
 
   async function loadData() {
-    if (isLoaded.value) return
-
+    if (isLoaded.value) return source.value
+    stopped = false
     try {
-      // 等待 pywebview 完全准备好（最多等待10秒）
-      let apiReady = false
-      for (let i = 0; i < 100; i++) {
-        if (window.pywebview?.api?.load_ssr_data) {
-          apiReady = true
-          break
-        }
-        console.log(`[SSR] 等待 pywebview 准备中... ${i + 1}/100`)
-        await new Promise(r => setTimeout(r, 100))
-      }
-      
-      if (!apiReady) {
-        console.error('[SSR] pywebview 未准备好')
-        return 'error'
-      }
-      
-      // 调用后端加载数据
-      const result = await window.pywebview.api.load_ssr_data()
-      const data = result.data
-      SSR_character.value = data.SSR_character || {}
-      SSR_weapon.value = data.SSR_weapon || {}
-      SSR_permanent.value = data.SSR_permanent || {}
-      // 自选池子使用与普通池子相同的SSR映射
-      SSR_custom_character.value = data.SSR_character || {}
-      SSR_custom_weapon.value = data.SSR_weapon || {}
-      SSR_version.value = data.version || ''
-      // 数据来源标识
-      SSR_fromRemote.value = result.source === 'remote' || result.source === 'local-proto'
-      isLoaded.value = true
-      
-      return result.source  // 返回数据来源
-    } catch (e) {
-      console.error('[SSR] 加载失败', e)
+      if (!(await waitForApi())) throw new Error('程序接口尚未就绪')
+      const result = await withTimeout(window.pywebview.api.get_startup_ssr_data())
+      apply(result)
+      if (result?.refreshing) scheduleRefresh(Date.now() + 20000)
+      return source.value
+    } catch (error) {
+      console.error('[SSR] 加载失败', error)
       return 'error'
     }
   }
 
+  function stopRefresh() {
+    stopped = true
+    clearTimeout(refreshTimer)
+  }
+
   return {
-    SSR_character,
-    SSR_weapon,
-    SSR_permanent,
-    SSR_custom_character,
-    SSR_custom_weapon,
-    SSR_version,
-    SSR_fromRemote,
-    loadData,
-    isLoaded
+    SSR_character, SSR_weapon, SSR_permanent, SSR_custom_character, SSR_custom_weapon,
+    SSR_version, SSR_fromRemote, loadData, isLoaded, source, isRefreshing, stopRefresh,
   }
 })

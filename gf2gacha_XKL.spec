@@ -53,13 +53,17 @@ a_main = Analysis(
     runtime_hooks=[],
     # 主程序曾经是空的 → conda 环境里的 numpy(26MB)/jedi(12MB)/IPython 全被打进包里，
     # 包从 42MB 涨到 77MB。这里排掉明显无关的；
-    # 注意：webview / pythonnet / clr / mitmproxy / OpenSSL / cryptography / PIL 是本程序要用的，不能排。
+    # Pillow 仅由 Pygments 的图片输出 formatter 引入；分享由 html2canvas + .NET 完成。
+    # 保留实际使用的 DumpMaster 和所有网络/加密组件，只排除 CLI 与构建工具。
     excludes=[
         'numpy', 'pandas', 'scipy', 'matplotlib', 'pygame',
         'jedi', 'IPython', 'ipykernel', 'ipython_genutils',
         'tkinter', 'PyQt5', 'PyQt6', 'PySide2', 'PySide6', 'wx',
         'pip', 'wheel', 'pytest', 'nose', 'sphinx', 'docutils',
         'sqlalchemy', 'bs4', 'lxml', 'notebook', 'jupyter',
+        'PIL', 'pygments.formatters.img',
+        'mitmproxy.tools.console', 'mitmproxy.tools.web', 'mitmproxy.tools.main', 'urwid',
+        'setuptools', 'pkg_resources', '_distutils_hack',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -92,6 +96,10 @@ a_updater = Analysis(
         'pygame',
         'numpy',
         'pandas',
+        # requests 会按可用解码器协商 Accept-Encoding；保留 gzip/deflate 即可。
+        'brotli', 'brotlicffi', '_brotli', 'zstandard', 'compression.zstd', 'backports.zstd',
+        'setuptools', 'pkg_resources', '_distutils_hack',
+        '_pyrepl', 'unittest', 'pydoc', 'doctest',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,

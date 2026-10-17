@@ -1,7 +1,6 @@
 from pathlib import Path
 import sys
 import threading
-import time
 import socket
 import asyncio
 from mitmproxy import options
@@ -20,6 +19,10 @@ proxy_state = {
     "error": None,
 }
 _state_lock = threading.Lock()
+_lifecycle_lock = threading.RLock()
+_active_master = None
+_active_stop = None
+_previous_proxy = None
 
 p = ProxySetting()
 
@@ -37,19 +40,42 @@ def _update_state(**kwargs):
 
 def set_proxy(ip, port):
     """设置系统代理"""
-    p.enable = True
-    p.server = f'{ip}:{port}'
-    p.registry_write()
-    _update_state(system_proxy=True)
+    global _previous_proxy
+    with _lifecycle_lock:
+        if _active_stop is not None and _active_stop.is_set():
+            return False
+        if _previous_proxy is None:
+            previous = ProxySetting()
+            previous.registry_read()
+            _previous_proxy = previous
+        p.enable = True
+        p.server = f'{ip}:{port}'
+        p.registry_write()
+        _update_state(system_proxy=True)
+        return True
 
 
 def close_proxy():
-    """关闭系统代理"""
-    try:
-        p.enable = False
-        p.registry_write()
-    finally:
+    """只恢复本程序接管前的代理设置；未接管时不改用户设置。"""
+    global _previous_proxy
+    with _lifecycle_lock:
+        if _previous_proxy is not None:
+            _previous_proxy.registry_write()
+            _previous_proxy = None
         _update_state(system_proxy=False)
+
+
+def stop_proxy():
+    """可从窗口事件线程调用；即使代理还在启动，也不允许随后接管系统代理。"""
+    with _lifecycle_lock:
+        if _active_stop is not None:
+            _active_stop.set()
+        try:
+            if _active_master is not None:
+                _active_master.shutdown()  # mitmproxy 提供的线程安全接口
+        finally:
+            _update_state(ready=False)
+            close_proxy()
 
 
 def is_port_available(port):
@@ -79,19 +105,6 @@ def _can_connect(port, timeout=0.3):
         return False
 
 
-def _watch_ready(port, timeout=15.0):
-    """后台探测 mitmproxy 何时真正开始监听，Ready 之后系统代理才是可信的"""
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        if _can_connect(port):
-            _update_state(ready=True)
-            print(f"[OK] mitmproxy 已开始监听 127.0.0.1:{port}")
-            return
-        time.sleep(0.2)
-    _update_state(ready=False, error=f"端口 {port} 在 {timeout:.0f} 秒内没有开始监听")
-    print(f"[ERROR] mitmproxy 未能在 {timeout:.0f} 秒内监听端口 {port}")
-
-
 def load_addons():
     """加载addons目录下的addons.py"""
     addons_dir = Path(__file__).parent / 'addons'
@@ -101,14 +114,17 @@ def load_addons():
     return addons.addons
 
 
-async def run_proxy(port=8080, auto_find_port=True):
+async def run_proxy(port=8080, auto_find_port=True, stop_event=None):
     """启动代理服务器
 
     Args:
         port: 起始端口，默认8080
         auto_find_port: 如果指定端口被占用，是否自动查找可用端口
     """
-    global actual_port
+    global actual_port, _active_master, _active_stop
+    stop_event = stop_event if stop_event is not None else threading.Event()
+    if stop_event.is_set():
+        return
 
     # 如果需要自动查找端口
     if auto_find_port:
@@ -120,7 +136,6 @@ async def run_proxy(port=8080, auto_find_port=True):
         actual_port = port
 
     _update_state(port=port, ready=False, error=None)
-    set_proxy('127.0.0.1', port)
 
     # 确保证书存在，不存在则自动生成
     from backend.cert_generator import ensure_ca_certificate, generate_user_ca_certificate
@@ -146,18 +161,38 @@ async def run_proxy(port=8080, auto_find_port=True):
     #                       （默认是 True，日志文件会被 127.0.0.1:1469: GET http://... 刷满）
     master = DumpMaster(opts, with_termlog=False, with_dumper=False)
 
-    # 加载addons
-    for addon in load_addons():
-        master.addons.add(addon)
+    class Lifecycle:
+        def running(self):
+            # RunningHook 在监听器建立后触发；与退出操作串行，防止关闭后重新启用代理。
+            with _lifecycle_lock:
+                if stop_event.is_set():
+                    master.shutdown()
+                    return
+                try:
+                    if not _can_connect(port):
+                        raise RuntimeError(f'代理端口 {port} 未开始监听')
+                    set_proxy('127.0.0.1', port)
+                    _update_state(ready=True)
+                    print(f'[OK] mitmproxy 已就绪并接管系统代理: 127.0.0.1:{port}')
+                except Exception as exc:
+                    _update_state(error=str(exc))
+                    master.shutdown()
 
-    print(f"[OK] mitmproxy启动成功！监听端口: {port}")
-    print("[INFO] 按 Ctrl+C 停止代理")
-
-    # 后台探测端口是否真的可用
-    threading.Thread(target=_watch_ready, args=(port,), daemon=True).start()
+    # 即使在 run() 初始化期间退出，也会在下一次事件循环迭代发出停止信号。
+    async def watch_stop():
+        while not stop_event.is_set():
+            await asyncio.sleep(.1)
+        master.shutdown()
 
     # 启动代理
+    watcher = None
     try:
+        with _lifecycle_lock:
+            _active_master, _active_stop = master, stop_event
+        for addon in load_addons():
+            master.addons.add(addon)
+        master.addons.add(Lifecycle())
+        watcher = asyncio.create_task(watch_stop())
         await master.run()
     except KeyboardInterrupt:
         print("\n[INFO] 正在停止代理...")
@@ -167,8 +202,13 @@ async def run_proxy(port=8080, auto_find_port=True):
         print(f"[ERROR] mitmproxy 运行出错: {e}")
         raise
     finally:
-        _update_state(ready=False)
-        close_proxy()
+        if watcher is not None:
+            watcher.cancel()
+            await asyncio.gather(watcher, return_exceptions=True)
+        with _lifecycle_lock:
+            _active_master, _active_stop = None, None
+            _update_state(ready=False)
+            close_proxy()
 
     return port
 

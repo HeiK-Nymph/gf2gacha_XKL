@@ -8,6 +8,7 @@ import json
 import shutil
 import subprocess
 import time
+from types import SimpleNamespace
 from datetime import datetime
 from pathlib import Path
 import requests
@@ -96,6 +97,11 @@ class GachaApp:
         self.proxy_running = False  # 新增：代理运行标志
         self._proxy_lock = threading.Lock()    # 防止重复启动代理
         self._capture_lock = threading.Lock()
+        self._closing = threading.Event()
+        self._ssr_lock = threading.Lock()
+        self._ssr_thread = None
+        self._ssr_source = 'none'
+        self._ssr_refresh_started = False
         self.last_capture = None               # mitmproxy 最近一次捕获（内存里的状态）
         self._pending_update = {}              # 最近一次"检查更新"的结果（供 start_update 写进状态文件）
         # 新增：版本管理
@@ -764,7 +770,9 @@ class GachaApp:
         """从 R2 拉取 ssr.json（超时/断网/格式异常一律返回 None，不影响主流程）"""
         try:
             print(f"[SSR] 尝试从 R2 获取五星数据: {self.SSR_REMOTE_URL}")
-            response = requests.get(self.SSR_REMOTE_URL, timeout=timeout)
+            with requests.Session() as session:
+                session.trust_env = False
+                response = session.get(self.SSR_REMOTE_URL, timeout=timeout)
             if response.status_code != 200:
                 print(f"[SSR] R2 返回 HTTP {response.status_code}，忽略")
                 return None
@@ -801,6 +809,58 @@ class GachaApp:
             "status": "success",
             "data": self.ssr_data
         }
+
+    def get_startup_ssr_data(self):
+        """先返回内置表；慢解析和网络刷新只运行一个后台任务。"""
+        with self._ssr_lock:
+            if not self._ssr_refresh_started and not self._closing.is_set():
+                self._ssr_refresh_started = True
+                try:
+                    path = Path(__file__).parent / 'json' / 'ssr.json'
+                    data = json.loads(path.read_text(encoding='utf-8'))
+                    if not isinstance(data, dict) or not data.get('SSR_character'):
+                        raise ValueError('内置五星表无效')
+                    self.ssr_data = data
+                    self._ssr_source = 'local-json'
+                except Exception as exc:
+                    print(f'[STARTUP] 读取内置五星表失败: {exc}')
+
+                def refresh():
+                    started = time.monotonic()
+                    try:
+                        data, source = self._load_ssr_data_impl()
+                        with self._ssr_lock:
+                            if not self._closing.is_set() and source != 'none':
+                                self.ssr_data = dict(data)
+                                self._ssr_source = source
+                    except Exception as exc:
+                        print(f'[STARTUP] 五星表后台刷新失败: {exc}')
+                    finally:
+                        with self._ssr_lock:
+                            self.ssr_loading = False
+                        print(f'[STARTUP] 五星表刷新结束，耗时 {time.monotonic() - started:.2f}s')
+
+                self._ssr_thread = threading.Thread(target=refresh, daemon=True, name='ssr-refresh')
+                self._ssr_thread.start()
+            return {
+                'status': 'success' if self._ssr_source != 'none' else 'error',
+                'source': self._ssr_source,
+                'data': self.ssr_data,
+                'refreshing': self.ssr_loading and not self._closing.is_set(),
+            }
+
+    def _create_js_api(self):
+        """只暴露前端使用的方法，避免桥接反射进入原生窗口及线程。"""
+        names = (
+            'get_startup_ssr_data', 'get_ssr_data', 'load_ssr_data',
+            'get_capture_status', 'get_record_list', 'get_version_info',
+            'get_gacha', 'export_record', 'import_record',
+            'install_cert', 'uninstall_cert', 'open_github', 'open_log_file',
+            'prefetch_share_images', 'copy_image_to_clipboard',
+            'get_update_status', 'mark_update_ok', 'dismiss_update_status',
+            'rollback_update', 'start_update',
+        )
+        return SimpleNamespace(**{name: getattr(self, name) for name in names})
 
     pass
 
@@ -965,7 +1025,7 @@ class GachaApp:
             # 启动更新器（独立进程）
             subprocess.Popen(
                 [str(updater_path)],
-                cwd=str(base_path),
+                cwd=str(_app_root()),
                 creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
             )
             
@@ -1167,13 +1227,16 @@ class GachaApp:
             )
 
             if failed:
-                # 有图没拿到就不要往下走了：留着 https 地址会让 canvas 被污染，
-                # 最后只会抛一句看不懂的 SecurityError
-                print(f"[ERROR] 以下图标未取到，无法生成分享图: {failed[:5]}")
-                return {
-                    "status": "error",
-                    "message": f"有 {len(failed)} 张图标没有取到（网络问题？），请稍后重试",
-                }
+                # 触发组件的错误兜底，替换掉失败的远程图片，分享仍能保留完整记录。
+                print(f"[分享] {len(failed)} 张图标未取到，使用文字占位")
+                self.window.evaluate_js(f"""
+                    (function() {{
+                        var failed = {json.dumps(failed)};
+                        document.querySelectorAll('.screenshot-container img').forEach(function(img) {{
+                            if (failed.includes(img.src)) img.dispatchEvent(new Event('error'));
+                        }});
+                    }})()
+                """)
 
             # ============================================================
             # 步骤2：注入 data URI
@@ -1316,13 +1379,16 @@ class GachaApp:
         """
         from backend.proxy import set_proxy, get_proxy_status
 
+        if self._closing.is_set():
+            return False
         status = get_proxy_status()
         port = status.get("port")
         if not status.get("ready") or not port:
             print(f"[WARN] mitmproxy 未就绪，跳过系统代理设置 (state={status})")
             return False
         try:
-            set_proxy('127.0.0.1', port)
+            if set_proxy('127.0.0.1', port) is False:
+                return False
             print(f"[OK] 系统代理已指向 127.0.0.1:{port}，游戏流量会被捕获")
             return True
         except Exception as e:
@@ -1347,6 +1413,8 @@ class GachaApp:
     def start_proxy(self):
         """在子线程中启动mitmproxy（幂等：重复调用不会起第二个实例）"""
         with self._proxy_lock:
+            if self._closing.is_set():
+                return False
             if self.proxy_thread is not None and self.proxy_thread.is_alive():
                 print("[INFO] mitmproxy 已在运行，跳过重复启动")
                 return False
@@ -1361,7 +1429,7 @@ class GachaApp:
                 print("[INFO] 启动mitmproxy代理...")
                 try:
                     self.proxy_running = True
-                    asyncio.run(run_proxy(8080))
+                    asyncio.run(run_proxy(8080, stop_event=self._closing))
                 except Exception as e:
                     print(f"[ERROR] 代理启动失败: {e}")
                 finally:
@@ -1377,8 +1445,16 @@ class GachaApp:
         捕获文件里有 Authorization，所以按「关掉软件就自动清除」的行为处理
         （界面上不再需要「清除捕获」按钮）。
         """
-        from backend.proxy import close_proxy
-        close_proxy()
+        self._closing.set()
+        try:
+            from backend.proxy import stop_proxy
+            stop_proxy()
+            if self.proxy_thread and self.proxy_thread is not threading.current_thread():
+                self.proxy_thread.join(timeout=2)
+                if self.proxy_thread.is_alive():
+                    print('[SHUTDOWN] 代理清理超过2秒，不再等待后台线程')
+        except Exception as exc:
+            print(f'[SHUTDOWN] 代理清理失败: {exc}')
         self.proxy_running = False
 
         try:
@@ -1394,6 +1470,8 @@ class GachaApp:
     def on_request(self, request_data):
         """mitmproxy 捕获到游戏请求时的回调（运行在代理线程里）"""
         try:
+            if self._closing.is_set():
+                return
             with self._capture_lock:
                 self.last_capture = {
                     "at": datetime.now().strftime("%H:%M:%S"),
@@ -1585,7 +1663,7 @@ class GachaApp:
             url=url,
             width=1200,
             height=800,
-            js_api=self,  # 将整个对象暴露给JS
+            js_api=self._create_js_api(),
             confirm_close=False,  # 询问是否关闭
             resizable=False
         )
@@ -1601,7 +1679,11 @@ class GachaApp:
         # 启动Webview GUI（主线程）
         print("[OK] 启动GUI界面...")
         print("[INFO] 按 Ctrl+C 停止应用")
-        webview.start()
+        try:
+            webview.start()
+        finally:
+            if not self._closing.is_set():
+                self.on_closed()
     
     def _check_and_generate_certificate(self):
         """检查并生成证书（首次运行）"""

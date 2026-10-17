@@ -233,7 +233,9 @@ def _page(next_value, records=1):
 def test_replay_success(tmpdir, capture):
     def responder(url, params, data, headers):
         assert url.startswith("https://gf2-gacha-record.sunborngame.com/list"), url
-        assert headers.get("Content-Length"), headers
+        # aiohttp 在序列化真实表单后计算长度，不能重用捕获请求的旧长度。
+        assert "Content-Length" not in headers, headers
+        assert headers.get("Authorization") == "tok-1234", headers
         return 200, _page("" if "next" in data else "p2")
 
     _install_aiohttp_stub(responder)

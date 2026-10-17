@@ -87,23 +87,23 @@
       <div class="screenshot-pools-row">
         <div class="screenshot-pool-item" v-show="sharePoolChecked('character')">
           <span class="screenshot-pool-title">角色池</span>
-          <GachaItem pool_type="character" :hideRawButton="true" />
+          <GachaItem pool_type="character" share-mode />
         </div>
         <div class="screenshot-pool-item" v-show="sharePoolChecked('weapon')">
           <span class="screenshot-pool-title">武器池</span>
-          <GachaItem pool_type="weapon" :hideRawButton="true" />
+          <GachaItem pool_type="weapon" share-mode />
         </div>
         <div class="screenshot-pool-item" v-show="sharePoolChecked('permanent')">
           <span class="screenshot-pool-title">常驻池</span>
-          <GachaItem pool_type="permanent" :hideRawButton="true" />
+          <GachaItem pool_type="permanent" share-mode />
         </div>
         <div class="screenshot-pool-item" v-show="sharePoolChecked('custom_character')">
           <span class="screenshot-pool-title">自选角色池</span>
-          <GachaItem pool_type="custom_character" :hideRawButton="true" />
+          <GachaItem pool_type="custom_character" share-mode />
         </div>
         <div class="screenshot-pool-item" v-show="sharePoolChecked('custom_weapon')">
           <span class="screenshot-pool-title">自选武器池</span>
-          <GachaItem pool_type="custom_weapon" :hideRawButton="true" />
+          <GachaItem pool_type="custom_weapon" share-mode />
         </div>
       </div>
     </div>
@@ -189,6 +189,7 @@
   import {useGachaRecordStore} from '@/stores/gachaRecord'
   import {useSSRStore} from '@/stores/ssr'
   import versionInfo from '@/../../version.json'
+  import {waitForApi, withTimeout} from './utils/bridge'
 
 
   const gachaRecordStore = useGachaRecordStore()
@@ -317,19 +318,8 @@
   })
 
   // 等 pywebview 注入 api（页面脚本有时比后端就绪更早）
-  const waitForApi = () => new Promise((resolve) => {
-    if (window.pywebview && window.pywebview.api) return resolve(true)
-    let tries = 0
-    const timer = setInterval(() => {
-      if (window.pywebview && window.pywebview.api) {
-        clearInterval(timer)
-        resolve(true)
-      } else if (++tries > 100) {
-        clearInterval(timer)
-        resolve(false)
-      }
-    }, 50)
-  })
+  let disposed = false
+  let statusPending = false
 
   const applyStatus = (res, notify) => {
     if (!res || res.status !== 'success') return
@@ -346,11 +336,16 @@
   }
 
   const refreshStatus = async (notify = true) => {
-    if (!(await waitForApi())) return
+    if (disposed || statusPending) return
+    statusPending = true
     try {
-      applyStatus(await window.pywebview.api.get_capture_status(), notify)
+      if (!(await waitForApi()) || disposed) return
+      const result = await withTimeout(window.pywebview.api.get_capture_status())
+      if (!disposed) applyStatus(result, notify)
     } catch (e) {
       console.error('[ERROR] 获取状态失败:', e)
+    } finally {
+      statusPending = false
     }
   }
 
@@ -410,16 +405,11 @@
 
   // 加载记录列表
   const loadRecordList = async () => {
-    // 检查 pywebview 和方法是否已准备好
-    if (!window.pywebview?.api?.get_record_list) {
-      console.log('[INFO] pywebview API 尚未完全就绪，延迟加载记录列表...')
-      // 300ms后重试，避免过于频繁
-      setTimeout(loadRecordList, 300)
-      return
-    }
+    if (!(await waitForApi()) || disposed) return
 
     try {
-      const res = await window.pywebview.api.get_record_list()
+      const res = await withTimeout(window.pywebview.api.get_record_list())
+      if (disposed) return
       if (res.status == 'success') {
         recordList.value = res.data || []
         console.log('[INFO] 记录列表加载成功:', res.data)
@@ -452,7 +442,7 @@
     try {
       // 必须"先读状态"，读完再让后端收尾（mark_update_ok 会把状态改成 ok，
       // 顺序反了这条提示就永远弹不出来）
-      st = await window.pywebview.api.get_update_status()
+      st = await withTimeout(window.pywebview.api.get_update_status())
     } catch (e) {
       console.error('[ERROR] 读取更新状态失败:', e)
       return
@@ -688,6 +678,20 @@
     }
   }
 
+  // 后台刷新结束后按最终来源提示；内置表只用于让页面先显示。
+  watch(() => [ssrStore.source, ssrStore.isRefreshing], ([source, refreshing]) => {
+    if (disposed || refreshing) return
+    if (source === 'local-proto') {
+      ElMessage.success('正在使用最新五星数据')
+    } else if (source === 'remote') {
+      ElMessage.success('正在使用远端五星数据')
+    } else if (source === 'local-json') {
+      ElMessage.warning('正在使用本地五星数据(可能不是最新)')
+    } else if (source === 'error') {
+      ElMessage.error('无法加载五星数据')
+    }
+  })
+
   // 组件挂载时加载数据
   onMounted(async () => {
     // 无论初始化成功还是失败，都必须把遮罩关掉，否则界面会一直转圈没法用
@@ -712,29 +716,22 @@
       await checkUpdateStatus()
       // 界面确实起来了 -> 通知后端收尾更新流程（写 ok + 清理回滚备份/临时文件）
       try {
-        await window.pywebview.api.mark_update_ok()
+        await withTimeout(window.pywebview.api.mark_update_ok(), 10000)
       } catch (e) {
         console.error('[ERROR] 收尾更新流程失败:', e)
       }
     }
     
-    // 显示提示：数据来源按可靠性分三档
-    //   local-proto 本地游戏数据 -> 最新最可靠，绿色
-    //   remote      R2 远端数据  -> 开发者维护的兜底，绿色
-    //   local-json  内置 json    -> 可能不是最新，黄色
-    if (source === 'local-proto') {
-      ElMessage.success('正在使用最新五星数据')
-    } else if (source === 'remote') {
-      ElMessage.success('正在使用远端五星数据')
-    } else if (source === 'local-json') {
-      ElMessage.warning('正在使用本地五星数据(可能不是最新)')
-    } else {
+    if (source === 'error' && !ssrStore.isRefreshing) {
       ElMessage.error('无法加载五星数据')
     }
   })
 
   onUnmounted(() => {
+    disposed = true
     if (statusTimer) clearInterval(statusTimer)
+    clearTimeout(prefetchTimer)
+    ssrStore.stopRefresh()
   })
 
 </script>

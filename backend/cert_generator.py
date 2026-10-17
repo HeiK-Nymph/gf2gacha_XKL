@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from cryptography import x509
 from cryptography.x509.oid import NameOID, ExtensionOID
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 import subprocess
@@ -116,7 +117,7 @@ def generate_user_ca_certificate():
     
     # 保存为 PKCS12 格式（Windows）
     ca_cert_p12_path = cert_dir / "mitmproxy-ca-cert.p12"
-    p12 = serialization.pkcs12.serialize_key_and_certificates(
+    p12 = pkcs12.serialize_key_and_certificates(
         name=b"gf2gacha_XKL_CA",
         key=private_key,
         cert=cert,

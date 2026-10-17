@@ -64,6 +64,10 @@ def check_file(path: Path) -> list[str]:
     script = rest.split("</script>", 1)[0] if "</script>" in rest else rest
 
     defined = set(re.findall(SCRIPT_SYMBOL_RE, text))
+    # 命名导入同样是本模块中已定义的符号（包括 as 别名）。
+    for names in re.findall(r'import\s*\{([^}]+)\}\s*from', script):
+        for name in names.split(','):
+            defined.add(name.strip().split(' as ')[-1].strip())
     for pattern in TEMPLATE_VARS_RE:
         for groups in re.findall(pattern, template):
             for name in (groups if isinstance(groups, tuple) else (groups,)):

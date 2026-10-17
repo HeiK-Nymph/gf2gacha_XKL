@@ -1,0 +1,8225 @@
+{
+  "1001": {
+    "type_id": 1,
+    "type_name": "普通卡池",
+    "name": "常规采购",
+    "start_time": 0,
+    "end_time": 0,
+    "start_time_text": null,
+    "end_time_text": null,
+    "up_5": [],
+    "up_4": []
+  },
+  "1101": {
+    "type_id": 2,
+    "type_name": "武器普通卡池",
+    "name": "常规采购",
+    "start_time": 0,
+    "end_time": 0,
+    "start_time_text": null,
+    "end_time_text": null,
+    "up_5": [],
+    "up_4": []
+  },
+  "2001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "游星",
+    "start_time": 1703124000,
+    "end_time": 1704358799,
+    "start_time_text": "2023-12-21 10:00:00",
+    "end_time_text": "2024-01-04 16:59:59",
+    "up_5": [
+      {
+        "id": 11038,
+        "name": "游星",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11037,
+        "name": "卡拉什-阿尔法",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "3001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "托洛洛",
+    "start_time": 1703124000,
+    "end_time": 1704358799,
+    "start_time_text": "2023-12-21 10:00:00",
+    "end_time_text": "2024-01-04 16:59:59",
+    "up_5": [
+      {
+        "id": 1025,
+        "name": "托洛洛",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "4001": {
+    "type_id": 5,
+    "type_name": "新手卡池",
+    "name": "初始采购",
+    "start_time": 0,
+    "end_time": 0,
+    "start_time_text": null,
+    "end_time_text": null,
+    "up_5": [],
+    "up_4": []
+  },
+  "4101": {
+    "type_id": 5,
+    "type_name": "新手卡池",
+    "name": "独家采购",
+    "start_time": 0,
+    "end_time": 0,
+    "start_time_text": null,
+    "end_time_text": null,
+    "up_5": [],
+    "up_4": []
+  },
+  "5001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "重弦",
+    "start_time": 1703494800,
+    "end_time": 1705913999,
+    "start_time_text": "2023-12-25 17:00:00",
+    "end_time_text": "2024-01-22 16:59:59",
+    "up_5": [
+      {
+        "id": 11053,
+        "name": "重弦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11052,
+        "name": "九五式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "6001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "黛烟",
+    "start_time": 1703494800,
+    "end_time": 1705913999,
+    "start_time_text": "2023-12-25 17:00:00",
+    "end_time_text": "2024-01-22 16:59:59",
+    "up_5": [
+      {
+        "id": 1032,
+        "name": "黛烟",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "7001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "塞布丽娜",
+    "start_time": 1705395600,
+    "end_time": 1706605199,
+    "start_time_text": "2024-01-16 17:00:00",
+    "end_time_text": "2024-01-30 16:59:59",
+    "up_5": [
+      {
+        "id": 1029,
+        "name": "塞布丽娜",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1024,
+        "name": "奇塔",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "8001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "梅扎露娜",
+    "start_time": 1705395600,
+    "end_time": 1706605199,
+    "start_time_text": "2024-01-16 17:00:00",
+    "end_time_text": "2024-01-30 16:59:59",
+    "up_5": [
+      {
+        "id": 11047,
+        "name": "梅扎露娜",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11046,
+        "name": "特殊用途自动型霰弹枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11040,
+        "name": "黑科赫7",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "9001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "桑朵莱希",
+    "start_time": 1705978800,
+    "end_time": 1708657199,
+    "start_time_text": "2024-01-23 11:00:00",
+    "end_time_text": "2024-02-23 10:59:59",
+    "up_5": [
+      {
+        "id": 1028,
+        "name": "桑朵莱希",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      }
+    ]
+  },
+  "10001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "女仆准则",
+    "start_time": 1705978800,
+    "end_time": 1708657199,
+    "start_time_text": "2024-01-23 11:00:00",
+    "end_time_text": "2024-02-23 10:59:59",
+    "up_5": [
+      {
+        "id": 11056,
+        "name": "女仆准则",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11055,
+        "name": "格威尔36",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "11001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "琼玖",
+    "start_time": 1707382800,
+    "end_time": 1708657199,
+    "start_time_text": "2024-02-08 17:00:00",
+    "end_time_text": "2024-02-23 10:59:59",
+    "up_5": [
+      {
+        "id": 1027,
+        "name": "琼玖",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1024,
+        "name": "奇塔",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "12001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "金石奏",
+    "start_time": 1707382800,
+    "end_time": 1708657199,
+    "start_time_text": "2024-02-08 17:00:00",
+    "end_time_text": "2024-02-23 10:59:59",
+    "up_5": [
+      {
+        "id": 11044,
+        "name": "金石奏",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11043,
+        "name": "一九一式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      },
+      {
+        "id": 11040,
+        "name": "黑科赫7",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "13001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱娜",
+    "start_time": 1708657200,
+    "end_time": 1711421999,
+    "start_time_text": "2024-02-23 11:00:00",
+    "end_time_text": "2024-03-26 10:59:59",
+    "up_5": [
+      {
+        "id": 1013,
+        "name": "莱娜",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "14001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "幼狮",
+    "start_time": 1708657200,
+    "end_time": 1711421999,
+    "start_time_text": "2024-02-23 11:00:00",
+    "end_time_text": "2024-03-26 10:59:59",
+    "up_5": [
+      {
+        "id": 10133,
+        "name": "幼狮",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10132,
+        "name": "通用冲锋枪9",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "15001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "黛烟",
+    "start_time": 1712653200,
+    "end_time": 1714445999,
+    "start_time_text": "2024-04-09 17:00:00",
+    "end_time_text": "2024-04-30 10:59:59",
+    "up_5": [
+      {
+        "id": 1032,
+        "name": "黛烟",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "16001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "重弦",
+    "start_time": 1712653200,
+    "end_time": 1714445999,
+    "start_time_text": "2024-04-09 17:00:00",
+    "end_time_text": "2024-04-30 10:59:59",
+    "up_5": [
+      {
+        "id": 11053,
+        "name": "重弦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11052,
+        "name": "九五式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "17001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "绛雨",
+    "start_time": 1711422000,
+    "end_time": 1714445999,
+    "start_time_text": "2024-03-26 11:00:00",
+    "end_time_text": "2024-04-30 10:59:59",
+    "up_5": [
+      {
+        "id": 1035,
+        "name": "绛雨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      },
+      {
+        "id": 1024,
+        "name": "奇塔",
+        "kind": "character"
+      }
+    ]
+  },
+  "18001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "跃虎",
+    "start_time": 1711422000,
+    "end_time": 1714445999,
+    "start_time_text": "2024-03-26 11:00:00",
+    "end_time_text": "2024-04-30 10:59:59",
+    "up_5": [
+      {
+        "id": 10353,
+        "name": "跃虎",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10352,
+        "name": "九七式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      },
+      {
+        "id": 11040,
+        "name": "黑科赫7",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "19001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莫辛纳甘",
+    "start_time": 1709629200,
+    "end_time": 1711421999,
+    "start_time_text": "2024-03-05 17:00:00",
+    "end_time_text": "2024-03-26 10:59:59",
+    "up_5": [
+      {
+        "id": 1033,
+        "name": "莫辛纳甘",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      }
+    ]
+  },
+  "20001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "斯摩希克",
+    "start_time": 1709629200,
+    "end_time": 1711421999,
+    "start_time_text": "2024-03-05 17:00:00",
+    "end_time_text": "2024-03-26 10:59:59",
+    "up_5": [
+      {
+        "id": 10333,
+        "name": "斯摩希克",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10332,
+        "name": "莫辛-纳甘",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "21001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "佩里缇亚",
+    "start_time": 1711422000,
+    "end_time": 1712653199,
+    "start_time_text": "2024-03-26 11:00:00",
+    "end_time_text": "2024-04-09 16:59:59",
+    "up_5": [
+      {
+        "id": 1021,
+        "name": "佩里缇亚",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "22001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "光学幻境",
+    "start_time": 1711422000,
+    "end_time": 1712653199,
+    "start_time_text": "2024-03-26 11:00:00",
+    "end_time_text": "2024-04-09 16:59:59",
+    "up_5": [
+      {
+        "id": 11020,
+        "name": "光学幻境",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11026,
+        "name": "佩切涅",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "23001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "玛绮朵",
+    "start_time": 1714446000,
+    "end_time": 1717556399,
+    "start_time_text": "2024-04-30 11:00:00",
+    "end_time_text": "2024-06-05 10:59:59",
+    "up_5": [
+      {
+        "id": 1034,
+        "name": "玛绮朵",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      },
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      }
+    ]
+  },
+  "24001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "苦涩焦糖",
+    "start_time": 1714446000,
+    "end_time": 1717556399,
+    "start_time_text": "2024-04-30 11:00:00",
+    "end_time_text": "2024-06-05 10:59:59",
+    "up_5": [
+      {
+        "id": 10343,
+        "name": "苦涩焦糖",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10342,
+        "name": "瓦尔特2000",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "25001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "桑朵莱希",
+    "start_time": 1715677200,
+    "end_time": 1717556399,
+    "start_time_text": "2024-05-14 17:00:00",
+    "end_time_text": "2024-06-05 10:59:59",
+    "up_5": [
+      {
+        "id": 1028,
+        "name": "桑朵莱希",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "26001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "女仆准则",
+    "start_time": 1715677200,
+    "end_time": 1717556399,
+    "start_time_text": "2024-05-14 17:00:00",
+    "end_time_text": "2024-06-05 10:59:59",
+    "up_5": [
+      {
+        "id": 11056,
+        "name": "女仆准则",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11055,
+        "name": "格威尔36",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "27001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "乌尔丽德",
+    "start_time": 1717556400,
+    "end_time": 1719284399,
+    "start_time_text": "2024-06-05 11:00:00",
+    "end_time_text": "2024-06-25 10:59:59",
+    "up_5": [
+      {
+        "id": 1037,
+        "name": "乌尔丽德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      },
+      {
+        "id": 1024,
+        "name": "奇塔",
+        "kind": "character"
+      }
+    ]
+  },
+  "28001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流羽白英",
+    "start_time": 1717556400,
+    "end_time": 1719284399,
+    "start_time_text": "2024-06-05 11:00:00",
+    "end_time_text": "2024-06-25 10:59:59",
+    "up_5": [
+      {
+        "id": 10373,
+        "name": "流羽白英",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10372,
+        "name": "羽锋",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      },
+      {
+        "id": 11040,
+        "name": "黑科赫7",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "29001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱娜",
+    "start_time": 1717556400,
+    "end_time": 1719284399,
+    "start_time_text": "2024-06-05 11:00:00",
+    "end_time_text": "2024-06-25 10:59:59",
+    "up_5": [
+      {
+        "id": 1013,
+        "name": "莱娜",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "30001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "幼狮",
+    "start_time": 1717556400,
+    "end_time": 1719284399,
+    "start_time_text": "2024-06-05 11:00:00",
+    "end_time_text": "2024-06-25 10:59:59",
+    "up_5": [
+      {
+        "id": 10133,
+        "name": "幼狮",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10132,
+        "name": "通用冲锋枪9",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "31001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "索米",
+    "start_time": 1719284400,
+    "end_time": 1721098799,
+    "start_time_text": "2024-06-25 11:00:00",
+    "end_time_text": "2024-07-16 10:59:59",
+    "up_5": [
+      {
+        "id": 1039,
+        "name": "索米",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      },
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      }
+    ]
+  },
+  "32001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "未言使命",
+    "start_time": 1719284400,
+    "end_time": 1721098799,
+    "start_time_text": "2024-06-25 11:00:00",
+    "end_time_text": "2024-07-16 10:59:59",
+    "up_5": [
+      {
+        "id": 10393,
+        "name": "未言使命",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10392,
+        "name": "索米",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "33001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "绛雨",
+    "start_time": 1719284400,
+    "end_time": 1721098799,
+    "start_time_text": "2024-06-25 11:00:00",
+    "end_time_text": "2024-07-16 10:59:59",
+    "up_5": [
+      {
+        "id": 1035,
+        "name": "绛雨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "34001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "跃虎",
+    "start_time": 1719284400,
+    "end_time": 1721098799,
+    "start_time_text": "2024-06-25 11:00:00",
+    "end_time_text": "2024-07-16 10:59:59",
+    "up_5": [
+      {
+        "id": 10353,
+        "name": "跃虎",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10352,
+        "name": "九七式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "35001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "杜莎妮",
+    "start_time": 1721098800,
+    "end_time": 1722913199,
+    "start_time_text": "2024-07-16 11:00:00",
+    "end_time_text": "2024-08-06 10:59:59",
+    "up_5": [
+      {
+        "id": 1023,
+        "name": "杜莎妮",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "36001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "传颂之诗",
+    "start_time": 1721098800,
+    "end_time": 1722913199,
+    "start_time_text": "2024-07-16 11:00:00",
+    "end_time_text": "2024-08-06 10:59:59",
+    "up_5": [
+      {
+        "id": 10233,
+        "name": "传颂之诗",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10232,
+        "name": "科夫罗夫",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "37001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "玛绮朵",
+    "start_time": 1721098800,
+    "end_time": 1722913199,
+    "start_time_text": "2024-07-16 11:00:00",
+    "end_time_text": "2024-08-06 10:59:59",
+    "up_5": [
+      {
+        "id": 1034,
+        "name": "玛绮朵",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "38001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "苦涩焦糖",
+    "start_time": 1721098800,
+    "end_time": 1722913199,
+    "start_time_text": "2024-07-16 11:00:00",
+    "end_time_text": "2024-08-06 10:59:59",
+    "up_5": [
+      {
+        "id": 10343,
+        "name": "苦涩焦糖",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10342,
+        "name": "瓦尔特2000",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "39001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "朝晖",
+    "start_time": 1722913200,
+    "end_time": 1724705999,
+    "start_time_text": "2024-08-06 11:00:00",
+    "end_time_text": "2024-08-27 04:59:59",
+    "up_5": [
+      {
+        "id": 1050,
+        "name": "朝晖",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      },
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      }
+    ]
+  },
+  "40001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "不留行",
+    "start_time": 1722913200,
+    "end_time": 1724705999,
+    "start_time_text": "2024-08-06 11:00:00",
+    "end_time_text": "2024-08-27 04:59:59",
+    "up_5": [
+      {
+        "id": 10503,
+        "name": "不留行",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10502,
+        "name": "长风零六",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "41001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "乌尔丽德",
+    "start_time": 1722913200,
+    "end_time": 1724705999,
+    "start_time_text": "2024-08-06 11:00:00",
+    "end_time_text": "2024-08-27 04:59:59",
+    "up_5": [
+      {
+        "id": 1037,
+        "name": "乌尔丽德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "42001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流羽白英",
+    "start_time": 1722913200,
+    "end_time": 1724705999,
+    "start_time_text": "2024-08-06 11:00:00",
+    "end_time_text": "2024-08-27 04:59:59",
+    "up_5": [
+      {
+        "id": 10373,
+        "name": "流羽白英",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10372,
+        "name": "羽锋",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "43001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "可露凯",
+    "start_time": 1724706000,
+    "end_time": 1726714799,
+    "start_time_text": "2024-08-27 05:00:00",
+    "end_time_text": "2024-09-19 10:59:59",
+    "up_5": [
+      {
+        "id": 1052,
+        "name": "可露凯",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "44001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "斯库拉",
+    "start_time": 1724706000,
+    "end_time": 1726714799,
+    "start_time_text": "2024-08-27 05:00:00",
+    "end_time_text": "2024-09-19 10:59:59",
+    "up_5": [
+      {
+        "id": 10523,
+        "name": "斯库拉",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10522,
+        "name": "黑克勒科赫416",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "45001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "索米",
+    "start_time": 1724706000,
+    "end_time": 1726714799,
+    "start_time_text": "2024-08-27 05:00:00",
+    "end_time_text": "2024-09-19 10:59:59",
+    "up_5": [
+      {
+        "id": 1039,
+        "name": "索米",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "46001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "未言使命",
+    "start_time": 1724706000,
+    "end_time": 1726714799,
+    "start_time_text": "2024-08-27 05:00:00",
+    "end_time_text": "2024-09-19 10:59:59",
+    "up_5": [
+      {
+        "id": 10393,
+        "name": "未言使命",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10392,
+        "name": "索米",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "47001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "米什缇",
+    "start_time": 1726714800,
+    "end_time": 1728442799,
+    "start_time_text": "2024-09-19 11:00:00",
+    "end_time_text": "2024-10-09 10:59:59",
+    "up_5": [
+      {
+        "id": 1051,
+        "name": "米什缇",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "48001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "白日梦",
+    "start_time": 1726714800,
+    "end_time": 1728442799,
+    "start_time_text": "2024-09-19 11:00:00",
+    "end_time_text": "2024-10-09 10:59:59",
+    "up_5": [
+      {
+        "id": 10513,
+        "name": "白日梦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10512,
+        "name": "无壳弹步枪11",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "49001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "杜莎妮",
+    "start_time": 1726714800,
+    "end_time": 1728442799,
+    "start_time_text": "2024-09-19 11:00:00",
+    "end_time_text": "2024-10-09 10:59:59",
+    "up_5": [
+      {
+        "id": 1023,
+        "name": "杜莎妮",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      },
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      }
+    ]
+  },
+  "50001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "传颂之诗",
+    "start_time": 1726714800,
+    "end_time": 1728442799,
+    "start_time_text": "2024-09-19 11:00:00",
+    "end_time_text": "2024-10-09 10:59:59",
+    "up_5": [
+      {
+        "id": 10233,
+        "name": "传颂之诗",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10232,
+        "name": "科夫罗夫",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "51001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "维克托",
+    "start_time": 1728432000,
+    "end_time": 1730159999,
+    "start_time_text": "2024-10-09 08:00:00",
+    "end_time_text": "2024-10-29 07:59:59",
+    "up_5": [
+      {
+        "id": 1044,
+        "name": "维克托",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "52001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "报丧轻语",
+    "start_time": 1728432000,
+    "end_time": 1730159999,
+    "start_time_text": "2024-10-09 08:00:00",
+    "end_time_text": "2024-10-29 07:59:59",
+    "up_5": [
+      {
+        "id": 10443,
+        "name": "报丧轻语",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10442,
+        "name": "短剑",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "53001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "朝晖",
+    "start_time": 1728432000,
+    "end_time": 1730159999,
+    "start_time_text": "2024-10-09 08:00:00",
+    "end_time_text": "2024-10-29 07:59:59",
+    "up_5": [
+      {
+        "id": 1050,
+        "name": "朝晖",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "54001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "不留行",
+    "start_time": 1728432000,
+    "end_time": 1730159999,
+    "start_time_text": "2024-10-09 08:00:00",
+    "end_time_text": "2024-10-29 07:59:59",
+    "up_5": [
+      {
+        "id": 10503,
+        "name": "不留行",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10502,
+        "name": "长风零六",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "55001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "比悠卡",
+    "start_time": 1730160000,
+    "end_time": 1731974399,
+    "start_time_text": "2024-10-29 08:00:00",
+    "end_time_text": "2024-11-19 07:59:59",
+    "up_5": [
+      {
+        "id": 1045,
+        "name": "比悠卡",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "56001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "林野精灵",
+    "start_time": 1730160000,
+    "end_time": 1731974399,
+    "start_time_text": "2024-10-29 08:00:00",
+    "end_time_text": "2024-11-19 07:59:59",
+    "up_5": [
+      {
+        "id": 10453,
+        "name": "林野精灵",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10452,
+        "name": "格威尔28",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "57001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "可露凯",
+    "start_time": 1730160000,
+    "end_time": 1731974399,
+    "start_time_text": "2024-10-29 08:00:00",
+    "end_time_text": "2024-11-19 07:59:59",
+    "up_5": [
+      {
+        "id": 1052,
+        "name": "可露凯",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "58001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "斯库拉",
+    "start_time": 1730160000,
+    "end_time": 1731974399,
+    "start_time_text": "2024-10-29 08:00:00",
+    "end_time_text": "2024-11-19 07:59:59",
+    "up_5": [
+      {
+        "id": 10523,
+        "name": "斯库拉",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10522,
+        "name": "黑克勒科赫416",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "59001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "安朵丝",
+    "start_time": 1731974400,
+    "end_time": 1733777999,
+    "start_time_text": "2024-11-19 08:00:00",
+    "end_time_text": "2024-12-10 04:59:59",
+    "up_5": [
+      {
+        "id": 1042,
+        "name": "安朵丝",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "60001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "阿格莱亚",
+    "start_time": 1731974400,
+    "end_time": 1733777999,
+    "start_time_text": "2024-11-19 08:00:00",
+    "end_time_text": "2024-12-10 04:59:59",
+    "up_5": [
+      {
+        "id": 10423,
+        "name": "阿格莱亚",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10422,
+        "name": "格威尔36-斯佩凯芙特",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "61001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "米什缇",
+    "start_time": 1731974400,
+    "end_time": 1733777999,
+    "start_time_text": "2024-11-19 08:00:00",
+    "end_time_text": "2024-12-10 04:59:59",
+    "up_5": [
+      {
+        "id": 1051,
+        "name": "米什缇",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "62001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "白日梦",
+    "start_time": 1731974400,
+    "end_time": 1733777999,
+    "start_time_text": "2024-11-19 08:00:00",
+    "end_time_text": "2024-12-10 04:59:59",
+    "up_5": [
+      {
+        "id": 10513,
+        "name": "白日梦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10512,
+        "name": "无壳弹步枪11",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "63001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "绛雨",
+    "start_time": 1731974400,
+    "end_time": 1733777999,
+    "start_time_text": "2024-11-19 08:00:00",
+    "end_time_text": "2024-12-10 04:59:59",
+    "up_5": [
+      {
+        "id": 1035,
+        "name": "绛雨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "64001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "跃虎",
+    "start_time": 1731974400,
+    "end_time": 1733777999,
+    "start_time_text": "2024-11-19 08:00:00",
+    "end_time_text": "2024-12-10 04:59:59",
+    "up_5": [
+      {
+        "id": 10353,
+        "name": "跃虎",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10352,
+        "name": "九七式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "65001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "春田",
+    "start_time": 1733778000,
+    "end_time": 1735603199,
+    "start_time_text": "2024-12-10 05:00:00",
+    "end_time_text": "2024-12-31 07:59:59",
+    "up_5": [
+      {
+        "id": 1047,
+        "name": "春田",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "66001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "信仰棘光",
+    "start_time": 1733778000,
+    "end_time": 1735603199,
+    "start_time_text": "2024-12-10 05:00:00",
+    "end_time_text": "2024-12-31 07:59:59",
+    "up_5": [
+      {
+        "id": 10473,
+        "name": "信仰棘光",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10472,
+        "name": "斯普林菲尔德",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "67001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "维克托",
+    "start_time": 1733778000,
+    "end_time": 1735603199,
+    "start_time_text": "2024-12-10 05:00:00",
+    "end_time_text": "2024-12-31 07:59:59",
+    "up_5": [
+      {
+        "id": 1044,
+        "name": "维克托",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "68001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "报丧轻语",
+    "start_time": 1733778000,
+    "end_time": 1735603199,
+    "start_time_text": "2024-12-10 05:00:00",
+    "end_time_text": "2024-12-31 07:59:59",
+    "up_5": [
+      {
+        "id": 10443,
+        "name": "报丧轻语",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10442,
+        "name": "短剑",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "69001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "玛绮朵",
+    "start_time": 1733778000,
+    "end_time": 1735603199,
+    "start_time_text": "2024-12-10 05:00:00",
+    "end_time_text": "2024-12-31 07:59:59",
+    "up_5": [
+      {
+        "id": 1034,
+        "name": "玛绮朵",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "70001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "苦涩焦糖",
+    "start_time": 1733778000,
+    "end_time": 1735603199,
+    "start_time_text": "2024-12-10 05:00:00",
+    "end_time_text": "2024-12-31 07:59:59",
+    "up_5": [
+      {
+        "id": 10343,
+        "name": "苦涩焦糖",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10342,
+        "name": "瓦尔特2000",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "71001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "佩莉",
+    "start_time": 1735603200,
+    "end_time": 1737417599,
+    "start_time_text": "2024-12-31 08:00:00",
+    "end_time_text": "2025-01-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1053,
+        "name": "佩莉",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "72001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "厄梅尼塔",
+    "start_time": 1735603200,
+    "end_time": 1737417599,
+    "start_time_text": "2024-12-31 08:00:00",
+    "end_time_text": "2025-01-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10533,
+        "name": "厄梅尼塔",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10532,
+        "name": "五号九毫米冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "73001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "比悠卡",
+    "start_time": 1735603200,
+    "end_time": 1737417599,
+    "start_time_text": "2024-12-31 08:00:00",
+    "end_time_text": "2025-01-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1045,
+        "name": "比悠卡",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "74001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "林野精灵",
+    "start_time": 1735603200,
+    "end_time": 1737417599,
+    "start_time_text": "2024-12-31 08:00:00",
+    "end_time_text": "2025-01-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10453,
+        "name": "林野精灵",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10452,
+        "name": "格威尔28",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "75001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "桑朵莱希",
+    "start_time": 1735603200,
+    "end_time": 1737417599,
+    "start_time_text": "2024-12-31 08:00:00",
+    "end_time_text": "2025-01-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1028,
+        "name": "桑朵莱希",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "76001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "女仆准则",
+    "start_time": 1735603200,
+    "end_time": 1737417599,
+    "start_time_text": "2024-12-31 08:00:00",
+    "end_time_text": "2025-01-21 07:59:59",
+    "up_5": [
+      {
+        "id": 11056,
+        "name": "女仆准则",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11055,
+        "name": "格威尔36",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "77001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "秋桦",
+    "start_time": 1737417600,
+    "end_time": 1739231999,
+    "start_time_text": "2025-01-21 08:00:00",
+    "end_time_text": "2025-02-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1048,
+        "name": "秋桦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "78001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "逐光",
+    "start_time": 1737417600,
+    "end_time": 1739231999,
+    "start_time_text": "2025-01-21 08:00:00",
+    "end_time_text": "2025-02-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10483,
+        "name": "逐光",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10482,
+        "name": "九七式霰",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "79001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "安朵丝",
+    "start_time": 1737417600,
+    "end_time": 1739231999,
+    "start_time_text": "2025-01-21 08:00:00",
+    "end_time_text": "2025-02-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1042,
+        "name": "安朵丝",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "80001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "阿格莱亚",
+    "start_time": 1737417600,
+    "end_time": 1739231999,
+    "start_time_text": "2025-01-21 08:00:00",
+    "end_time_text": "2025-02-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10423,
+        "name": "阿格莱亚",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10422,
+        "name": "格威尔36-斯佩凯芙特",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "81001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "米什缇",
+    "start_time": 1737417600,
+    "end_time": 1739231999,
+    "start_time_text": "2025-01-21 08:00:00",
+    "end_time_text": "2025-02-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1051,
+        "name": "米什缇",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "82001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "白日梦",
+    "start_time": 1737417600,
+    "end_time": 1739231999,
+    "start_time_text": "2025-01-21 08:00:00",
+    "end_time_text": "2025-02-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10513,
+        "name": "白日梦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10512,
+        "name": "无壳弹步枪11",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "83001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "幼熙",
+    "start_time": 1739232000,
+    "end_time": 1741046399,
+    "start_time_text": "2025-02-11 08:00:00",
+    "end_time_text": "2025-03-04 07:59:59",
+    "up_5": [
+      {
+        "id": 1054,
+        "name": "幼熙",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "84001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流光花火",
+    "start_time": 1739232000,
+    "end_time": 1741046399,
+    "start_time_text": "2025-02-11 08:00:00",
+    "end_time_text": "2025-03-04 07:59:59",
+    "up_5": [
+      {
+        "id": 10543,
+        "name": "流光花火",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10542,
+        "name": "卡宾刻2型",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "85001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "春田",
+    "start_time": 1739232000,
+    "end_time": 1741046399,
+    "start_time_text": "2025-02-11 08:00:00",
+    "end_time_text": "2025-03-04 07:59:59",
+    "up_5": [
+      {
+        "id": 1047,
+        "name": "春田",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "86001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "信仰棘光",
+    "start_time": 1739232000,
+    "end_time": 1741046399,
+    "start_time_text": "2025-02-11 08:00:00",
+    "end_time_text": "2025-03-04 07:59:59",
+    "up_5": [
+      {
+        "id": 10473,
+        "name": "信仰棘光",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10472,
+        "name": "斯普林菲尔德",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "87001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "黛烟",
+    "start_time": 1739232000,
+    "end_time": 1741046399,
+    "start_time_text": "2025-02-11 08:00:00",
+    "end_time_text": "2025-03-04 07:59:59",
+    "up_5": [
+      {
+        "id": 1032,
+        "name": "黛烟",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "88001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "重弦",
+    "start_time": 1739232000,
+    "end_time": 1741046399,
+    "start_time_text": "2025-02-11 08:00:00",
+    "end_time_text": "2025-03-04 07:59:59",
+    "up_5": [
+      {
+        "id": 11053,
+        "name": "重弦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11052,
+        "name": "九五式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "98001": {
+    "type_id": 9,
+    "type_name": "皮肤卡池",
+    "name": "新装采购·第1期",
+    "start_time": 1753977600,
+    "end_time": 1782770399,
+    "start_time_text": "2025-08-01 00:00:00",
+    "end_time_text": "2026-06-30 05:59:59",
+    "up_5": [],
+    "up_4": []
+  },
+  "99001": {
+    "type_id": 8,
+    "type_name": "调度室卡池",
+    "name": "神秘箱",
+    "start_time": 1689476400,
+    "end_time": 4089668399,
+    "start_time_text": "2023-07-16 11:00:00",
+    "end_time_text": "2099-08-06 10:59:59",
+    "up_5": [],
+    "up_4": []
+  },
+  "100001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "妮基塔",
+    "start_time": 1741046400,
+    "end_time": 1742853599,
+    "start_time_text": "2025-03-04 08:00:00",
+    "end_time_text": "2025-03-25 05:59:59",
+    "up_5": [
+      {
+        "id": 1055,
+        "name": "妮基塔",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "101001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "护梦银翼",
+    "start_time": 1741046400,
+    "end_time": 1742853599,
+    "start_time_text": "2025-03-04 08:00:00",
+    "end_time_text": "2025-03-25 05:59:59",
+    "up_5": [
+      {
+        "id": 10553,
+        "name": "护梦银翼",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10552,
+        "name": "维斯卡94",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "102001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "佩莉",
+    "start_time": 1741046400,
+    "end_time": 1742853599,
+    "start_time_text": "2025-03-04 08:00:00",
+    "end_time_text": "2025-03-25 05:59:59",
+    "up_5": [
+      {
+        "id": 1053,
+        "name": "佩莉",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "103001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "厄梅尼塔",
+    "start_time": 1741046400,
+    "end_time": 1742853599,
+    "start_time_text": "2025-03-04 08:00:00",
+    "end_time_text": "2025-03-25 05:59:59",
+    "up_5": [
+      {
+        "id": 10533,
+        "name": "厄梅尼塔",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10532,
+        "name": "五号九毫米冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "104001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "可露凯",
+    "start_time": 1741046400,
+    "end_time": 1742853599,
+    "start_time_text": "2025-03-04 08:00:00",
+    "end_time_text": "2025-03-25 05:59:59",
+    "up_5": [
+      {
+        "id": 1052,
+        "name": "可露凯",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "105001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "斯库拉",
+    "start_time": 1741046400,
+    "end_time": 1742853599,
+    "start_time_text": "2025-03-04 08:00:00",
+    "end_time_text": "2025-03-25 05:59:59",
+    "up_5": [
+      {
+        "id": 10523,
+        "name": "斯库拉",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10522,
+        "name": "黑克勒科赫416",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "106001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱娅",
+    "start_time": 1742853600,
+    "end_time": 1744675199,
+    "start_time_text": "2025-03-25 06:00:00",
+    "end_time_text": "2025-04-15 07:59:59",
+    "up_5": [
+      {
+        "id": 1056,
+        "name": "莱娅",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "107001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "狡狐",
+    "start_time": 1742853600,
+    "end_time": 1744675199,
+    "start_time_text": "2025-03-25 06:00:00",
+    "end_time_text": "2025-04-15 07:59:59",
+    "up_5": [
+      {
+        "id": 10563,
+        "name": "狡狐",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10562,
+        "name": "通用冲锋枪45",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "108001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "秋桦",
+    "start_time": 1742853600,
+    "end_time": 1744675199,
+    "start_time_text": "2025-03-25 06:00:00",
+    "end_time_text": "2025-04-15 07:59:59",
+    "up_5": [
+      {
+        "id": 1048,
+        "name": "秋桦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "109001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "逐光",
+    "start_time": 1742853600,
+    "end_time": 1744675199,
+    "start_time_text": "2025-03-25 06:00:00",
+    "end_time_text": "2025-04-15 07:59:59",
+    "up_5": [
+      {
+        "id": 10483,
+        "name": "逐光",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10482,
+        "name": "九七式霰",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "110001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "杜莎妮",
+    "start_time": 1742853600,
+    "end_time": 1744675199,
+    "start_time_text": "2025-03-25 06:00:00",
+    "end_time_text": "2025-04-15 07:59:59",
+    "up_5": [
+      {
+        "id": 1023,
+        "name": "杜莎妮",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "111001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "传颂之诗",
+    "start_time": 1742853600,
+    "end_time": 1744675199,
+    "start_time_text": "2025-03-25 06:00:00",
+    "end_time_text": "2025-04-15 07:59:59",
+    "up_5": [
+      {
+        "id": 10233,
+        "name": "传颂之诗",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10232,
+        "name": "科夫罗夫",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "112001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "洛贝拉",
+    "start_time": 1744675200,
+    "end_time": 1746482399,
+    "start_time_text": "2025-04-15 08:00:00",
+    "end_time_text": "2025-05-06 05:59:59",
+    "up_5": [
+      {
+        "id": 1057,
+        "name": "洛贝拉",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "113001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流浪者赞歌",
+    "start_time": 1744675200,
+    "end_time": 1746482399,
+    "start_time_text": "2025-04-15 08:00:00",
+    "end_time_text": "2025-05-06 05:59:59",
+    "up_5": [
+      {
+        "id": 10573,
+        "name": "流浪者赞歌",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10572,
+        "name": "柯尔特635型冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "114001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "幼熙",
+    "start_time": 1744675200,
+    "end_time": 1746482399,
+    "start_time_text": "2025-04-15 08:00:00",
+    "end_time_text": "2025-05-06 05:59:59",
+    "up_5": [
+      {
+        "id": 1054,
+        "name": "幼熙",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "115001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流光花火",
+    "start_time": 1744675200,
+    "end_time": 1746482399,
+    "start_time_text": "2025-04-15 08:00:00",
+    "end_time_text": "2025-05-06 05:59:59",
+    "up_5": [
+      {
+        "id": 10543,
+        "name": "流光花火",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10542,
+        "name": "卡宾刻2型",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "116001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "索米",
+    "start_time": 1744675200,
+    "end_time": 1746482399,
+    "start_time_text": "2025-04-15 08:00:00",
+    "end_time_text": "2025-05-06 05:59:59",
+    "up_5": [
+      {
+        "id": 1039,
+        "name": "索米",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "117001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "未言使命",
+    "start_time": 1744675200,
+    "end_time": 1746482399,
+    "start_time_text": "2025-04-15 08:00:00",
+    "end_time_text": "2025-05-06 05:59:59",
+    "up_5": [
+      {
+        "id": 10393,
+        "name": "未言使命",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10392,
+        "name": "索米",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "118001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱妮",
+    "start_time": 1746482400,
+    "end_time": 1748303999,
+    "start_time_text": "2025-05-06 06:00:00",
+    "end_time_text": "2025-05-27 07:59:59",
+    "up_5": [
+      {
+        "id": 1058,
+        "name": "莱妮",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "119001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "骄阳构想",
+    "start_time": 1746482400,
+    "end_time": 1748303999,
+    "start_time_text": "2025-05-06 06:00:00",
+    "end_time_text": "2025-05-27 07:59:59",
+    "up_5": [
+      {
+        "id": 10583,
+        "name": "骄阳构想",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10582,
+        "name": "通用冲锋枪40",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "120001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "妮基塔",
+    "start_time": 1746482400,
+    "end_time": 1748303999,
+    "start_time_text": "2025-05-06 06:00:00",
+    "end_time_text": "2025-05-27 07:59:59",
+    "up_5": [
+      {
+        "id": 1055,
+        "name": "妮基塔",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "121001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "护梦银翼",
+    "start_time": 1746482400,
+    "end_time": 1748303999,
+    "start_time_text": "2025-05-06 06:00:00",
+    "end_time_text": "2025-05-27 07:59:59",
+    "up_5": [
+      {
+        "id": 10553,
+        "name": "护梦银翼",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10552,
+        "name": "维斯卡94",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "122001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "乌尔丽德",
+    "start_time": 1746482400,
+    "end_time": 1748303999,
+    "start_time_text": "2025-05-06 06:00:00",
+    "end_time_text": "2025-05-27 07:59:59",
+    "up_5": [
+      {
+        "id": 1037,
+        "name": "乌尔丽德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "123001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流羽白英",
+    "start_time": 1746482400,
+    "end_time": 1748303999,
+    "start_time_text": "2025-05-06 06:00:00",
+    "end_time_text": "2025-05-27 07:59:59",
+    "up_5": [
+      {
+        "id": 10373,
+        "name": "流羽白英",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10372,
+        "name": "羽锋",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "124001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "芙洛伦",
+    "start_time": 1748304000,
+    "end_time": 1750118399,
+    "start_time_text": "2025-05-27 08:00:00",
+    "end_time_text": "2025-06-17 07:59:59",
+    "up_5": [
+      {
+        "id": 1064,
+        "name": "芙洛伦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "125001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "伊阿索",
+    "start_time": 1748304000,
+    "end_time": 1750118399,
+    "start_time_text": "2025-05-27 08:00:00",
+    "end_time_text": "2025-06-17 07:59:59",
+    "up_5": [
+      {
+        "id": 10643,
+        "name": "伊阿索",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10642,
+        "name": "15型自动手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "126001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱娅",
+    "start_time": 1748304000,
+    "end_time": 1750118399,
+    "start_time_text": "2025-05-27 08:00:00",
+    "end_time_text": "2025-06-17 07:59:59",
+    "up_5": [
+      {
+        "id": 1056,
+        "name": "莱娅",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "127001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "狡狐",
+    "start_time": 1748304000,
+    "end_time": 1750118399,
+    "start_time_text": "2025-05-27 08:00:00",
+    "end_time_text": "2025-06-17 07:59:59",
+    "up_5": [
+      {
+        "id": 10563,
+        "name": "狡狐",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10562,
+        "name": "通用冲锋枪45",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "128001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "春田",
+    "start_time": 1748304000,
+    "end_time": 1750118399,
+    "start_time_text": "2025-05-27 08:00:00",
+    "end_time_text": "2025-06-17 07:59:59",
+    "up_5": [
+      {
+        "id": 1047,
+        "name": "春田",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "129001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "信仰棘光",
+    "start_time": 1748304000,
+    "end_time": 1750118399,
+    "start_time_text": "2025-05-27 08:00:00",
+    "end_time_text": "2025-06-17 07:59:59",
+    "up_5": [
+      {
+        "id": 10473,
+        "name": "信仰棘光",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10472,
+        "name": "斯普林菲尔德",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "130001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "琳德",
+    "start_time": 1750118400,
+    "end_time": 1751925599,
+    "start_time_text": "2025-06-17 08:00:00",
+    "end_time_text": "2025-07-08 05:59:59",
+    "up_5": [
+      {
+        "id": 1059,
+        "name": "琳德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "131001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "刺棘法则",
+    "start_time": 1750118400,
+    "end_time": 1751925599,
+    "start_time_text": "2025-06-17 08:00:00",
+    "end_time_text": "2025-07-08 05:59:59",
+    "up_5": [
+      {
+        "id": 10593,
+        "name": "刺棘法则",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10592,
+        "name": "艾奇逊12自动霰弹枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "132001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "洛贝拉",
+    "start_time": 1750118400,
+    "end_time": 1751925599,
+    "start_time_text": "2025-06-17 08:00:00",
+    "end_time_text": "2025-07-08 05:59:59",
+    "up_5": [
+      {
+        "id": 1057,
+        "name": "洛贝拉",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "133001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流浪者赞歌",
+    "start_time": 1750118400,
+    "end_time": 1751925599,
+    "start_time_text": "2025-06-17 08:00:00",
+    "end_time_text": "2025-07-08 05:59:59",
+    "up_5": [
+      {
+        "id": 10573,
+        "name": "流浪者赞歌",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10572,
+        "name": "柯尔特635型冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "134001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "米什缇",
+    "start_time": 1750118400,
+    "end_time": 1751925599,
+    "start_time_text": "2025-06-17 08:00:00",
+    "end_time_text": "2025-07-08 05:59:59",
+    "up_5": [
+      {
+        "id": 1051,
+        "name": "米什缇",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "135001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "白日梦",
+    "start_time": 1750118400,
+    "end_time": 1751925599,
+    "start_time_text": "2025-06-17 08:00:00",
+    "end_time_text": "2025-07-08 05:59:59",
+    "up_5": [
+      {
+        "id": 10513,
+        "name": "白日梦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10512,
+        "name": "无壳弹步枪11",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "136001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "埃芙",
+    "start_time": 1751925600,
+    "end_time": 1753739999,
+    "start_time_text": "2025-07-08 06:00:00",
+    "end_time_text": "2025-07-29 05:59:59",
+    "up_5": [
+      {
+        "id": 1065,
+        "name": "埃芙",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "137001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "6P33",
+    "start_time": 1751925600,
+    "end_time": 1753739999,
+    "start_time_text": "2025-07-08 06:00:00",
+    "end_time_text": "2025-07-29 05:59:59",
+    "up_5": [
+      {
+        "id": 10653,
+        "name": "6P33",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10652,
+        "name": "尼科诺夫突击步枪94",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "138001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱妮",
+    "start_time": 1751925600,
+    "end_time": 1753739999,
+    "start_time_text": "2025-07-08 06:00:00",
+    "end_time_text": "2025-07-29 05:59:59",
+    "up_5": [
+      {
+        "id": 1058,
+        "name": "莱妮",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "139001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "骄阳构想",
+    "start_time": 1751925600,
+    "end_time": 1753739999,
+    "start_time_text": "2025-07-08 06:00:00",
+    "end_time_text": "2025-07-29 05:59:59",
+    "up_5": [
+      {
+        "id": 10583,
+        "name": "骄阳构想",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10582,
+        "name": "通用冲锋枪40",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "140001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "比悠卡",
+    "start_time": 1751925600,
+    "end_time": 1753739999,
+    "start_time_text": "2025-07-08 06:00:00",
+    "end_time_text": "2025-07-29 05:59:59",
+    "up_5": [
+      {
+        "id": 1045,
+        "name": "比悠卡",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "141001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "林野精灵",
+    "start_time": 1751925600,
+    "end_time": 1753739999,
+    "start_time_text": "2025-07-08 06:00:00",
+    "end_time_text": "2025-07-29 05:59:59",
+    "up_5": [
+      {
+        "id": 10453,
+        "name": "林野精灵",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10452,
+        "name": "格威尔28",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "142001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "威玛西娜",
+    "start_time": 1753740000,
+    "end_time": 1756166399,
+    "start_time_text": "2025-07-29 06:00:00",
+    "end_time_text": "2025-08-26 07:59:59",
+    "up_5": [
+      {
+        "id": 1066,
+        "name": "威玛西娜",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "143001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "6P71",
+    "start_time": 1753740000,
+    "end_time": 1756166399,
+    "start_time_text": "2025-07-29 06:00:00",
+    "end_time_text": "2025-08-26 07:59:59",
+    "up_5": [
+      {
+        "id": 10663,
+        "name": "6P71",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10662,
+        "name": "卡拉什尼科夫突击步枪15",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "144001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "芙洛伦",
+    "start_time": 1753740000,
+    "end_time": 1755550799,
+    "start_time_text": "2025-07-29 06:00:00",
+    "end_time_text": "2025-08-19 04:59:59",
+    "up_5": [
+      {
+        "id": 1064,
+        "name": "芙洛伦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "145001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "伊阿索",
+    "start_time": 1753740000,
+    "end_time": 1755550799,
+    "start_time_text": "2025-07-29 06:00:00",
+    "end_time_text": "2025-08-19 04:59:59",
+    "up_5": [
+      {
+        "id": 10643,
+        "name": "伊阿索",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10642,
+        "name": "15型自动手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "146001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "安朵丝",
+    "start_time": 1753740000,
+    "end_time": 1755550799,
+    "start_time_text": "2025-07-29 06:00:00",
+    "end_time_text": "2025-08-19 04:59:59",
+    "up_5": [
+      {
+        "id": 1042,
+        "name": "安朵丝",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "147001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "阿格莱亚",
+    "start_time": 1753740000,
+    "end_time": 1755550799,
+    "start_time_text": "2025-07-29 06:00:00",
+    "end_time_text": "2025-08-19 04:59:59",
+    "up_5": [
+      {
+        "id": 10423,
+        "name": "阿格莱亚",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10422,
+        "name": "格威尔36-斯佩凯芙特",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "148001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "绛雨",
+    "start_time": 1756166400,
+    "end_time": 1757375999,
+    "start_time_text": "2025-08-26 08:00:00",
+    "end_time_text": "2025-09-09 07:59:59",
+    "up_5": [
+      {
+        "id": 1035,
+        "name": "绛雨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "149001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "跃虎",
+    "start_time": 1756166400,
+    "end_time": 1757375999,
+    "start_time_text": "2025-08-26 08:00:00",
+    "end_time_text": "2025-09-09 07:59:59",
+    "up_5": [
+      {
+        "id": 10353,
+        "name": "跃虎",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10352,
+        "name": "九七式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "152001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "维克托",
+    "start_time": 1755550800,
+    "end_time": 1757375999,
+    "start_time_text": "2025-08-19 05:00:00",
+    "end_time_text": "2025-09-09 07:59:59",
+    "up_5": [
+      {
+        "id": 1044,
+        "name": "维克托",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "153001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "报丧轻语",
+    "start_time": 1755550800,
+    "end_time": 1757375999,
+    "start_time_text": "2025-08-19 05:00:00",
+    "end_time_text": "2025-09-09 07:59:59",
+    "up_5": [
+      {
+        "id": 10443,
+        "name": "报丧轻语",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10442,
+        "name": "短剑",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "154001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "刘易斯",
+    "start_time": 1757376000,
+    "end_time": 1759183199,
+    "start_time_text": "2025-09-09 08:00:00",
+    "end_time_text": "2025-09-30 05:59:59",
+    "up_5": [
+      {
+        "id": 1062,
+        "name": "刘易斯",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "155001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "玩具匠",
+    "start_time": 1757376000,
+    "end_time": 1759183199,
+    "start_time_text": "2025-09-09 08:00:00",
+    "end_time_text": "2025-09-30 05:59:59",
+    "up_5": [
+      {
+        "id": 10623,
+        "name": "玩具匠",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10622,
+        "name": "刘易斯轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "156001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "琳德",
+    "start_time": 1757376000,
+    "end_time": 1759183199,
+    "start_time_text": "2025-09-09 08:00:00",
+    "end_time_text": "2025-09-30 05:59:59",
+    "up_5": [
+      {
+        "id": 1059,
+        "name": "琳德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "157001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "刺棘法则",
+    "start_time": 1757376000,
+    "end_time": 1759183199,
+    "start_time_text": "2025-09-09 08:00:00",
+    "end_time_text": "2025-09-30 05:59:59",
+    "up_5": [
+      {
+        "id": 10593,
+        "name": "刺棘法则",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10592,
+        "name": "艾奇逊12自动霰弹枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "158001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "佩莉",
+    "start_time": 1757376000,
+    "end_time": 1759183199,
+    "start_time_text": "2025-09-09 08:00:00",
+    "end_time_text": "2025-09-30 05:59:59",
+    "up_5": [
+      {
+        "id": 1053,
+        "name": "佩莉",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "159001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "厄梅尼塔",
+    "start_time": 1757376000,
+    "end_time": 1759183199,
+    "start_time_text": "2025-09-09 08:00:00",
+    "end_time_text": "2025-09-30 05:59:59",
+    "up_5": [
+      {
+        "id": 10533,
+        "name": "厄梅尼塔",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10532,
+        "name": "五号九毫米冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "160001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "海伦",
+    "start_time": 1759183200,
+    "end_time": 1761004799,
+    "start_time_text": "2025-09-30 06:00:00",
+    "end_time_text": "2025-10-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1067,
+        "name": "海伦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "161001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "谧语永护",
+    "start_time": 1759183200,
+    "end_time": 1761004799,
+    "start_time_text": "2025-09-30 06:00:00",
+    "end_time_text": "2025-10-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10673,
+        "name": "谧语永护",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10672,
+        "name": "12型双管霰弹枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "162001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "埃芙",
+    "start_time": 1759183200,
+    "end_time": 1761004799,
+    "start_time_text": "2025-09-30 06:00:00",
+    "end_time_text": "2025-10-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1065,
+        "name": "埃芙",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "163001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "6P33",
+    "start_time": 1759183200,
+    "end_time": 1761004799,
+    "start_time_text": "2025-09-30 06:00:00",
+    "end_time_text": "2025-10-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10653,
+        "name": "6P33",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10652,
+        "name": "尼科诺夫突击步枪94",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "164001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "乌尔丽德",
+    "start_time": 1759183200,
+    "end_time": 1761004799,
+    "start_time_text": "2025-09-30 06:00:00",
+    "end_time_text": "2025-10-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1037,
+        "name": "乌尔丽德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "165001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流羽白英",
+    "start_time": 1759183200,
+    "end_time": 1761004799,
+    "start_time_text": "2025-09-30 06:00:00",
+    "end_time_text": "2025-10-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10373,
+        "name": "流羽白英",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10372,
+        "name": "羽锋",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "168001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "翡图萨",
+    "start_time": 1761004800,
+    "end_time": 1762819199,
+    "start_time_text": "2025-10-21 08:00:00",
+    "end_time_text": "2025-11-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1060,
+        "name": "翡图萨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "169001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "因果律理",
+    "start_time": 1761004800,
+    "end_time": 1762819199,
+    "start_time_text": "2025-10-21 08:00:00",
+    "end_time_text": "2025-11-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10603,
+        "name": "因果律理",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10602,
+        "name": "灰棘",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "170001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "威玛西娜",
+    "start_time": 1761004800,
+    "end_time": 1762819199,
+    "start_time_text": "2025-10-21 08:00:00",
+    "end_time_text": "2025-11-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1066,
+        "name": "威玛西娜",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "171001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "6P71",
+    "start_time": 1761004800,
+    "end_time": 1762819199,
+    "start_time_text": "2025-10-21 08:00:00",
+    "end_time_text": "2025-11-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10663,
+        "name": "6P71",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10662,
+        "name": "卡拉什尼科夫突击步枪15",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "172001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "秋桦",
+    "start_time": 1761004800,
+    "end_time": 1762819199,
+    "start_time_text": "2025-10-21 08:00:00",
+    "end_time_text": "2025-11-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1048,
+        "name": "秋桦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "173001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "逐光",
+    "start_time": 1761004800,
+    "end_time": 1762819199,
+    "start_time_text": "2025-10-21 08:00:00",
+    "end_time_text": "2025-11-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10483,
+        "name": "逐光",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10482,
+        "name": "九七式霰",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "174001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "樱花",
+    "start_time": 1762819200,
+    "end_time": 1764626399,
+    "start_time_text": "2025-11-11 08:00:00",
+    "end_time_text": "2025-12-02 05:59:59",
+    "up_5": [
+      {
+        "id": 1068,
+        "name": "樱花",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "175001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绯红契约",
+    "start_time": 1762819200,
+    "end_time": 1764626399,
+    "start_time_text": "2025-11-11 08:00:00",
+    "end_time_text": "2025-12-02 05:59:59",
+    "up_5": [
+      {
+        "id": 10683,
+        "name": "绯红契约",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10682,
+        "name": "樱花冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "176001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "刘易斯",
+    "start_time": 1762819200,
+    "end_time": 1764626399,
+    "start_time_text": "2025-11-11 08:00:00",
+    "end_time_text": "2025-12-02 05:59:59",
+    "up_5": [
+      {
+        "id": 1062,
+        "name": "刘易斯",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "177001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "玩具匠",
+    "start_time": 1762819200,
+    "end_time": 1764626399,
+    "start_time_text": "2025-11-11 08:00:00",
+    "end_time_text": "2025-12-02 05:59:59",
+    "up_5": [
+      {
+        "id": 10623,
+        "name": "玩具匠",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10622,
+        "name": "刘易斯轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "178001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "幼熙",
+    "start_time": 1762819200,
+    "end_time": 1764626399,
+    "start_time_text": "2025-11-11 08:00:00",
+    "end_time_text": "2025-12-02 05:59:59",
+    "up_5": [
+      {
+        "id": 1054,
+        "name": "幼熙",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "179001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流光花火",
+    "start_time": 1762819200,
+    "end_time": 1764626399,
+    "start_time_text": "2025-11-11 08:00:00",
+    "end_time_text": "2025-12-02 05:59:59",
+    "up_5": [
+      {
+        "id": 10543,
+        "name": "流光花火",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10542,
+        "name": "卡宾刻2型",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "180001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "罗蕾莱",
+    "start_time": 1764626400,
+    "end_time": 1766447999,
+    "start_time_text": "2025-12-02 06:00:00",
+    "end_time_text": "2025-12-23 07:59:59",
+    "up_5": [
+      {
+        "id": 1069,
+        "name": "罗蕾莱",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "181001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "潮涌夜曲",
+    "start_time": 1764626400,
+    "end_time": 1766447999,
+    "start_time_text": "2025-12-02 06:00:00",
+    "end_time_text": "2025-12-23 07:59:59",
+    "up_5": [
+      {
+        "id": 10693,
+        "name": "潮涌夜曲",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10692,
+        "name": "因戈尔夫50",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "182001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "海伦",
+    "start_time": 1764626400,
+    "end_time": 1766447999,
+    "start_time_text": "2025-12-02 06:00:00",
+    "end_time_text": "2025-12-23 07:59:59",
+    "up_5": [
+      {
+        "id": 1067,
+        "name": "海伦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "183001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "谧语永护",
+    "start_time": 1764626400,
+    "end_time": 1766447999,
+    "start_time_text": "2025-12-02 06:00:00",
+    "end_time_text": "2025-12-23 07:59:59",
+    "up_5": [
+      {
+        "id": 10673,
+        "name": "谧语永护",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10672,
+        "name": "12型双管霰弹枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "184001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "妮基塔",
+    "start_time": 1764626400,
+    "end_time": 1766447999,
+    "start_time_text": "2025-12-02 06:00:00",
+    "end_time_text": "2025-12-23 07:59:59",
+    "up_5": [
+      {
+        "id": 1055,
+        "name": "妮基塔",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      },
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      }
+    ]
+  },
+  "185001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "护梦银翼",
+    "start_time": 1764626400,
+    "end_time": 1766447999,
+    "start_time_text": "2025-12-02 06:00:00",
+    "end_time_text": "2025-12-23 07:59:59",
+    "up_5": [
+      {
+        "id": 10553,
+        "name": "护梦银翼",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10552,
+        "name": "维斯卡94",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "188001": {
+    "type_id": 9,
+    "type_name": "皮肤卡池",
+    "name": "新装采购·第2期",
+    "start_time": 1764626400,
+    "end_time": 1780963199,
+    "start_time_text": "2025-12-02 06:00:00",
+    "end_time_text": "2026-06-09 07:59:59",
+    "up_5": [],
+    "up_4": []
+  },
+  "189001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "夏安",
+    "start_time": 1766448000,
+    "end_time": 1768262399,
+    "start_time_text": "2025-12-23 08:00:00",
+    "end_time_text": "2026-01-13 07:59:59",
+    "up_5": [
+      {
+        "id": 1070,
+        "name": "夏安",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "190001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "夜行豆蔻",
+    "start_time": 1766448000,
+    "end_time": 1768262399,
+    "start_time_text": "2025-12-23 08:00:00",
+    "end_time_text": "2026-01-13 07:59:59",
+    "up_5": [
+      {
+        "id": 10703,
+        "name": "夜行豆蔻",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10702,
+        "name": "干预200",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "191001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "翡图萨",
+    "start_time": 1766448000,
+    "end_time": 1768262399,
+    "start_time_text": "2025-12-23 08:00:00",
+    "end_time_text": "2026-01-13 07:59:59",
+    "up_5": [
+      {
+        "id": 1060,
+        "name": "翡图萨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "192001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "因果律理",
+    "start_time": 1766448000,
+    "end_time": 1768262399,
+    "start_time_text": "2025-12-23 08:00:00",
+    "end_time_text": "2026-01-13 07:59:59",
+    "up_5": [
+      {
+        "id": 10603,
+        "name": "因果律理",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10602,
+        "name": "灰棘",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "193001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱妮",
+    "start_time": 1766448000,
+    "end_time": 1768262399,
+    "start_time_text": "2025-12-23 08:00:00",
+    "end_time_text": "2026-01-13 07:59:59",
+    "up_5": [
+      {
+        "id": 1058,
+        "name": "莱妮",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "194001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "骄阳构想",
+    "start_time": 1766448000,
+    "end_time": 1768262399,
+    "start_time_text": "2025-12-23 08:00:00",
+    "end_time_text": "2026-01-13 07:59:59",
+    "up_5": [
+      {
+        "id": 10583,
+        "name": "骄阳构想",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10582,
+        "name": "通用冲锋枪40",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "195001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "贝丝蒂",
+    "start_time": 1768262400,
+    "end_time": 1770076799,
+    "start_time_text": "2026-01-13 08:00:00",
+    "end_time_text": "2026-02-03 07:59:59",
+    "up_5": [
+      {
+        "id": 1071,
+        "name": "贝丝蒂",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "196001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "告死礼赞",
+    "start_time": 1768262400,
+    "end_time": 1770076799,
+    "start_time_text": "2026-01-13 08:00:00",
+    "end_time_text": "2026-02-03 07:59:59",
+    "up_5": [
+      {
+        "id": 10713,
+        "name": "告死礼赞",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10712,
+        "name": "马克23进攻型手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "197001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "樱花",
+    "start_time": 1768262400,
+    "end_time": 1770076799,
+    "start_time_text": "2026-01-13 08:00:00",
+    "end_time_text": "2026-02-03 07:59:59",
+    "up_5": [
+      {
+        "id": 1068,
+        "name": "樱花",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "198001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绯红契约",
+    "start_time": 1768262400,
+    "end_time": 1770076799,
+    "start_time_text": "2026-01-13 08:00:00",
+    "end_time_text": "2026-02-03 07:59:59",
+    "up_5": [
+      {
+        "id": 10683,
+        "name": "绯红契约",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10682,
+        "name": "樱花冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "199001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "洛贝拉",
+    "start_time": 1768262400,
+    "end_time": 1770076799,
+    "start_time_text": "2026-01-13 08:00:00",
+    "end_time_text": "2026-02-03 07:59:59",
+    "up_5": [
+      {
+        "id": 1057,
+        "name": "洛贝拉",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "200001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流浪者赞歌",
+    "start_time": 1768262400,
+    "end_time": 1770076799,
+    "start_time_text": "2026-01-13 08:00:00",
+    "end_time_text": "2026-02-03 07:59:59",
+    "up_5": [
+      {
+        "id": 10573,
+        "name": "流浪者赞歌",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10572,
+        "name": "柯尔特635型冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "201001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "刘莳",
+    "start_time": 1770076800,
+    "end_time": 1771891199,
+    "start_time_text": "2026-02-03 08:00:00",
+    "end_time_text": "2026-02-24 07:59:59",
+    "up_5": [
+      {
+        "id": 1072,
+        "name": "刘莳",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "202001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绝影",
+    "start_time": 1770076800,
+    "end_time": 1771891199,
+    "start_time_text": "2026-02-03 08:00:00",
+    "end_time_text": "2026-02-24 07:59:59",
+    "up_5": [
+      {
+        "id": 10723,
+        "name": "绝影",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10722,
+        "name": "刘氏步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "203001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "罗蕾莱",
+    "start_time": 1770076800,
+    "end_time": 1771891199,
+    "start_time_text": "2026-02-03 08:00:00",
+    "end_time_text": "2026-02-24 07:59:59",
+    "up_5": [
+      {
+        "id": 1069,
+        "name": "罗蕾莱",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "204001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "潮涌夜曲",
+    "start_time": 1770076800,
+    "end_time": 1771891199,
+    "start_time_text": "2026-02-03 08:00:00",
+    "end_time_text": "2026-02-24 07:59:59",
+    "up_5": [
+      {
+        "id": 10693,
+        "name": "潮涌夜曲",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10692,
+        "name": "因戈尔夫50",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "205001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "芙洛伦",
+    "start_time": 1770076800,
+    "end_time": 1771891199,
+    "start_time_text": "2026-02-03 08:00:00",
+    "end_time_text": "2026-02-24 07:59:59",
+    "up_5": [
+      {
+        "id": 1064,
+        "name": "芙洛伦",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "206001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "伊阿索",
+    "start_time": 1770076800,
+    "end_time": 1771891199,
+    "start_time_text": "2026-02-03 08:00:00",
+    "end_time_text": "2026-02-24 07:59:59",
+    "up_5": [
+      {
+        "id": 10643,
+        "name": "伊阿索",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10642,
+        "name": "15型自动手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "207001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "六分仪",
+    "start_time": 1771891200,
+    "end_time": 1773698399,
+    "start_time_text": "2026-02-24 08:00:00",
+    "end_time_text": "2026-03-17 05:59:59",
+    "up_5": [
+      {
+        "id": 1073,
+        "name": "六分仪",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "208001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "暮色蔷薇",
+    "start_time": 1771891200,
+    "end_time": 1773698399,
+    "start_time_text": "2026-02-24 08:00:00",
+    "end_time_text": "2026-03-17 05:59:59",
+    "up_5": [
+      {
+        "id": 10733,
+        "name": "暮色蔷薇",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10732,
+        "name": "夜蛇",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "209001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "夏安",
+    "start_time": 1771891200,
+    "end_time": 1773698399,
+    "start_time_text": "2026-02-24 08:00:00",
+    "end_time_text": "2026-03-17 05:59:59",
+    "up_5": [
+      {
+        "id": 1070,
+        "name": "夏安",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "210001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "夜行豆蔻",
+    "start_time": 1771891200,
+    "end_time": 1773698399,
+    "start_time_text": "2026-02-24 08:00:00",
+    "end_time_text": "2026-03-17 05:59:59",
+    "up_5": [
+      {
+        "id": 10703,
+        "name": "夜行豆蔻",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10702,
+        "name": "干预200",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "211001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "比悠卡",
+    "start_time": 1771891200,
+    "end_time": 1773698399,
+    "start_time_text": "2026-02-24 08:00:00",
+    "end_time_text": "2026-03-17 05:59:59",
+    "up_5": [
+      {
+        "id": 1045,
+        "name": "比悠卡",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "212001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "林野精灵",
+    "start_time": 1771891200,
+    "end_time": 1773698399,
+    "start_time_text": "2026-02-24 08:00:00",
+    "end_time_text": "2026-03-17 05:59:59",
+    "up_5": [
+      {
+        "id": 10453,
+        "name": "林野精灵",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10452,
+        "name": "格威尔28",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "213001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "OTs-14",
+    "start_time": 1773698400,
+    "end_time": 1775519999,
+    "start_time_text": "2026-03-17 06:00:00",
+    "end_time_text": "2026-04-07 07:59:59",
+    "up_5": [
+      {
+        "id": 1074,
+        "name": "OTs-14",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "214001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "卡庇托林",
+    "start_time": 1773698400,
+    "end_time": 1775519999,
+    "start_time_text": "2026-03-17 06:00:00",
+    "end_time_text": "2026-04-07 07:59:59",
+    "up_5": [
+      {
+        "id": 10743,
+        "name": "卡庇托林",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10742,
+        "name": "闪电-3",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "215001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "贝丝蒂",
+    "start_time": 1773698400,
+    "end_time": 1775519999,
+    "start_time_text": "2026-03-17 06:00:00",
+    "end_time_text": "2026-04-07 07:59:59",
+    "up_5": [
+      {
+        "id": 1071,
+        "name": "贝丝蒂",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "216001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "告死礼赞",
+    "start_time": 1773698400,
+    "end_time": 1775519999,
+    "start_time_text": "2026-03-17 06:00:00",
+    "end_time_text": "2026-04-07 07:59:59",
+    "up_5": [
+      {
+        "id": 10713,
+        "name": "告死礼赞",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10712,
+        "name": "马克23进攻型手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "217001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "樱花",
+    "start_time": 1773698400,
+    "end_time": 1775519999,
+    "start_time_text": "2026-03-17 06:00:00",
+    "end_time_text": "2026-04-07 07:59:59",
+    "up_5": [
+      {
+        "id": 1068,
+        "name": "樱花",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "218001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绯红契约",
+    "start_time": 1773698400,
+    "end_time": 1775519999,
+    "start_time_text": "2026-03-17 06:00:00",
+    "end_time_text": "2026-04-07 07:59:59",
+    "up_5": [
+      {
+        "id": 10683,
+        "name": "绯红契约",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10682,
+        "name": "樱花冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "221001": {
+    "type_id": 9,
+    "type_name": "皮肤卡池",
+    "name": "新装采购·第3期",
+    "start_time": 1773698400,
+    "end_time": 1806357599,
+    "start_time_text": "2026-03-17 06:00:00",
+    "end_time_text": "2027-03-30 05:59:59",
+    "up_5": [],
+    "up_4": []
+  },
+  "222001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "索普",
+    "start_time": 1775520000,
+    "end_time": 1777334399,
+    "start_time_text": "2026-04-07 08:00:00",
+    "end_time_text": "2026-04-28 07:59:59",
+    "up_5": [
+      {
+        "id": 1076,
+        "name": "索普",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "223001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "碎穹嚎歌",
+    "start_time": 1775520000,
+    "end_time": 1777334399,
+    "start_time_text": "2026-04-07 08:00:00",
+    "end_time_text": "2026-04-28 07:59:59",
+    "up_5": [
+      {
+        "id": 10763,
+        "name": "碎穹嚎歌",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10762,
+        "name": "特殊模组战术步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "224001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "刘莳",
+    "start_time": 1775520000,
+    "end_time": 1777334399,
+    "start_time_text": "2026-04-07 08:00:00",
+    "end_time_text": "2026-04-28 07:59:59",
+    "up_5": [
+      {
+        "id": 1072,
+        "name": "刘莳",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "225001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绝影",
+    "start_time": 1775520000,
+    "end_time": 1777334399,
+    "start_time_text": "2026-04-07 08:00:00",
+    "end_time_text": "2026-04-28 07:59:59",
+    "up_5": [
+      {
+        "id": 10723,
+        "name": "绝影",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10722,
+        "name": "刘氏步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "226001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "洛贝拉",
+    "start_time": 1775520000,
+    "end_time": 1777334399,
+    "start_time_text": "2026-04-07 08:00:00",
+    "end_time_text": "2026-04-28 07:59:59",
+    "up_5": [
+      {
+        "id": 1057,
+        "name": "洛贝拉",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "227001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "流浪者赞歌",
+    "start_time": 1775520000,
+    "end_time": 1777334399,
+    "start_time_text": "2026-04-07 08:00:00",
+    "end_time_text": "2026-04-28 07:59:59",
+    "up_5": [
+      {
+        "id": 10573,
+        "name": "流浪者赞歌",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10572,
+        "name": "柯尔特635型冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "228001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "米蒂尔",
+    "start_time": 1777334400,
+    "end_time": 1779148799,
+    "start_time_text": "2026-04-28 08:00:00",
+    "end_time_text": "2026-05-19 07:59:59",
+    "up_5": [
+      {
+        "id": 1077,
+        "name": "米蒂尔",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "229001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绒鼠新星",
+    "start_time": 1777334400,
+    "end_time": 1779148799,
+    "start_time_text": "2026-04-28 08:00:00",
+    "end_time_text": "2026-05-19 07:59:59",
+    "up_5": [
+      {
+        "id": 10773,
+        "name": "绒鼠新星",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10772,
+        "name": "90型单兵自卫武器",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "230001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "六分仪",
+    "start_time": 1777334400,
+    "end_time": 1779148799,
+    "start_time_text": "2026-04-28 08:00:00",
+    "end_time_text": "2026-05-19 07:59:59",
+    "up_5": [
+      {
+        "id": 1073,
+        "name": "六分仪",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "231001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "暮色蔷薇",
+    "start_time": 1777334400,
+    "end_time": 1779148799,
+    "start_time_text": "2026-04-28 08:00:00",
+    "end_time_text": "2026-05-19 07:59:59",
+    "up_5": [
+      {
+        "id": 10733,
+        "name": "暮色蔷薇",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10732,
+        "name": "夜蛇",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "232001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "埃芙",
+    "start_time": 1777334400,
+    "end_time": 1779148799,
+    "start_time_text": "2026-04-28 08:00:00",
+    "end_time_text": "2026-05-19 07:59:59",
+    "up_5": [
+      {
+        "id": 1065,
+        "name": "埃芙",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "233001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "6P33",
+    "start_time": 1777334400,
+    "end_time": 1779148799,
+    "start_time_text": "2026-04-28 08:00:00",
+    "end_time_text": "2026-05-19 07:59:59",
+    "up_5": [
+      {
+        "id": 10653,
+        "name": "6P33",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10652,
+        "name": "尼科诺夫突击步枪94",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "234001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "维尔德",
+    "start_time": 1779148800,
+    "end_time": 1780963199,
+    "start_time_text": "2026-05-19 08:00:00",
+    "end_time_text": "2026-06-09 07:59:59",
+    "up_5": [
+      {
+        "id": 1063,
+        "name": "维尔德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "235001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "缄默制裁",
+    "start_time": 1779148800,
+    "end_time": 1780963199,
+    "start_time_text": "2026-05-19 08:00:00",
+    "end_time_text": "2026-06-09 07:59:59",
+    "up_5": [
+      {
+        "id": 10633,
+        "name": "缄默制裁",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10632,
+        "name": "马克二型栓动手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "236001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "OTs-14",
+    "start_time": 1779148800,
+    "end_time": 1780963199,
+    "start_time_text": "2026-05-19 08:00:00",
+    "end_time_text": "2026-06-09 07:59:59",
+    "up_5": [
+      {
+        "id": 1074,
+        "name": "OTs-14",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "237001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "卡庇托林",
+    "start_time": 1779148800,
+    "end_time": 1780963199,
+    "start_time_text": "2026-05-19 08:00:00",
+    "end_time_text": "2026-06-09 07:59:59",
+    "up_5": [
+      {
+        "id": 10743,
+        "name": "卡庇托林",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10742,
+        "name": "闪电-3",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "238001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "琳德",
+    "start_time": 1779148800,
+    "end_time": 1780963199,
+    "start_time_text": "2026-05-19 08:00:00",
+    "end_time_text": "2026-06-09 07:59:59",
+    "up_5": [
+      {
+        "id": 1059,
+        "name": "琳德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "239001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "刺棘法则",
+    "start_time": 1779148800,
+    "end_time": 1780963199,
+    "start_time_text": "2026-05-19 08:00:00",
+    "end_time_text": "2026-06-09 07:59:59",
+    "up_5": [
+      {
+        "id": 10593,
+        "name": "刺棘法则",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10592,
+        "name": "艾奇逊12自动霰弹枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "240001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "芙铃",
+    "start_time": 1780963200,
+    "end_time": 1782770399,
+    "start_time_text": "2026-06-09 08:00:00",
+    "end_time_text": "2026-06-30 05:59:59",
+    "up_5": [
+      {
+        "id": 1078,
+        "name": "芙铃",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "241001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "森牙戾兽",
+    "start_time": 1780963200,
+    "end_time": 1782770399,
+    "start_time_text": "2026-06-09 08:00:00",
+    "end_time_text": "2026-06-30 05:59:59",
+    "up_5": [
+      {
+        "id": 10783,
+        "name": "森牙戾兽",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10782,
+        "name": "格威尔41",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "242001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "索普",
+    "start_time": 1780963200,
+    "end_time": 1782770399,
+    "start_time_text": "2026-06-09 08:00:00",
+    "end_time_text": "2026-06-30 05:59:59",
+    "up_5": [
+      {
+        "id": 1076,
+        "name": "索普",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "243001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "碎穹嚎歌",
+    "start_time": 1780963200,
+    "end_time": 1782770399,
+    "start_time_text": "2026-06-09 08:00:00",
+    "end_time_text": "2026-06-30 05:59:59",
+    "up_5": [
+      {
+        "id": 10763,
+        "name": "碎穹嚎歌",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10762,
+        "name": "特殊模组战术步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "244001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "刘易斯",
+    "start_time": 1780963200,
+    "end_time": 1782770399,
+    "start_time_text": "2026-06-09 08:00:00",
+    "end_time_text": "2026-06-30 05:59:59",
+    "up_5": [
+      {
+        "id": 1062,
+        "name": "刘易斯",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "245001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "玩具匠",
+    "start_time": 1780963200,
+    "end_time": 1782770399,
+    "start_time_text": "2026-06-09 08:00:00",
+    "end_time_text": "2026-06-30 05:59:59",
+    "up_5": [
+      {
+        "id": 10623,
+        "name": "玩具匠",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10622,
+        "name": "刘易斯轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "246001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "克莱妲",
+    "start_time": 1782770400,
+    "end_time": 1784591999,
+    "start_time_text": "2026-06-30 06:00:00",
+    "end_time_text": "2026-07-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1079,
+        "name": "克莱妲",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "247001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "切尔诺伯格",
+    "start_time": 1782770400,
+    "end_time": 1784591999,
+    "start_time_text": "2026-06-30 06:00:00",
+    "end_time_text": "2026-07-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10793,
+        "name": "切尔诺伯格",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10792,
+        "name": "12型突击步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "248001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "米蒂尔",
+    "start_time": 1782770400,
+    "end_time": 1784591999,
+    "start_time_text": "2026-06-30 06:00:00",
+    "end_time_text": "2026-07-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1077,
+        "name": "米蒂尔",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "249001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绒鼠新星",
+    "start_time": 1782770400,
+    "end_time": 1784591999,
+    "start_time_text": "2026-06-30 06:00:00",
+    "end_time_text": "2026-07-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10773,
+        "name": "绒鼠新星",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10772,
+        "name": "90型单兵自卫武器",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "250001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "翡图萨",
+    "start_time": 1782770400,
+    "end_time": 1784591999,
+    "start_time_text": "2026-06-30 06:00:00",
+    "end_time_text": "2026-07-21 07:59:59",
+    "up_5": [
+      {
+        "id": 1060,
+        "name": "翡图萨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "251001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "因果律理",
+    "start_time": 1782770400,
+    "end_time": 1784591999,
+    "start_time_text": "2026-06-30 06:00:00",
+    "end_time_text": "2026-07-21 07:59:59",
+    "up_5": [
+      {
+        "id": 10603,
+        "name": "因果律理",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10602,
+        "name": "灰棘",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "254001": {
+    "type_id": 9,
+    "type_name": "皮肤卡池",
+    "name": "新装采购·第4期",
+    "start_time": 1782770400,
+    "end_time": 1815429599,
+    "start_time_text": "2026-06-30 06:00:00",
+    "end_time_text": "2027-07-13 05:59:59",
+    "up_5": [],
+    "up_4": []
+  },
+  "255001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "阿斯缇亚",
+    "start_time": 1784592000,
+    "end_time": 1786406399,
+    "start_time_text": "2026-07-21 08:00:00",
+    "end_time_text": "2026-08-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1080,
+        "name": "阿斯缇亚",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "256001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "忏悔罗盘",
+    "start_time": 1784592000,
+    "end_time": 1786406399,
+    "start_time_text": "2026-07-21 08:00:00",
+    "end_time_text": "2026-08-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10803,
+        "name": "忏悔罗盘",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10802,
+        "name": "阿玛莱特15型自动步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "257001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "维尔德",
+    "start_time": 1784592000,
+    "end_time": 1786406399,
+    "start_time_text": "2026-07-21 08:00:00",
+    "end_time_text": "2026-08-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1063,
+        "name": "维尔德",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "258001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "缄默制裁",
+    "start_time": 1784592000,
+    "end_time": 1786406399,
+    "start_time_text": "2026-07-21 08:00:00",
+    "end_time_text": "2026-08-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10633,
+        "name": "缄默制裁",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10632,
+        "name": "马克二型栓动手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "259001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "莱妮",
+    "start_time": 1784592000,
+    "end_time": 1786406399,
+    "start_time_text": "2026-07-21 08:00:00",
+    "end_time_text": "2026-08-11 07:59:59",
+    "up_5": [
+      {
+        "id": 1058,
+        "name": "莱妮",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "260001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "骄阳构想",
+    "start_time": 1784592000,
+    "end_time": 1786406399,
+    "start_time_text": "2026-07-21 08:00:00",
+    "end_time_text": "2026-08-11 07:59:59",
+    "up_5": [
+      {
+        "id": 10583,
+        "name": "骄阳构想",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10582,
+        "name": "通用冲锋枪40",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "261001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "伊格蕾塔",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 1081,
+        "name": "伊格蕾塔",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "262001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "银翼匹丝缇",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 10813,
+        "name": "银翼匹丝缇",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10812,
+        "name": "沙漠之鹰",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "263001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "芙铃",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 1078,
+        "name": "芙铃",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "264001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "森牙戾兽",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 10783,
+        "name": "森牙戾兽",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10782,
+        "name": "格威尔41",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "265001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "樱花",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 1068,
+        "name": "樱花",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "266001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绯红契约",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 10683,
+        "name": "绯红契约",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10682,
+        "name": "樱花冲锋枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "267001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "玛绮朵",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 1034,
+        "name": "玛绮朵",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "268001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "苦涩焦糖",
+    "start_time": 1786408200,
+    "end_time": 1788220799,
+    "start_time_text": "2026-08-11 08:30:00",
+    "end_time_text": "2026-09-01 07:59:59",
+    "up_5": [
+      {
+        "id": 10343,
+        "name": "苦涩焦糖",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10342,
+        "name": "瓦尔特2000",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "269001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "希丽雅",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 1082,
+        "name": "希丽雅",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "270001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "斯诺特拉",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 10823,
+        "name": "斯诺特拉",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10822,
+        "name": "格威尔36-康派科特",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "271001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "克莱妲",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 1079,
+        "name": "克莱妲",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "272001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "切尔诺伯格",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 10793,
+        "name": "切尔诺伯格",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10792,
+        "name": "12型突击步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "273001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "贝丝蒂",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 1071,
+        "name": "贝丝蒂",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "274001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "告死礼赞",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 10713,
+        "name": "告死礼赞",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10712,
+        "name": "马克23进攻型手枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "275001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "桑朵莱希",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 1028,
+        "name": "桑朵莱希",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "276001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "女仆准则",
+    "start_time": 1788220800,
+    "end_time": 1790038799,
+    "start_time_text": "2026-09-01 08:00:00",
+    "end_time_text": "2026-09-22 08:59:59",
+    "up_5": [
+      {
+        "id": 11056,
+        "name": "女仆准则",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 11055,
+        "name": "格威尔36",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "277001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "代理人",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 1083,
+        "name": "代理人",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "278001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "恶兆之钥",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 10833,
+        "name": "恶兆之钥",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10832,
+        "name": "黑棘",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "279001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "阿斯缇亚",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 1080,
+        "name": "阿斯缇亚",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "280001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "忏悔罗盘",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 10803,
+        "name": "忏悔罗盘",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10802,
+        "name": "阿玛莱特15型自动步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "281001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "刘莳",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 1072,
+        "name": "刘莳",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "282001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "绝影",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 10723,
+        "name": "绝影",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10722,
+        "name": "刘氏步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "283001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "刘易斯",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 1062,
+        "name": "刘易斯",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "284001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "玩具匠",
+    "start_time": 1790038800,
+    "end_time": 1791853199,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2026-10-13 08:59:59",
+    "up_5": [
+      {
+        "id": 10623,
+        "name": "玩具匠",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10622,
+        "name": "刘易斯轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "287001": {
+    "type_id": 9,
+    "type_name": "皮肤卡池",
+    "name": "新装采购·第5期",
+    "start_time": 1790038800,
+    "end_time": 1822683599,
+    "start_time_text": "2026-09-22 09:00:00",
+    "end_time_text": "2027-10-05 04:59:59",
+    "up_5": [],
+    "up_4": []
+  },
+  "288001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "针",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 1085,
+        "name": "针",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "289001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "天鹅之死",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 10853,
+        "name": "天鹅之死",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10852,
+        "name": "挽歌",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "290001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "伊格蕾塔",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 1081,
+        "name": "伊格蕾塔",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "291001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "银翼匹丝缇",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 10813,
+        "name": "银翼匹丝缇",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10812,
+        "name": "沙漠之鹰",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "292001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "六分仪",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 1073,
+        "name": "六分仪",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "293001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "暮色蔷薇",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 10733,
+        "name": "暮色蔷薇",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10732,
+        "name": "夜蛇",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "294001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "OTs-14",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 1074,
+        "name": "OTs-14",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "295001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "卡庇托林",
+    "start_time": 1791853200,
+    "end_time": 1793667599,
+    "start_time_text": "2026-10-13 09:00:00",
+    "end_time_text": "2026-11-03 08:59:59",
+    "up_5": [
+      {
+        "id": 10743,
+        "name": "卡庇托林",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10742,
+        "name": "闪电-3",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  }
+}

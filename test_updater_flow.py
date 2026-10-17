@@ -138,7 +138,8 @@ def run_updater(install: Path, skip_launch: bool = True, extra_args=None):
     else:
         env.pop("GF2XKL_SKIP_LAUNCH", None)
     proc = subprocess.run(
-        [sys.executable, str(UPDATER)] + list(extra_args or []),
+        ([env['GF2XKL_TEST_UPDATER_EXE']] if env.get('GF2XKL_TEST_UPDATER_EXE')
+         else [sys.executable, str(UPDATER)]) + list(extra_args or []),
         input="\n", capture_output=True, text=True, encoding="utf-8", errors="replace",
         env=env, cwd=str(ROOT), timeout=180,
     )
