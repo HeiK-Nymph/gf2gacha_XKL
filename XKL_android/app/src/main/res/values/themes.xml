@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.XKL" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.XKL" parent="Base.Theme.XKL" />
+
+    <style name="Base.Theme.XKL" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
         <!-- 系统栏颜色跟着 App 深色底走，否则底部会露出一条系统默认的白条 -->
         <item name="android:statusBarColor">@color/bg</item>
-        <!-- false = 在深色栏上画亮色图标/手势条（windowLightNavigationBar 需要 API 27+，低版本自动忽略） -->
+        <!-- false = 在深色栏上画亮色图标；导航栏图标设置放在 values-v27。 -->
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">@color/bg</item>
-        <item name="android:windowLightNavigationBar">false</item>
         <item name="android:colorBackground">@color/bg</item>
         <item name="colorPrimary">@color/gold</item>
         <item name="colorPrimaryDark">@color/bg</item>

@@ -15,3 +15,6 @@ docs/capture_kit/*_out.txt
 docs/capture_kit/*_err.txt
 keystore.properties
 keystore/
+bili.properties
+# 本地协议调查笔记，包含个人账号的测试结果，不随源码发布。
+docs/BILI_PASSWORD_RESEARCH.md

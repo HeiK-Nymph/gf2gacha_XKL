@@ -20,6 +20,7 @@ import java.io.File
 class MiniProgramKeyInstrumentation : Instrumentation() {
     private var verifyClipboard = false
     private var verifyReauth = false
+    private var verifyBili = false
     private lateinit var isolatedStore: AccountStore
     private lateinit var isolatedDir: File
 
@@ -27,6 +28,7 @@ class MiniProgramKeyInstrumentation : Instrumentation() {
         super.onCreate(arguments)
         verifyClipboard = arguments?.getString("verifyClipboard") == "true"
         verifyReauth = arguments?.getString("verifyReauth") == "true"
+        verifyBili = arguments?.getString("verifyBili") == "true"
         if (verifyReauth) {
             isolatedDir = File(targetContext.cacheDir, "reauth-test-${System.nanoTime()}").apply { mkdirs() }
             isolatedStore = AccountStore(object : ContextWrapper(targetContext) {
@@ -46,6 +48,11 @@ class MiniProgramKeyInstrumentation : Instrumentation() {
     }
 
     override fun onStart() {
+        if (verifyBili) {
+            val result = BiliLoginChecks.run(targetContext)
+            finish(if (result.getInt("failed") == 0) Activity.RESULT_OK else Activity.RESULT_CANCELED, result)
+            return
+        }
         if (verifyReauth) {
             verifyReauthPrompts()
             return

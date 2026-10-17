@@ -187,13 +187,13 @@ XKL_android/keystore.properties           ← 密码配置（storeFile / storePa
 cd D:\myproject\gf2gacha_XKL\XKL_android
 $env:JAVA_HOME = "D:\java\jdk-17"; $env:ANDROID_HOME = "D:\android-sdk"
 D:\gradle-8.7\bin\gradle.bat assembleRelease
-# 产物：app\build\outputs\apk\release\app-release.apk（约 5.0 MB）
+# 产物：app\build\outputs\apk\release\app-release.apk（含B服原生库，arm64）
 
 D:\android-sdk\build-tools\34.0.0\apksigner.bat verify --print-certs app\build\outputs\apk\release\app-release.apk
 ```
 
 **开始下一版更新时**：将 `app/build.gradle.kts` 的 `versionCode` 和 `versionName` 升到下一个版本，再 `assembleRelease`，让旧版用户能检测到更新。
-**正式提交前的真机 / MuMu 调试固定使用该下一版本**，当前为 `versionName=0.1.2`、`versionCode=10`，不为方便覆盖安装而反复递增。
+**正式提交前的真机 / MuMu 调试固定使用该下一版本**，当前为 `versionName=0.1.4`、`versionCode=12`，不为方便覆盖安装而反复递增。
 同签名、同版本先尝试 `adb install -r`；如果系统拒绝安装，请用户手动安装，
 不要递增版本、卸载原应用或清除账号数据来绕过问题。
 
@@ -287,3 +287,9 @@ D:\miniconda3\python.exe -m http.server 8000 --bind 127.0.0.1 --directory .runti
 3. 手机号、令牌、记录都只在本机，不上传自建服务器。
    账号密码登录时，明文密码只在内存里活一次（算完 MD5 就丢），不落盘、不进日志。
 4. 这是模拟官方客户端登录的第三方实现，账号风控责任在 App 方。
+
+## 官服 / B服登录
+
+正式版0.1.4支持官服与B服的短信及账号密码登录。B服需要安全验证时，在应用内完成后继续登录；无需验证时直接登录。
+账号与缓存按渠道隔离，旧账号自动按官服兼容。凭证、手机号和记录不上传自建服务器。当前APK要求64位ARM设备和Android 7.0+。
+B服暂不支持导出到小程序。构建B服功能需要本地SDK配置与原生库，详见[构建与协议说明](docs/BILI_LOGIN.md)。

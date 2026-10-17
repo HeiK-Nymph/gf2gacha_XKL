@@ -45,6 +45,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uk.gf2gacha.xkl.R
 import uk.gf2gacha.xkl.data.Account
+import uk.gf2gacha.xkl.data.GameChannel
+import uk.gf2gacha.xkl.data.SmsChallenge
 import uk.gf2gacha.xkl.data.AccountStore
 import uk.gf2gacha.xkl.data.Gf2Api
 import uk.gf2gacha.xkl.data.Gf2Exception
@@ -184,8 +186,8 @@ class MainActivity : AppCompatActivity() {
     private fun applyCurrentAccount() {
         val account = store.current() ?: return
         renderAccountHeader(account)
-        if (account.uid == renderedUid) return
-        renderedUid = account.uid
+        if (account.key == renderedUid) return
+        renderedUid = account.key
         results.clear()
         if (account.hasRecords) {
             renderFromCache(account)
@@ -208,7 +210,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderAccountHeader(account: Account) {
         val parts = ArrayList<String>()
-        parts.add("UID: " + maskUid(account.uid))
+        parts.add(account.channel.label + " · UID: " + maskUid(account.uid))
         if (account.phone.isNotEmpty()) parts.add(maskPhone(account.phone))
         if (account.recordsUpdatedAt > 0) {
             parts.add("更新 " + timeFormat.format(Date(account.recordsUpdatedAt * 1000)))
@@ -258,15 +260,15 @@ class MainActivity : AppCompatActivity() {
                 tableSource = table.source
                 renderFooter()
                 // 把本地已有记录交给接口层：拉回来的全量记录会与它按 fakeId 合并（历史只增不减）
-                Gf2Api.fetchAllPools(this@MainActivity, account.token, account.records) { result ->
-                    store.putRecords(account.uid, result.poolType, result.records)
-                    if (store.current()?.uid == account.uid) {
+                Gf2Api.fetchAllPools(this@MainActivity, account.token, account.records, account.channel) { result ->
+                    store.putRecords(account.key, result.poolType, result.records)
+                    if (store.current()?.key == account.key) {
                         results[result.poolType] = result
                         renderHeader()
                         if (current.typeId == result.poolType) renderPool()
                     }
                 }
-                if (store.current()?.uid == account.uid) {
+                if (store.current()?.key == account.key) {
                     renderHeader()
                     renderPool()
                     store.current()?.let { renderAccountHeader(it) }
@@ -275,9 +277,9 @@ class MainActivity : AppCompatActivity() {
                 if (e is CancellationException) throw e
                 if (e is Gf2Exception && e.isTokenError) {
                     ok = false
-                    val saved = store.accounts().find { it.uid == account.uid }
+                    val saved = store.accounts().find { it.key == account.key }
                     if (saved?.token == account.token) {
-                        store.invalidateToken(account.uid)
+                        store.invalidateToken(account.key)
                         store.current()?.let { renderAccountHeader(it) }
                         confirmReauthentication(saved, PendingAction.REFRESH)
                     }
@@ -309,9 +311,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun confirmReauthentication(account: Account, action: PendingAction) {
-        if (store.current()?.uid != account.uid || reauthBusy || reauthDialog?.isShowing == true) return
+        if (store.current()?.key != account.key || reauthBusy || reauthDialog?.isShowing == true) return
         if (account.phone.length != 11) {
-            showAddAccountPrompt()
+            startActivity(Intent(this, LoginActivity::class.java).putExtra(LoginActivity.EXTRA_CHANNEL, account.channel.id))
             return
         }
         reauthDialog = MaterialAlertDialogBuilder(this)
@@ -323,23 +325,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendCode(account: Account, action: PendingAction) {
-        if (reauthBusy || store.current()?.uid != account.uid) return
+        if (reauthBusy || store.current()?.key != account.key) return
         reauthBusy = true
         lifecycleScope.launch {
             try {
-                Gf2Api.sendSmsCode(this@MainActivity, account.phone)
-                if (store.current()?.uid == account.uid) showCodeDialog(account, action)
+                val challenge = Gf2Api.sendSmsCode(this@MainActivity, account.phone, account.channel)
+                if (store.current()?.key == account.key) showCodeDialog(account, action, challenge)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                toast("验证码发送失败，请重试")
+                toast("验证码发送失败：" + (e.message ?: "请重试"))
             } finally {
                 reauthBusy = false
             }
         }
     }
 
-    private fun showCodeDialog(account: Account, action: PendingAction) {
+    private fun showCodeDialog(account: Account, action: PendingAction, challenge: SmsChallenge) {
         val input = EditText(this)
         input.inputType = InputType.TYPE_CLASS_NUMBER
         input.hint = "6 位验证码"
@@ -370,28 +372,28 @@ class MainActivity : AppCompatActivity() {
                 input.error = "请输入 6 位验证码"
             } else {
                 dialog.dismiss()
-                loginWithCode(account, code, action)
+                loginWithCode(account, code, action, challenge)
             }
         }
     }
 
-    private fun loginWithCode(account: Account, code: String, action: PendingAction) {
+    private fun loginWithCode(account: Account, code: String, action: PendingAction, challenge: SmsChallenge) {
         if (code.length != 6) {
             toast("请输入 6 位验证码")
             return
         }
-        if (reauthBusy || store.current()?.uid != account.uid) return
+        if (reauthBusy || store.current()?.key != account.key) return
         reauthBusy = true
         progress.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
-                val result = Gf2Api.smsLogin(this@MainActivity, account.phone, code)
-                if (store.current()?.uid != account.uid) return@launch
+                val result = Gf2Api.smsLogin(this@MainActivity, account.phone, code, account.channel, challenge)
+                if (store.current()?.key != account.key) return@launch
                 if (result.uid != account.uid) {
                     toast("登录账号不一致，请重新添加账号")
                     return@launch
                 }
-                store.upsert(result.uid, account.phone, result.accessToken)
+                store.upsert(result.uid, account.phone, result.accessToken, account.channel)
                 store.reload()
                 val renewed = store.current() ?: return@launch
                 renderAccountHeader(renewed)
@@ -403,7 +405,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
-                toast("登录失败，请重试")
+                toast("登录失败：" + (e.message ?: "请重试"))
             } finally {
                 reauthBusy = false
                 if (!loading) progress.visibility = View.GONE
@@ -432,7 +434,7 @@ class MainActivity : AppCompatActivity() {
                 val view = convertView
                     ?: layoutInflater.inflate(R.layout.item_account_dialog, parent, false)
                 val account = list[position]
-                val isCurrent = account.uid == currentUid
+                val isCurrent = account.key == currentUid
 
                 val mark = view.findViewById<TextView>(R.id.acc_mark)
                 val uid = view.findViewById<TextView>(R.id.acc_uid)
@@ -445,6 +447,7 @@ class MainActivity : AppCompatActivity() {
                 uid.setTextColor(color(if (isCurrent) R.color.gold else R.color.text))
 
                 val bits = ArrayList<String>()
+                bits.add(account.channel.label)
                 if (account.phone.isNotEmpty()) bits.add(maskPhone(account.phone))
                 bits.add(if (account.token.isNotEmpty()) "凭证有效" else "凭证已过期")
                 if (account.recordsUpdatedAt > 0) {
@@ -467,8 +470,8 @@ class MainActivity : AppCompatActivity() {
             .setTitle("管理账号")
             .setAdapter(adapter) { _, which ->
                 val account = list[which]
-                if (account.uid != store.currentUid) {
-                    store.select(account.uid)
+                if (account.key != store.currentUid) {
+                    store.select(account.key)
                     renderedUid = null
                     applyCurrentAccount()
                 }
@@ -492,7 +495,7 @@ class MainActivity : AppCompatActivity() {
                     + recordCountText(account) + "记录都会被清掉，无法恢复。"
             )
             .setPositiveButton("删除") { _, _ ->
-                store.remove(account.uid)
+                store.remove(account.key)
                 toast("已删除 " + maskUid(account.uid))
                 onDeleted()
             }
@@ -511,7 +514,7 @@ class MainActivity : AppCompatActivity() {
             showEmptyState()
             return
         }
-        if (account.uid == renderedUid) {
+        if (account.key == renderedUid) {
             renderAccountHeader(account)
         } else {
             renderedUid = null
@@ -879,6 +882,10 @@ class MainActivity : AppCompatActivity() {
     private fun showExportKey() {
         if (loading || exportKeyJob?.isActive == true || reauthBusy || reauthDialog?.isShowing == true) return
         val account = store.current() ?: run { showAddAccountPrompt(); return }
+        if (account.channel == GameChannel.BILIBILI) {
+            toast("B服暂不支持导出到小程序")
+            return
+        }
         if (account.token.isBlank()) {
             confirmReauthentication(account, PendingAction.EXPORT)
             return
@@ -909,7 +916,7 @@ class MainActivity : AppCompatActivity() {
                     return@launch
                 }
                 val selected = store.current()
-                if (selected?.uid != uid || selected.token != token) {
+                if (selected?.uid != uid || selected.channel != GameChannel.OFFICIAL || selected.token != token) {
                     toast(getString(R.string.export_key_account_changed))
                     return@launch
                 }
@@ -925,7 +932,7 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 // 凭证过期与刷新使用同一套续登确认，不跳转登录页、不自动发码。
                 val selected = store.current()
-                if (e is Gf2Exception && e.isTokenError && selected?.uid == uid && selected.token == token) {
+                if (e is Gf2Exception && e.isTokenError && selected?.uid == uid && selected.channel == GameChannel.OFFICIAL && selected.token == token) {
                     store.invalidateToken(uid)
                     store.reload()
                     store.current()?.let {

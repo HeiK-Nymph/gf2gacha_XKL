@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #14171c; color: #f1eee6; font: 15px sans-serif; }
+    main { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 24px; }
+    .mark { color: #d6b46f; font-size: 12px; letter-spacing: 3px; margin-bottom: 14px; }
+    p { margin: 0 0 24px; line-height: 1.8; color: #c0c4cd; }
+    button { width: 100%; border: 1px solid #d6b46f; border-radius: 8px; padding: 15px 10px;
+      background: #d6b46f; color: #17191c; font-size: 16px; }
+    button:disabled { opacity: .55; }
+    #status { margin: 18px 0 0; font-size: 13px; min-height: 42px; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="mark">哔哩哔哩 · 账号验证</div>
+  <p>请按提示完成安全验证，完成后会继续登录。</p>
+  <button id="verify" disabled>正在加载…</button>
+  <p id="status" role="status"></p>
+</main>
+<script src="https://static.geetest.com/static/tools/gt.js"></script>
+<script>
+  const config = __BILI_CAPTCHA_CONFIG__;
+  const button = document.getElementById('verify');
+  const status = document.getElementById('status');
+  let completed = false;
+  function unavailable() {
+    status.textContent = '验证组件加载失败，请检查网络后重新加载。';
+    button.textContent = '重新加载';
+    button.disabled = false;
+    button.onclick = () => BiliCaptcha.reload();
+  }
+  try {
+    if (typeof initGeetest !== 'function') throw new Error('unavailable');
+    initGeetest({...config, new_captcha: true, product: 'bind', lang: 'zh-cn', https: true}, captcha => {
+      button.onclick = () => captcha.verify();
+      captcha.onReady(() => {
+        button.disabled = false;
+        button.textContent = '开始安全验证';
+        captcha.verify();
+      });
+      captcha.onError(unavailable);
+      captcha.onSuccess(() => {
+        const result = captcha.getValidate();
+        if (!result || completed) return;
+        completed = true;
+        button.disabled = true;
+        button.textContent = '验证完成';
+        status.textContent = '正在继续登录…';
+        BiliCaptcha.complete(JSON.stringify({challenge: result.geetest_challenge,
+          validate: result.geetest_validate, seccode: result.geetest_seccode}));
+      });
+    });
+  } catch (error) { unavailable(); }
+</script>
+</body>
+</html>

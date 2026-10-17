@@ -6,7 +6,8 @@ import org.json.JSONObject
 import java.io.File
 
 /** 一个已保存的账号：登录凭证 + 抽卡记录缓存（两者都只在本机） */
-class Account(val uid: String) {
+class Account(val uid: String, val channel: GameChannel = GameChannel.OFFICIAL) {
+    val key: String get() = channel.accountKey(uid)
     var phone: String = ""
     var token: String = ""
     var tokenSavedAt: Long = 0L
@@ -57,7 +58,7 @@ class AccountStore(context: Context) {
                 val obj = array.optJSONObject(i) ?: continue
                 val uid = obj.optString("uid", "")
                 if (uid.isEmpty()) continue
-                val account = Account(uid)
+                val account = Account(uid, GameChannel.fromId(obj.optInt("channel", 5)))
                 account.phone = obj.optString("phone", "")
                 account.token = obj.optString("token", "")
                 account.tokenSavedAt = obj.optLong("tokenSavedAt", 0L)
@@ -84,7 +85,7 @@ class AccountStore(context: Context) {
                         account.records[poolType] = list
                     }
                 }
-                items[uid] = account
+                items[account.key] = account
             }
             if (current.isNotEmpty() && items.containsKey(current)) currentUid = current
         } catch (e: Exception) {
@@ -114,6 +115,7 @@ class AccountStore(context: Context) {
             array.put(
                 JSONObject().apply {
                     put("uid", account.uid)
+                    put("channel", account.channel.id)
                     put("phone", account.phone)
                     put("token", account.token)
                     put("tokenSavedAt", account.tokenSavedAt)
@@ -140,14 +142,15 @@ class AccountStore(context: Context) {
     }
 
     /** 登录成功后写入/更新账号（不动别账号的数据） */
-    fun upsert(uid: String, phone: String, token: String): Account {
-        val account = items.getOrPut(uid) { Account(uid) }
+    fun upsert(uid: String, phone: String, token: String, channel: GameChannel = GameChannel.OFFICIAL): Account {
+        val key = channel.accountKey(uid)
+        val account = items.getOrPut(key) { Account(uid, channel) }
         if (phone.isNotEmpty()) account.phone = phone
         if (token.isNotEmpty()) {
             account.token = token
             account.tokenSavedAt = System.currentTimeMillis() / 1000
         }
-        currentUid = uid
+        currentUid = key
         save()
         return account
     }

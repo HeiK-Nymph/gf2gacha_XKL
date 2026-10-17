@@ -133,16 +133,20 @@ object Gf2Api {
         uid
     }
 
-    suspend fun sendSmsCode(context: Context, phone: String) = withContext(Dispatchers.IO) {
+    suspend fun sendSmsCode(context: Context, phone: String, channel: GameChannel = GameChannel.OFFICIAL): SmsChallenge = withContext(Dispatchers.IO) {
+        if (channel == GameChannel.BILIBILI) return@withContext BiliAuth.sendSms(context, phone)
         val deviceNum = Gf2Sign.deviceNum(context)
         val timestamp = System.currentTimeMillis() / 1000
         val body = commonBody(deviceNum, phone, timestamp)
         body.put("x", -1)
         checkOk(postJson(SMS_URL, body))
+        SmsChallenge(phone, channel)
     }
 
-    suspend fun smsLogin(context: Context, phone: String, verifyCode: String): LoginResult =
+    suspend fun smsLogin(context: Context, phone: String, verifyCode: String,
+                         channel: GameChannel = GameChannel.OFFICIAL, challenge: SmsChallenge? = null): LoginResult =
         withContext(Dispatchers.IO) {
+            if (channel == GameChannel.BILIBILI) return@withContext BiliAuth.login(context, phone, verifyCode, challenge)
             val deviceNum = Gf2Sign.deviceNum(context)
             val timestamp = System.currentTimeMillis() / 1000
             val body = commonBody(deviceNum, phone, timestamp)
@@ -225,13 +229,14 @@ object Gf2Api {
         context: Context,
         token: String,
         known: Map<Int, List<GachaRecord>> = emptyMap(),
+        channel: GameChannel = GameChannel.OFFICIAL,
         onPool: (PoolResult) -> Unit
     ): List<PoolResult> = coroutineScope {
         // 先快照一份：回调里 store 会改原 map，不能边改边被别的池子读到
         val knownSnapshot = HashMap(known)
         POOLS.map { pool ->
             async(Dispatchers.IO) {
-                val result = fetchPool(context, token, pool, knownSnapshot[pool.typeId].orEmpty())
+                val result = fetchPool(context, token, pool, knownSnapshot[pool.typeId].orEmpty(), channel)
                 withContext(Dispatchers.Main) { onPool(result) }
                 result
             }
@@ -251,7 +256,8 @@ object Gf2Api {
         context: Context,
         token: String,
         pool: Pool,
-        known: List<GachaRecord> = emptyList()
+        known: List<GachaRecord> = emptyList(),
+        channel: GameChannel = GameChannel.OFFICIAL
     ): PoolResult =
         withContext(Dispatchers.IO) {
             val startedAt = System.currentTimeMillis()
@@ -261,7 +267,7 @@ object Gf2Api {
             while (true) {
                 page++
                 if (page > MAX_PAGES) throw Gf2Exception(-1, "翻页超过 $MAX_PAGES 页，疑似接口异常")
-                val json = listPage(token, pool.typeId, next)
+                val json = listPage(token, pool.typeId, next, channel)
                 checkOk(json)
                 val data = json.optJSONObject("data")
                 var nextCursor: String? = null
@@ -297,10 +303,10 @@ object Gf2Api {
             analyze(context, pool, merged)
         }
 
-    private fun listPage(token: String, poolType: Int, next: String?): JSONObject {
+    private fun listPage(token: String, poolType: Int, next: String?, channel: GameChannel): JSONObject {
         val base = LIST_URL.toHttpUrlOrNull() ?: throw Gf2Exception(-1, "记录接口地址不合法")
         val url = base.newBuilder()
-            .addQueryParameter("game_channel_id", "5")
+            .addQueryParameter("game_channel_id", channel.id.toString())
             .addQueryParameter("type_id", "3")
             .build()
 

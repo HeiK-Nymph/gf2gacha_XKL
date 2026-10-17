@@ -5,6 +5,15 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val biliProperties = Properties().apply {
+    val localConfig = rootProject.file("bili.properties")
+    if (localConfig.exists()) localConfig.inputStream().use { load(it) }
+}
+val biliAppKey = biliProperties.getProperty("appKey", "")
+require(biliAppKey.isEmpty() || biliAppKey.matches(Regex("[A-Za-z0-9]{32}"))) {
+    "bili.properties appKey must be a 32-character SDK key"
+}
+
 android {
     namespace = "uk.gf2gacha.xkl"
     compileSdk = 34
@@ -13,8 +22,9 @@ android {
         applicationId = "uk.gf2gacha.xkl"
         minSdk = 24
         targetSdk = 34
-        versionCode = 10
-        versionName = "0.1.2"
+        versionCode = 12
+        versionName = "0.1.4"
+        buildConfigField("String", "BILI_APP_KEY", "\"$biliAppKey\"")
         testInstrumentationRunner = "uk.gf2gacha.xkl.MiniProgramKeyInstrumentation"
         resourceConfigurations += listOf("zh", "en")
 

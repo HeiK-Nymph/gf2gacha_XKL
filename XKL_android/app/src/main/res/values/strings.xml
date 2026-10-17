@@ -4,6 +4,9 @@
     <string name="login_title_add">添加账号</string>
     <string name="login_hint">用绑定游戏的手机号收短信验证码登录。手机号只用于发码与登录，不上传自建服务器；令牌与记录都只存本机。</string>
     <string name="login_phone_hint">手机号</string>
+    <string name="channel_official">官服</string>
+    <string name="channel_bili">B服 · 哔哩哔哩</string>
+    <string name="login_bili_hint">使用B站账号绑定的手机号，短信由B站发送。同手机号的官服与B服是两个账号；凭证与记录仅存本机。</string>
     <string name="login_send_code">发送验证码</string>
     <string name="login_code_hint">6 位短信验证码</string>
     <string name="login_pwd_hint">密码</string>
@@ -12,6 +15,12 @@
     <string name="login_switch_to_pwd">收不到短信？改用账号密码登录</string>
     <string name="login_switch_to_sms">改用短信验证码登录</string>
     <string name="login_pwd_note">密码只在本机算一次 MD5 用于官方登录接口，不保存、不上传自建服务器，登录成功后立即丢弃。</string>
+    <string name="login_bili_pwd_note">使用B站账号和密码登录。密码不保存；如需安全验证，将在本应用内完成。</string>
+    <string name="login_bili_password_hint">使用B站账号（手机号、用户名或邮箱）和密码登录。凭证与记录仅存本机。</string>
+    <string name="bili_verification_title">B站安全验证</string>
+    <string name="bili_verification_image">安全验证图片</string>
+    <string name="bili_verification_image_hint">请输入图片中的验证码</string>
+    <string name="bili_verification_submit">提交验证</string>
     <string name="login_submit">登录并查询</string>
     <string name="login_cancel">取消</string>
     <string name="main_total">总抽卡数</string>
