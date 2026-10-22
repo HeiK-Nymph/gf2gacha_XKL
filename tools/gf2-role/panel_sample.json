@@ -1,0 +1,10 @@
+{
+  "source": "user screenshots of in-game assist detail for UID 4382210, 2026-10-16",
+  "notes": "attack/defense are displayed as integers; crit and crit damage keep screenshot precision; crit above 100 percent retained",
+  "scales": [1, 10, 100, 1000, 10000],
+  "characters": {
+    "21340": {"attack": 3206, "defense": 1336, "crit": 59.4, "critDamage": 161.8},
+    "23661": {"attack": 4126, "defense": 1311, "crit": 84.1, "critDamage": 178.3},
+    "27444": {"attack": 4385, "defense": 1296, "crit": 109.5, "critDamage": 164.5}
+  }
+}

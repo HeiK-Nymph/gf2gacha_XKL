@@ -1,0 +1,36 @@
+{
+  "description": "Reviewed name mappings for unresolved local reference expressions. Names and definitions are verified against the matching official Wiki character page; local original text remains preserved.",
+  "references": {
+    "0:-1,103209,1": {"ownerId": 1032, "name": "校音"},
+    "0:-1,103307,1": {"ownerId": 1033, "name": "积极作战"},
+    "0:-1,10370401,2": {"ownerId": 1037, "name": "迷彩"},
+    "0:-1,104400,1": {"ownerId": 1044, "name": "过热自燃"},
+    "0:-1,10470701,1": {"ownerId": 1047, "name": "满溢关怀"},
+    "0:-1,104700,1": {
+      "ownerId": 1047,
+      "name": "塔瑞兹",
+      "variants": ["塔瑞兹·强协"],
+      "recordNames": {"10470802": "塔瑞兹·强协", "10470803": "塔瑞兹·强协"},
+      "note": "Wiki 的鹰眼洞察升级记录明确使用塔瑞兹·强协，保留独立版本说明，不把升级后的效果套用到基础召唤物。"
+    },
+    "0:-1,10510700,1": {"ownerId": 1051, "name": "激斗模式"},
+    "0:-1,10510800,1": {"ownerId": 1051, "name": "补丁模式"},
+    "0:-1,10510701,1": {"ownerId": 1051, "name": "梦境亢奋"},
+    "0:-1,10520800,1": {"ownerId": 1052, "name": "好胜心"},
+    "0:340602,1": {"ownerId": 1052, "name": "强酸倾压", "note": "Wiki 对照也暴露了本地导出器尚未处理的带等级引用格式；同名本地显示行是 BattleBuffPerformData[340602]。"},
+    "0:-1,10550501,1": {"ownerId": 1055, "name": "畏罪"},
+    "0:-1,10680400,1": {"ownerId": 1068, "name": "吉运"},
+    "0:-1,107007,1": {"ownerId": 1070, "name": "靶心", "note": "对应固键的正文没有悬浮标签，但原文明确写靶心；该角色其他技能中有同名悬浮说明。"},
+    "0:-1,107107,1": {"ownerId": 1071, "name": "“小可爱”"},
+    "0:-1,10770800,1": {
+      "ownerId": 1077,
+      "name": "拟合共鸣",
+      "note": "Wiki 基础技能及多数升级说明均为拟合共鸣，本地 BattleSkillDisplayData[10770800] 同名。Wiki 某处升级正文出现银幕头衔，与上述来源不一致，因此不采用该处候选。"
+    },
+    "0:-1,10780401,1": {
+      "ownerId": 1078,
+      "name": "巡狩本能",
+      "note": "Wiki 基础正文一处写巡兽本能，但同页悬浮说明和升级正文为巡狩本能，本地 BattleDictionaryData[107804010] 也为巡狩本能。"
+    }
+  }
+}

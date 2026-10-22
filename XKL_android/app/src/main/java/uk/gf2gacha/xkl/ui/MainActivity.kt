@@ -879,6 +879,7 @@ class MainActivity : AppCompatActivity() {
 
     // ---------------------------------------------------------------- 小程序导入钥匙
 
+    /** 点「导出到小程序」立刻核验凭证：过期就先续登，核验通过才弹说明框。 */
     private fun showExportKey() {
         if (loading || exportKeyJob?.isActive == true || reauthBusy || reauthDialog?.isShowing == true) return
         val account = store.current() ?: run { showAddAccountPrompt(); return }
@@ -891,17 +892,15 @@ class MainActivity : AppCompatActivity() {
             return
         }
         // 固定本次导出的账号与凭证，核验中切换账号时不能把旧钥匙复制出去。
-        val uid = account.uid
-        val token = account.token
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.export_key_title)
-            .setMessage(getString(R.string.export_key_explanation, maskUid(uid)))
-            .setPositiveButton(R.string.export_key_copy) { _, _ -> verifyAndCopyKey(uid, token) }
-            .setNegativeButton("取消", null)
-            .show()
+        verifyExportAccount(account.uid, account.token, account.channel)
     }
 
-    private fun verifyAndCopyKey(uid: String, token: String) {
+    /**
+     * 导出前的核验：先按「刷新」同一条记录接口确认凭证真的没过期（账号接口对过期凭证
+     * 也会返回 uid，不能当过期检查），再核对钥匙里的 uid 与凭证是否同一个账号。
+     * 过期时与刷新共用续登确认；通过后才弹说明框，框里的「复制」不再发请求。
+     */
+    private fun verifyExportAccount(uid: String, token: String, channel: GameChannel) {
         if (exportKeyJob?.isActive == true) return
         val button = findViewById<Button>(R.id.export_key_button)
         button.isEnabled = false
@@ -909,31 +908,25 @@ class MainActivity : AppCompatActivity() {
         exportKeyJob = lifecycleScope.launch {
             try {
                 // 在发请求前校验格式；错误内容不回显凭证。
-                val key = MiniProgramKey.encode(uid, token)
+                MiniProgramKey.encode(uid, token)
+                Gf2Api.verifyCredential(token, channel)
                 val officialUid = Gf2Api.fetchAccountUid(token)
                 if (officialUid != uid) {
                     toast(getString(R.string.export_key_uid_mismatch))
                     return@launch
                 }
-                val selected = store.current()
-                if (selected?.uid != uid || selected.channel != GameChannel.OFFICIAL || selected.token != token) {
+                if (matchingAccount(uid, token, channel) == null) {
                     toast(getString(R.string.export_key_account_changed))
                     return@launch
                 }
-                val clipboard = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
-                if (clipboard == null) {
-                    toast(getString(R.string.export_key_copy_failed))
-                    return@launch
-                }
-                clipboard.setPrimaryClip(MiniProgramKey.clip(key))
-                toast(getString(R.string.export_key_copied))
+                showExportKeyDialog(uid, token, channel)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 // 凭证过期与刷新使用同一套续登确认，不跳转登录页、不自动发码。
-                val selected = store.current()
-                if (e is Gf2Exception && e.isTokenError && selected?.uid == uid && selected.channel == GameChannel.OFFICIAL && selected.token == token) {
-                    store.invalidateToken(uid)
+                val selected = matchingAccount(uid, token, channel)
+                if (e is Gf2Exception && e.isTokenError && selected != null) {
+                    store.invalidateToken(selected.key)
                     store.reload()
                     store.current()?.let {
                         renderAccountHeader(it)
@@ -946,6 +939,41 @@ class MainActivity : AppCompatActivity() {
                 button.isEnabled = true
                 button.setText(R.string.main_export_key)
             }
+        }
+    }
+
+    /** 核验期间账号或凭证变了就不再继续，避免把上一个账号的钥匙发出去。 */
+    private fun matchingAccount(uid: String, token: String, channel: GameChannel): Account? {
+        val selected = store.current() ?: return null
+        return if (selected.uid == uid && selected.channel == channel && selected.token == token) selected else null
+    }
+
+    /** 凭证已核验通过的说明框：只负责确认，不再发网络请求。 */
+    private fun showExportKeyDialog(uid: String, token: String, channel: GameChannel) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.export_key_title)
+            .setMessage(getString(R.string.export_key_explanation, maskUid(uid)))
+            .setPositiveButton(R.string.export_key_copy) { _, _ -> copyMiniProgramKey(uid, token, channel) }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun copyMiniProgramKey(uid: String, token: String, channel: GameChannel) {
+        if (matchingAccount(uid, token, channel) == null) {
+            toast(getString(R.string.export_key_account_changed))
+            return
+        }
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
+        if (clipboard == null) {
+            toast(getString(R.string.export_key_copy_failed))
+            return
+        }
+        try {
+            clipboard.setPrimaryClip(MiniProgramKey.clip(MiniProgramKey.encode(uid, token)))
+            toast(getString(R.string.export_key_copied))
+        } catch (e: Exception) {
+            // 凭据格式在核验时已经校验过；这里只可能是账号数据被外部改坏或系统拒绝写剪贴板。
+            toast(getString(R.string.export_key_copy_failed))
         }
     }
 

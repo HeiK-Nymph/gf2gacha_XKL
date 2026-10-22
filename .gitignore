@@ -132,3 +132,13 @@ XKL_admin/dist/
 # .NET 构建产物（tools/gf2-role/reflect）
 tools/gf2-role/reflect/bin/
 tools/gf2-role/reflect/obj/
+
+# 更新工具的状态与端内副本备份
+json/.table_hash.json
+.backup/
+
+# meow-memory 记忆库（工作区私有，误删不可恢复，不要提交）
+.dsh-meow/
+
+# taste-skill 本地检查产物（插件已关，别提交）
+.taste-skill/

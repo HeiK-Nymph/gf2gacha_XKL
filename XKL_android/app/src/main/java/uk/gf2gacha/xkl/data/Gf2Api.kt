@@ -117,7 +117,12 @@ object Gf2Api {
 
     // ------------------------------------------------------------------ 登录
 
-    /** 导出前只核验凭证对应的 UID，不重新登录、不拉取抽卡记录。 */
+    /**
+     * 向账号接口要凭证对应的 UID（用于导出前确认钥匙里的 UID 没被改错）。
+     *
+     * **不能拿它当过期检查**：账号接口只校验签名，access_token 过期后照样返回 uid。
+     * 判断凭证是否可用要用 [verifyCredential]（与刷新同一条记录接口）。
+     */
     suspend fun fetchAccountUid(token: String): String = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url(ACCOUNT_INFO_URL)
@@ -131,6 +136,20 @@ object Gf2Api {
         val uid = json.optJSONObject("data")?.optString("uid", "").orEmpty()
         if (!uid.matches(Regex("[0-9]{4,32}"))) throw Gf2Exception(-1, "官方返回的 UID 不合法")
         uid
+    }
+
+    /**
+     * 按「刷新」同一条链路核验凭证是否**真的**还能用。
+     *
+     * 刷新是先打记录接口，`token err` 时走续登；导出也必须用这个判据 —— 账号接口
+     * （[fetchAccountUid]）对过期凭证仍返回 uid，只看它会导出一把用不了的钥匙。
+     * 这里只取记录接口第一页（不翻页、不合并、不落盘），凭证失效会在 [checkOk] 抛
+     * [Gf2Exception]，[Gf2Exception.isTokenError] 为 true。
+     */
+    suspend fun verifyCredential(token: String, channel: GameChannel = GameChannel.OFFICIAL) {
+        withContext(Dispatchers.IO) {
+            checkOk(listPage(token, POOL_CHARACTER, null, channel))
+        }
     }
 
     suspend fun sendSmsCode(context: Context, phone: String, channel: GameChannel = GameChannel.OFFICIAL): SmsChallenge = withContext(Dispatchers.IO) {

@@ -37,7 +37,7 @@
     <string name="main_export_key">导出到小程序</string>
     <string name="export_key_title">导出小程序钥匙</string>
     <string name="export_key_explanation">当前账号：%1$s\n\n复制后粘贴到小程序「抽卡分析」。钥匙含临时登录凭证，请勿转发。</string>
-    <string name="export_key_copy">核验并复制</string>
+    <string name="export_key_copy">复制</string>
     <string name="export_key_checking">正在核验凭证…</string>
     <string name="export_key_copied">钥匙已复制，请到小程序「抽卡分析」中粘贴</string>
     <string name="export_key_login_title">需要重新登录</string>

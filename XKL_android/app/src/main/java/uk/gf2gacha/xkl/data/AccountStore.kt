@@ -164,8 +164,9 @@ class AccountStore(context: Context) {
         return true
     }
 
-    fun invalidateToken(uid: String) {
-        val account = items[uid] ?: return
+    /** 传入账号 key（官服=uid，B服=bili:uid），不是裸 uid —— 与 [putRecords] 一致。 */
+    fun invalidateToken(key: String) {
+        val account = items[key] ?: return
         account.token = ""
         account.tokenSavedAt = 0L
         save()
