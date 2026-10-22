@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uk.gf2gacha.xkl.R
 import uk.gf2gacha.xkl.data.Account
+import uk.gf2gacha.xkl.data.AnnouncementCenter
 import uk.gf2gacha.xkl.data.GameChannel
 import uk.gf2gacha.xkl.data.SmsChallenge
 import uk.gf2gacha.xkl.data.AccountStore
@@ -100,6 +101,10 @@ class MainActivity : AppCompatActivity() {
     private var downloadJob: Job? = null
     private var autoUpdateChecked = false
     private var exportKeyJob: Job? = null
+    private var announcementJob: Job? = null
+    private var currentAnnouncement: AnnouncementCenter.Announcement? = null
+    private var announcementDialog: AlertDialog? = null
+    private var lastAnnouncementCheckAt = 0L
     private var reauthDialog: AlertDialog? = null
     private var reauthBusy = false
     private enum class PendingAction { REFRESH, EXPORT }
@@ -157,6 +162,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.share_button).setOnClickListener { showShare() }
         findViewById<Button>(R.id.refresh_button).setOnClickListener { smartRefresh() }
         findViewById<Button>(R.id.update_button).setOnClickListener { checkUpdate(manual = true) }
+        findViewById<Button>(R.id.announcement_button).setOnClickListener { checkAnnouncements(manual = true) }
         findViewById<Button>(R.id.export_key_button).setOnClickListener { showExportKey() }
 
         // 后台把五星表换成 R2 上的最新版，拿到后重算一次（表更新不用发版）
@@ -170,6 +176,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        checkAnnouncements(manual = false)
         store.reload()
         if (store.isEmpty) {
             showEmptyState()
@@ -775,6 +782,98 @@ class MainActivity : AppCompatActivity() {
     private fun describe(e: Exception): String =
         if (e is Gf2Exception) e.message ?: ("code=" + e.code) else (e.message ?: e.javaClass.simpleName)
 
+    // ---------------------------------------------------------------- 公告
+
+    /**
+     * 自动检查：每次回前台会检查，但 5 分钟内不重复请求。
+     * 用户点「公告」时 manual=true，强制拿最新清单；网络失败时回退到本次进程里拿到的公告。
+     */
+    private fun checkAnnouncements(manual: Boolean) {
+        val now = System.currentTimeMillis()
+        if (!manual && now - lastAnnouncementCheckAt < ANNOUNCEMENT_CHECK_INTERVAL_MS) return
+        if (announcementJob?.isActive == true) {
+            if (manual) toast("正在获取公告…")
+            return
+        }
+
+        lastAnnouncementCheckAt = now
+        announcementJob = lifecycleScope.launch {
+            when (val result = AnnouncementCenter.fetch()) {
+                is AnnouncementCenter.FetchResult.Success -> {
+                    val latest = AnnouncementCenter.mostRecent(result.feed)
+                    currentAnnouncement = latest
+                    updateAnnouncementButton()
+                    if (latest != null && (manual || AnnouncementCenter.isUnread(this@MainActivity, latest.id))) {
+                        showAnnouncement(latest)
+                    } else if (manual) {
+                        toast(getString(R.string.announcement_empty))
+                    }
+                }
+
+                is AnnouncementCenter.FetchResult.Failed -> {
+                    val cached = currentAnnouncement
+                    if (manual && cached != null) {
+                        showAnnouncement(cached)
+                    } else if (manual) {
+                        toast(getString(R.string.announcement_fetch_failed, result.message))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateAnnouncementButton() {
+        val button = findViewById<Button>(R.id.announcement_button)
+        val announcement = currentAnnouncement
+        button.text = if (announcement != null && AnnouncementCenter.isUnread(this, announcement.id)) {
+            getString(R.string.main_announcement_new)
+        } else {
+            getString(R.string.main_announcement)
+        }
+    }
+
+    private fun showAnnouncement(announcement: AnnouncementCenter.Announcement) {
+        val view = layoutInflater.inflate(R.layout.dialog_announcement, null)
+        val content = view.findViewById<LinearLayout>(R.id.announcement_content)
+        val meta = view.findViewById<TextView>(R.id.announcement_meta)
+        val body = view.findViewById<TextView>(R.id.announcement_body)
+
+        meta.text = if (announcement.publishedAt > 0L) {
+            "公告 · " + announcementTimeFormat.format(Date(announcement.publishedAt * 1000L))
+        } else {
+            "公告"
+        }
+        body.text = announcement.body
+
+        announcement.images.take(MAX_ANNOUNCEMENT_IMAGES).forEachIndexed { index, rawUrl ->
+            val image = AspectRatioImageView(this)
+            val params = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(12) }
+            image.layoutParams = params
+            image.adjustViewBounds = true
+            image.scaleType = ImageView.ScaleType.FIT_CENTER
+            image.contentDescription = getString(R.string.announcement_image, index + 1)
+            image.load(AnnouncementCenter.imageUrl(rawUrl)) {
+                error(R.color.card)
+            }
+            content.addView(image)
+        }
+
+        announcementDialog?.dismiss()
+        announcementDialog = MaterialAlertDialogBuilder(this)
+            .setTitle(announcement.title)
+            .setView(view)
+            .setPositiveButton(getString(R.string.announcement_dismiss), null)
+            .create()
+        announcementDialog?.show()
+
+        currentAnnouncement = announcement
+        AnnouncementCenter.markSeen(this, announcement.id)
+        updateAnnouncementButton()
+    }
+
     // ---------------------------------------------------------------- 更新
 
     /** 底部说明行 */
@@ -1156,6 +1255,9 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         const val REQ_STORAGE = 1001
+        const val ANNOUNCEMENT_CHECK_INTERVAL_MS = 5L * 60L * 1000L
+        const val MAX_ANNOUNCEMENT_IMAGES = 6
+        val announcementTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         val timeFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
     }
 }

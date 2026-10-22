@@ -30,6 +30,12 @@
     <string name="main_pick_account">管理账号</string>
     <string name="main_refresh">刷新</string>
     <string name="main_check_update">检查更新</string>
+    <string name="main_announcement">公告</string>
+    <string name="main_announcement_new">公告 · 新</string>
+    <string name="announcement_empty">暂无公告</string>
+    <string name="announcement_fetch_failed">公告获取失败：%1$s</string>
+    <string name="announcement_dismiss">知道了</string>
+    <string name="announcement_image">公告图片 %1$d</string>
     <string name="main_footer">数据来自官方接口 · 令牌与记录仅存本机</string>
     <string name="records_wai">歪</string>
     <string name="account_delete">删除</string>

@@ -194,7 +194,7 @@ D:\android-sdk\build-tools\34.0.0\apksigner.bat verify --print-certs app\build\o
 ```
 
 **开始下一版更新时**：将 `app/build.gradle.kts` 的 `versionCode` 和 `versionName` 升到下一个版本，再 `assembleRelease`，让旧版用户能检测到更新。
-**正式提交前的真机 / MuMu 调试固定使用该下一版本**，当前为 `versionName=0.1.4`、`versionCode=12`，不为方便覆盖安装而反复递增。
+**正式提交前的真机 / MuMu 调试固定使用该下一版本**，当前为 `versionName=0.1.5`、`versionCode=13`，不为方便覆盖安装而反复递增。
 同签名、同版本先尝试 `adb install -r`；如果系统拒绝安装，请用户手动安装，
 不要递增版本、卸载原应用或清除账号数据来绕过问题。
 
@@ -231,6 +231,29 @@ debug 版使用独立包名 `uk.gf2gacha.xkl.test`，与 release 版 `uk.gf2gach
   "download_url":   "https://r2.gf2gacha-xkl.uk/gf2gacha_XKL_android.apk",
   "sha256": "……", "size": 5297387, "update_info": "这次改了什么" }
 ```
+
+## 公告（App 内）
+
+标题右边有 **「公告」按钮**。App 每次回到前台会检查 R2 公告清单，5 分钟内不重复请求；
+最新公告未读时自动弹出，读过后按钮恢复为「公告」，仍可手动重新查看。
+
+公告资源位于 R2 桶 `gf2gachaxkl` 的一级目录：
+
+```text
+announcements/
+├── manifest.json
+└── images/
+    └── announcement-launch.png
+```
+
+- 清单：`https://r2.gf2gacha-xkl.uk/announcements/manifest.json`
+- 图片：`https://r2.gf2gacha-xkl.uk/announcements/images/<文件名>`
+- 本地源文件：仓库根目录 `announcements/`
+- 发布说明：`announcements/README.md`
+- 上传脚本：`python tools/upload_announcements.py --publish`（先图片、后清单）
+
+清单里 `active=true` 且 `published_at` 最新的一条会展示；`id` 必须唯一，
+`expires_at=0` 表示长期有效。单条公告最多加载 6 张图片。
 
 ### 发一个新版本
 
@@ -291,6 +314,6 @@ D:\miniconda3\python.exe -m http.server 8000 --bind 127.0.0.1 --directory .runti
 
 ## 官服 / B服登录
 
-正式版0.1.4支持官服与B服的短信及账号密码登录。B服需要安全验证时，在应用内完成后继续登录；无需验证时直接登录。
+正式版0.1.5在0.1.4登录能力基础上新增 R2 公告功能。B服需要安全验证时，在应用内完成后继续登录；无需验证时直接登录。
 账号与缓存按渠道隔离，旧账号自动按官服兼容。凭证、手机号和记录不上传自建服务器。当前APK要求64位ARM设备和Android 7.0+。
 B服暂不支持导出到小程序。构建B服功能需要本地SDK配置与原生库，详见[构建与协议说明](docs/BILI_LOGIN.md)。
