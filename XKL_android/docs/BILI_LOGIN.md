@@ -40,6 +40,7 @@ SDK应用密钥由未跟踪的`XKL_android/bili.properties`中的`appKey`提供�
 - 游戏凭证交换：`https://gf2-zoneinfo.sunborngame.com/bili/login`。
 - 抽卡查询：`https://gf2-gacha-record.sunborngame.com/list?game_channel_id=6&type_id=3`。
 - 小程序钥匙：携带 `game_channel_id=6`，小程序按同一渠道查询记录和助战网关。
+- B服游戏令牌不被官方 `account/info` 接受；导出核验使用渠道 6 的记录接口，UID 来自本次B站登录结果。
 - B站SDK：app_id/game_id 5279、merchant_id 1226、server_id 4424、sdk_ver 5.9.0。
 - Mica公共参数：game_channel_id 6、os 1、reyun_channel_id bzaz。
 

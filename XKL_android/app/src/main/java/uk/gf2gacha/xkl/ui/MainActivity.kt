@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import android.text.InputFilter
 import android.text.InputType
 import android.view.Gravity
@@ -1005,10 +1006,14 @@ class MainActivity : AppCompatActivity() {
                 // 在发请求前校验格式；错误内容不回显凭证。
                 MiniProgramKey.encode(uid, token, channel)
                 Gf2Api.verifyCredential(token, channel)
-                val officialUid = Gf2Api.fetchAccountUid(token)
-                if (officialUid != uid) {
-                    toast(getString(R.string.export_key_uid_mismatch))
-                    return@launch
+                // B服游戏令牌不被官方 account/info 接受；渠道 6 的记录接口已证明凭证有效，
+                // UID 来自本次 B站登录结果并随账号存储，不再调用官服专用 UID 接口。
+                if (channel != GameChannel.BILIBILI) {
+                    val officialUid = Gf2Api.fetchAccountUid(token, channel)
+                    if (officialUid != uid) {
+                        toast(getString(R.string.export_key_uid_mismatch))
+                        return@launch
+                    }
                 }
                 if (matchingAccount(uid, token, channel) == null) {
                     toast(getString(R.string.export_key_account_changed))
@@ -1018,6 +1023,8 @@ class MainActivity : AppCompatActivity() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                // 只记录异常类型与接口文案，不记录钥匙或凭证。
+                Log.w("XKL", "export verification failed: " + e.javaClass.simpleName + ": " + describe(e).take(240))
                 // 凭证过期与刷新使用同一套续登确认，不跳转登录页、不自动发码。
                 val selected = matchingAccount(uid, token, channel)
                 if (e is Gf2Exception && e.isTokenError && selected != null) {

@@ -123,9 +123,14 @@ object Gf2Api {
      * **不能拿它当过期检查**：账号接口只校验签名，access_token 过期后照样返回 uid。
      * 判断凭证是否可用要用 [verifyCredential]（与刷新同一条记录接口）。
      */
-    suspend fun fetchAccountUid(token: String): String = withContext(Dispatchers.IO) {
+    suspend fun fetchAccountUid(token: String, channel: GameChannel = GameChannel.OFFICIAL): String = withContext(Dispatchers.IO) {
+        val url = ACCOUNT_INFO_URL.toHttpUrlOrNull()?.newBuilder()
+            ?.addQueryParameter("game_channel_id", channel.id.toString())
+            ?.addQueryParameter("type_id", "3")
+            ?.build()
+            ?: throw Gf2Exception(-1, "账号接口地址不合法")
         val request = Request.Builder()
-            .url(ACCOUNT_INFO_URL)
+            .url(url)
             .post("{}".toRequestBody(JSON_TYPE))
             .header("User-Agent", USER_AGENT)
             .header("X-Unity-Version", UNITY_VERSION)
