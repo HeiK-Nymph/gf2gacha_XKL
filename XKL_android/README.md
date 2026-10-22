@@ -194,7 +194,7 @@ D:\android-sdk\build-tools\34.0.0\apksigner.bat verify --print-certs app\build\o
 ```
 
 **开始下一版更新时**：将 `app/build.gradle.kts` 的 `versionCode` 和 `versionName` 升到下一个版本，再 `assembleRelease`，让旧版用户能检测到更新。
-**正式提交前的真机 / MuMu 调试固定使用该下一版本**，当前为 `versionName=0.1.5`、`versionCode=13`，不为方便覆盖安装而反复递增。
+**正式提交前的真机 / MuMu 调试固定使用该下一版本**，当前为 `versionName=0.1.6`、`versionCode=14`，不为方便覆盖安装而反复递增。
 同签名、同版本先尝试 `adb install -r`；如果系统拒绝安装，请用户手动安装，
 不要递增版本、卸载原应用或清除账号数据来绕过问题。
 
@@ -314,6 +314,6 @@ D:\miniconda3\python.exe -m http.server 8000 --bind 127.0.0.1 --directory .runti
 
 ## 官服 / B服登录
 
-正式版0.1.5在0.1.4登录能力基础上新增 R2 公告功能。B服需要安全验证时，在应用内完成后继续登录；无需验证时直接登录。
+正式版0.1.6在0.1.5基础上支持官服/B服钥匙导入小程序。B服需要安全验证时，在应用内完成后继续登录；无需验证时直接登录。
 账号与缓存按渠道隔离，旧账号自动按官服兼容。凭证、手机号和记录不上传自建服务器。当前APK要求64位ARM设备和Android 7.0+。
-B服暂不支持导出到小程序。构建B服功能需要本地SDK配置与原生库，详见[构建与协议说明](docs/BILI_LOGIN.md)。
+官服与B服均可导出到小程序；钥匙会携带 `game_channel_id`（官服 5、B服 6），小程序按渠道读取记录和助战。B服构建需要本地SDK配置与原生库，详见[构建与协议说明](docs/BILI_LOGIN.md)。

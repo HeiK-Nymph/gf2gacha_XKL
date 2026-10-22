@@ -9,6 +9,7 @@ import android.content.ClipDescription
 import android.os.Bundle
 import android.util.Base64
 import org.json.JSONObject
+import uk.gf2gacha.xkl.data.GameChannel
 import uk.gf2gacha.xkl.data.MiniProgramKey
 import uk.gf2gacha.xkl.data.AccountStore
 import uk.gf2gacha.xkl.data.GachaRecord
@@ -78,16 +79,19 @@ class MiniProgramKeyInstrumentation : Instrumentation() {
         }
 
         verify("与小程序协议示例逐字一致") {
-            check(MiniProgramKey.encode("123456789", "demo") ==
-                "XKL1.eyJ2ZXJzaW9uIjoxLCJ1aWQiOiIxMjM0NTY3ODkiLCJjcmVkZW50aWFsIjoiZGVtbyJ9")
+            check(MiniProgramKey.encode("123456789", "demo", GameChannel.OFFICIAL) ==
+                "XKL1.eyJ2ZXJzaW9uIjoxLCJ1aWQiOiIxMjM0NTY3ODkiLCJjcmVkZW50aWFsIjoiZGVtbyIsImdhbWVfY2hhbm5lbF9pZCI6NX0")
+            check(MiniProgramKey.encode("123456789", "demo", GameChannel.BILIBILI) ==
+                "XKL1.eyJ2ZXJzaW9uIjoxLCJ1aWQiOiIxMjM0NTY3ODkiLCJjcmVkZW50aWFsIjoiZGVtbyIsImdhbWVfY2hhbm5lbF9pZCI6Nn0")
         }
-        verify("UTF-8 往返且仅包含三项协议字段") {
+        verify("UTF-8 往返且包含 UID、凭证和渠道") {
             val credential = "测试凭证+/=."
-            val key = MiniProgramKey.encode("123456789", credential)
+            val key = MiniProgramKey.encode("123456789", credential, GameChannel.BILIBILI)
             check(key.matches(Regex("XKL1\\.[A-Za-z0-9_-]+")))
             val json = JSONObject(String(Base64.decode(key.substring(5), Base64.URL_SAFE), Charsets.UTF_8))
-            check(json.length() == 3 && json.getInt("version") == 1)
+            check(json.length() == 4 && json.getInt("version") == 1)
             check(json.getString("uid") == "123456789" && json.getString("credential") == credential)
+            check(json.getInt("game_channel_id") == 6)
         }
         verify("拒绝错误 UID") {
             listOf("", "123", "a1234", "1".repeat(33)).forEach { uid -> rejects { MiniProgramKey.encode(uid, "demo") } }
@@ -205,8 +209,9 @@ class MiniProgramKeyInstrumentation : Instrumentation() {
                 if (key.startsWith("XKL1.")) {
                     val json = JSONObject(String(Base64.decode(key.substring(5), Base64.URL_SAFE), Charsets.UTF_8))
                     val account = AccountStore(targetContext).current()
-                    matches = account != null && json.length() == 3 && json.getInt("version") == 1 &&
-                        json.getString("uid") == account.uid && json.getString("credential") == account.token
+                    matches = account != null && json.length() == 4 && json.getInt("version") == 1 &&
+                        json.getString("uid") == account.uid && json.getString("credential") == account.token &&
+                        json.getInt("game_channel_id") == account.channel.id
                     sensitive = clip?.description?.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE) == true
                 }
             }

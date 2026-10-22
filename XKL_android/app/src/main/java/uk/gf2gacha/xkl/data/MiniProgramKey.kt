@@ -8,7 +8,7 @@ import org.json.JSONObject
 
 /** 小程序导入协议 v1。只封装 UID 和现有凭证，不包含手机号、密码或抽卡记录。 */
 object MiniProgramKey {
-    fun encode(uid: String, credential: String): String {
+    fun encode(uid: String, credential: String, channel: GameChannel = GameChannel.OFFICIAL): String {
         require(uid.matches(Regex("[0-9]{4,32}"))) { "UID 格式不正确" }
         require(credential.isNotBlank() && credential.length <= 4096 &&
             !credential.contains('\r') && !credential.contains('\n')) { "凭证格式不正确" }
@@ -16,6 +16,7 @@ object MiniProgramKey {
             put("version", 1)
             put("uid", uid)
             put("credential", credential)
+            put("game_channel_id", channel.id)
         }
         val payload = Base64.encodeToString(
             json.toString().toByteArray(Charsets.UTF_8),

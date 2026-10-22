@@ -982,10 +982,6 @@ class MainActivity : AppCompatActivity() {
     private fun showExportKey() {
         if (loading || exportKeyJob?.isActive == true || reauthBusy || reauthDialog?.isShowing == true) return
         val account = store.current() ?: run { showAddAccountPrompt(); return }
-        if (account.channel == GameChannel.BILIBILI) {
-            toast("B服暂不支持导出到小程序")
-            return
-        }
         if (account.token.isBlank()) {
             confirmReauthentication(account, PendingAction.EXPORT)
             return
@@ -1007,7 +1003,7 @@ class MainActivity : AppCompatActivity() {
         exportKeyJob = lifecycleScope.launch {
             try {
                 // 在发请求前校验格式；错误内容不回显凭证。
-                MiniProgramKey.encode(uid, token)
+                MiniProgramKey.encode(uid, token, channel)
                 Gf2Api.verifyCredential(token, channel)
                 val officialUid = Gf2Api.fetchAccountUid(token)
                 if (officialUid != uid) {
@@ -1068,7 +1064,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
         try {
-            clipboard.setPrimaryClip(MiniProgramKey.clip(MiniProgramKey.encode(uid, token)))
+            clipboard.setPrimaryClip(MiniProgramKey.clip(MiniProgramKey.encode(uid, token, channel)))
             toast(getString(R.string.export_key_copied))
         } catch (e: Exception) {
             // 凭据格式在核验时已经校验过；这里只可能是账号数据被外部改坏或系统拒绝写剪贴板。
