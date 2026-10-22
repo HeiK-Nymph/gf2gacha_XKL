@@ -1,9 +1,28 @@
+import os
+import sys
+
+# 看门狗由本程序以独立进程重新拉起。这里必须在导入 webview / mitmproxy 之前
+# 处理，保证即使 GUI 依赖损坏，主进程退出后也能恢复 Windows 代理设置。
+if len(sys.argv) >= 2 and sys.argv[1] == "--proxy-watchdog":
+    try:
+        if len(sys.argv) != 6:
+            raise SystemExit(2)
+        from backend.proxy_watchdog import run_watchdog
+        raise SystemExit(run_watchdog(
+            int(sys.argv[2]),
+            sys.argv[3],
+            sys.argv[4],
+            sys.argv[5],
+        ))
+    except SystemExit:
+        raise
+    except Exception:
+        raise SystemExit(2)
+
 import webview
 import webbrowser
 import threading
 import asyncio
-import sys
-import os
 import json
 import shutil
 import subprocess
@@ -280,7 +299,9 @@ class GachaApp:
 
         status = get_proxy_status()
         if status.get("ready"):
-            return status
+            if not status.get("system_proxy"):
+                self.enable_system_proxy()
+            return get_proxy_status()
 
         print("[WARN] mitmproxy 未就绪，尝试重新启动代理...")
         self.start_proxy()
@@ -328,18 +349,20 @@ class GachaApp:
             # 检查是否已安装
             if platform.system() == "Windows":
                 if check_certificate_installed_windows(cert_name):
+                    self._enable_proxy_after_cert()
                     return {
                         "status": "success",
-                        "msg": "证书已安装，无需重复安装",
+                        "msg": "证书已安装，正在启用仅针对游戏抽卡域名的定向代理",
                         "cert_name": cert_name
                     }
                 
                 # 自动安装证书
                 success = install_certificate_windows(cert_path)
                 if success:
+                    self._enable_proxy_after_cert()
                     return {
                         "status": "success",
-                        "msg": "证书安装成功！",
+                        "msg": "证书安装成功！正在启用仅针对游戏抽卡域名的定向代理",
                         "cert_name": cert_name
                     }
                 else:
@@ -1372,10 +1395,22 @@ class GachaApp:
                 "message": "打开GitHub主页失败"
             }
         
-    def enable_system_proxy(self):
-        """把系统代理指向本工具的 mitmproxy
+    def _enable_proxy_after_cert(self):
+        """证书刚安装/已确认后，后台启用定向代理，避免阻塞 UI 线程。"""
+        try:
+            threading.Thread(
+                target=self.enable_system_proxy,
+                daemon=True,
+                name="proxy-after-cert",
+            ).start()
+        except Exception as exc:
+            print(f"[WARN] 启动证书后代理任务失败: {exc}")
 
-        代理没就绪时绝不能乱设：那会让用户整台机器断网，而且依然抓不到请求。
+    def enable_system_proxy(self):
+        """把系统代理指向本机 mitmproxy
+
+        代理没就绪或证书未安装时绝不乱设；mitmproxy 只解密抽卡域名，
+        其余流量原样透传，所以其它网站照常可用。
         """
         from backend.proxy import set_proxy, get_proxy_status
 
@@ -1389,7 +1424,7 @@ class GachaApp:
         try:
             if set_proxy('127.0.0.1', port) is False:
                 return False
-            print(f"[OK] 系统代理已指向 127.0.0.1:{port}，游戏流量会被捕获")
+            print(f"[OK] 系统代理已启用: 127.0.0.1:{port}，仅游戏抽卡域名会被解密")
             return True
         except Exception as e:
             print(f"[ERROR] 开启系统代理失败: {e}")
@@ -1648,6 +1683,15 @@ class GachaApp:
                   f"replayable={info['replayable']}, captured_at={info['captured_at']})")
         except Exception as e:
             print(f"[WARNING] 读取捕获状态失败: {e}")
+
+        # 旧版本被强杀时可能留下指向已停止 mitmproxy 的全局代理。
+        # 此时先关闭它，避免用户在打开新版之前一直无法上网。
+        try:
+            from backend.proxy_watchdog import repair_stale_local_proxy
+            if repair_stale_local_proxy():
+                print("[OK] 已清理旧版本遗留的失效本机代理")
+        except Exception as exc:
+            print(f"[WARN] 检查旧版本代理残留失败: {exc}")
 
         # 首次运行时检查并生成证书
         self._check_and_generate_certificate()

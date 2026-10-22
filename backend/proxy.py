@@ -1,11 +1,29 @@
 from pathlib import Path
+import atexit
+import asyncio
+import os
+import socket
+import subprocess
 import sys
 import threading
-import socket
-import asyncio
+import time
+import uuid
+
 from mitmproxy import options
 from mitmproxy.tools.dump import DumpMaster
-from winproxy import ProxySetting
+
+from backend.proxy_watchdog import (
+    apply_manual_proxy,
+    capture_proxy_snapshot,
+    load_snapshot,
+    proxy_owned_by_us,
+    restore_proxy_snapshot,
+    write_snapshot,
+)
+
+# 只解密抽卡记录接口：系统代理指向本机 mitmproxy，其余域名由 allow_hosts
+# 原样透传（不解密、不校验证书），因此整机上网不受证书和抓包逻辑影响。
+TARGET_DOMAINS = ("gf2-gacha-record.sunborngame.com",)
 
 # 全局变量：保存实际使用的端口号（保留旧接口，兼容已有调用）
 actual_port = None
@@ -16,15 +34,16 @@ proxy_state = {
     "port": None,
     "ready": False,
     "system_proxy": False,
+    "mode": "none",
+    "targets": list(TARGET_DOMAINS),
     "error": None,
 }
 _state_lock = threading.Lock()
 _lifecycle_lock = threading.RLock()
 _active_master = None
 _active_stop = None
-_previous_proxy = None
-
-p = ProxySetting()
+_proxy_lease = None
+_watchdog_process = None
 
 
 def get_proxy_status() -> dict:
@@ -38,31 +57,290 @@ def _update_state(**kwargs):
         proxy_state.update(**kwargs)
 
 
+def _runtime_dir() -> Path:
+    override = os.environ.get("GF2XKL_PROXY_DIR", "").strip()
+    if override:
+        root = Path(override)
+    else:
+        local_appdata = os.environ.get("LOCALAPPDATA", "").strip()
+        root = Path(local_appdata) / "gf2gacha_XKL" if local_appdata else Path.home() / ".gf2gacha_XKL"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def _target_domains() -> list[str]:
+    override = os.environ.get("GF2XKL_PROXY_TARGETS", "").strip()
+    if override:
+        domains = [item.strip().lower() for item in override.split(",") if item.strip()]
+        if domains:
+            return domains
+    return list(TARGET_DOMAINS)
+
+
+def _allow_host_patterns(domains: list[str] | None = None) -> list[str]:
+    """mitmproxy allow_hosts：只有匹配的域名会被解密，其余连接原样转发。"""
+    import re
+
+    return [r".*" + re.escape(domain) + r".*" for domain in (domains or _target_domains())]
+
+
+def _make_options(port: int, cert_dir):
+    """构造 mitmproxy 选项；allow_hosts 让非目标域名原样透传。"""
+    allow = _allow_host_patterns()
+    try:
+        return options.Options(
+            listen_port=port,
+            ssl_insecure=True,
+            confdir=str(cert_dir),
+            allow_hosts=allow,
+        )
+    except Exception as exc:
+        print(f"[WARN] allow_hosts 设置失败({exc})，退回仅自定义证书目录")
+        try:
+            return options.Options(
+                listen_port=port,
+                ssl_insecure=True,
+                confdir=str(cert_dir),
+            )
+        except Exception as exc2:
+            print(f"[WARN] 自定义证书目录设置失败({exc2})，回退默认配置（TLS 拦截可能失败）")
+            return options.Options(listen_port=port, ssl_insecure=True)
+
+
+def _certificate_is_trusted() -> bool:
+    """证书没装时不动系统代理，避免游戏请求被不可信证书打断。"""
+    try:
+        from backend.cert_generator import (
+            check_certificate_installed_windows,
+            ensure_ca_certificate,
+            get_certificate_info,
+        )
+
+        cert_dir, _ = ensure_ca_certificate()
+        cert_path = cert_dir / "mitmproxy-ca-cert.cer"
+        if not cert_path.exists():
+            return False
+        info = get_certificate_info(cert_path)
+        cert_name = info.get("common_name") if isinstance(info, dict) else None
+        return bool(cert_name and check_certificate_installed_windows(cert_name))
+    except Exception as exc:
+        print(f"[WARN] 无法确认 mitmproxy 证书状态，暂不接管系统代理: {exc}")
+        return False
+
+
+def _start_watchdog(snapshot_path: Path, ready_path: Path, stop_path: Path) -> bool:
+    """启动独立看门狗，并等待它确认已经握住主进程句柄。"""
+    global _watchdog_process
+
+    if _watchdog_process is not None and _watchdog_process.poll() is None:
+        return True
+
+    command = [sys.executable]
+    if not getattr(sys, "frozen", False):
+        command.append(str(Path(sys.argv[0]).resolve()))
+    command.extend([
+        "--proxy-watchdog",
+        str(os.getpid()),
+        str(snapshot_path),
+        str(ready_path),
+        str(stop_path),
+    ])
+
+    creation_flags = 0
+    if os.name == "nt":
+        creation_flags = (
+            getattr(subprocess, "DETACHED_PROCESS", 0)
+            | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            | getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        )
+
+    try:
+        _watchdog_process = subprocess.Popen(
+            command,
+            cwd=str(Path(sys.argv[0]).resolve().parent),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+            creationflags=creation_flags,
+        )
+    except Exception as exc:
+        print(f"[WARN] 启动代理看门狗失败: {exc}")
+        _watchdog_process = None
+        return False
+
+    deadline = time.monotonic() + 8.0
+    while time.monotonic() < deadline:
+        if ready_path.exists():
+            return True
+        if _watchdog_process.poll() is not None:
+            print(f"[WARN] 代理看门狗提前退出，返回码={_watchdog_process.returncode}")
+            _watchdog_process = None
+            return False
+        time.sleep(0.1)
+
+    print("[WARN] 代理看门狗启动超时，未修改系统代理")
+    try:
+        _watchdog_process.terminate()
+    except Exception:
+        pass
+    _watchdog_process = None
+    return False
+
+
+def _stop_watchdog(stop_path: Path | None = None) -> None:
+    global _watchdog_process
+    process = _watchdog_process
+    if process is None:
+        return
+    if stop_path is not None:
+        try:
+            stop_path.touch(exist_ok=True)
+        except OSError:
+            pass
+    if process.poll() is None:
+        try:
+            process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            try:
+                process.terminate()
+                process.wait(timeout=1)
+            except Exception:
+                pass
+    _watchdog_process = None
+
+
+def _cleanup_lease_files(lease: dict) -> None:
+    for key in ("snapshot_path", "ready_path", "stop_path"):
+        value = lease.get(key)
+        if not value:
+            continue
+        try:
+            Path(value).unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _recover_stale_proxy_state() -> None:
+    """恢复上次主程序与看门狗同时被强杀时遗留的本工具代理。"""
+    runtime = _runtime_dir()
+    for snapshot_path in runtime.glob("gf2-proxy-*.json"):
+        try:
+            snapshot = load_snapshot(snapshot_path)
+            if proxy_owned_by_us(snapshot) and not restore_proxy_snapshot(snapshot):
+                continue
+            snapshot_path.unlink(missing_ok=True)
+            for suffix in (".ready", ".stop"):
+                snapshot_path.with_suffix(suffix).unlink(missing_ok=True)
+        except Exception as exc:
+            print(f"[WARN] 清理遗留系统代理失败: {exc}")
+
+
 def set_proxy(ip, port):
-    """设置系统代理"""
-    global _previous_proxy
+    """把系统代理指向本机 mitmproxy，并在修改注册表前先启动崩溃看门狗。
+
+    只有 TARGET_DOMAINS 会被 mitmproxy 解密；其余流量由 mitmproxy 原样透传，
+    所以证书没装、或抓包逻辑出错，都不会让整台机器断网。
+    """
+    global _proxy_lease
+
     with _lifecycle_lock:
         if _active_stop is not None and _active_stop.is_set():
             return False
-        if _previous_proxy is None:
-            previous = ProxySetting()
-            previous.registry_read()
-            _previous_proxy = previous
-        p.enable = True
-        p.server = f'{ip}:{port}'
-        p.registry_write()
-        _update_state(system_proxy=True)
-        return True
+        if os.name != "nt":
+            _update_state(error="定向代理仅支持 Windows")
+            return False
+
+        server = f"{ip}:{int(port)}"
+        if _proxy_lease is not None:
+            snapshot_path = Path(str(_proxy_lease.get("snapshot_path") or ""))
+            if _proxy_lease.get("server") == server and snapshot_path.is_file():
+                _update_state(system_proxy=True, mode="targeted_tunnel", error=None)
+                return True
+            print("[WARN] 代理配置已变化，先恢复上一份系统代理设置")
+            close_proxy()
+
+        _recover_stale_proxy_state()
+
+        if not _certificate_is_trusted():
+            _update_state(system_proxy=False, mode="none", error="mitmproxy 证书未安装或不可信")
+            print("[WARN] mitmproxy 证书未安装，已保持系统代理不变")
+            return False
+
+        token = f"{os.getpid()}-{uuid.uuid4().hex[:8]}"
+        runtime = _runtime_dir()
+        snapshot_path = runtime / f"gf2-proxy-{token}.json"
+        ready_path = runtime / f"gf2-proxy-{token}.ready"
+        stop_path = runtime / f"gf2-proxy-{token}.stop"
+        lease = {
+            "server": server,
+            "port": int(port),
+            "snapshot_path": str(snapshot_path),
+            "ready_path": str(ready_path),
+            "stop_path": str(stop_path),
+        }
+
+        try:
+            write_snapshot(snapshot_path, capture_proxy_snapshot(server))
+
+            if not _start_watchdog(snapshot_path, ready_path, stop_path):
+                _cleanup_lease_files(lease)
+                _update_state(system_proxy=False, mode="none", error="代理看门狗启动失败")
+                return False
+
+            if _active_stop is not None and _active_stop.is_set():
+                _stop_watchdog(stop_path)
+                _cleanup_lease_files(lease)
+                return False
+
+            apply_manual_proxy(server)
+            _proxy_lease = lease
+            _update_state(
+                system_proxy=True,
+                mode="targeted_tunnel",
+                targets=_target_domains(),
+                error=None,
+            )
+            print(
+                f"[OK] 已启用系统代理: {server} "
+                f"(仅 {', '.join(_target_domains())} 会被解密，其它流量直通)"
+            )
+            return True
+        except Exception as exc:
+            try:
+                restore_proxy_snapshot(load_snapshot(snapshot_path))
+            except Exception:
+                pass
+            _stop_watchdog(stop_path)
+            _cleanup_lease_files(lease)
+            _update_state(system_proxy=False, mode="none", error=str(exc))
+            print(f"[ERROR] 启用系统代理失败: {exc}")
+            return False
 
 
 def close_proxy():
-    """只恢复本程序接管前的代理设置；未接管时不改用户设置。"""
-    global _previous_proxy
+    """恢复启动前的系统代理设置；失败时保留看门狗等待主进程退出后重试。"""
+    global _proxy_lease
+
     with _lifecycle_lock:
-        if _previous_proxy is not None:
-            _previous_proxy.registry_write()
-            _previous_proxy = None
-        _update_state(system_proxy=False)
+        lease = _proxy_lease
+        if lease is not None:
+            restored = False
+            try:
+                snapshot = load_snapshot(lease["snapshot_path"])
+                restored = restore_proxy_snapshot(snapshot)
+                if not restored:
+                    restored = not proxy_owned_by_us(snapshot)
+            except Exception as exc:
+                print(f"[WARN] 恢复系统代理失败，看门狗将继续兜底: {exc}")
+
+            if restored:
+                _stop_watchdog(Path(lease["stop_path"]))
+                _cleanup_lease_files(lease)
+                _proxy_lease = None
+            else:
+                print("[WARN] 当前代理设置仍指向本工具，保留看门狗等待进程退出后恢复")
+        _update_state(system_proxy=False, mode="none")
 
 
 def stop_proxy():
@@ -143,22 +421,12 @@ async def run_proxy(port=8080, auto_find_port=True, stop_event=None):
     if is_new:
         cert_dir = generate_user_ca_certificate()
 
-    # 配置选项
-    try:
-        opts = options.Options(
-            listen_port=port,
-            ssl_insecure=True,
-            confdir=str(cert_dir)  # 使用项目专属证书目录
-        )
-    except Exception as e:
-        # 不同 mitmproxy 版本对 confdir 的处理不同，退化也不能让代理起不来
-        print(f"[WARN] 自定义证书目录设置失败({e})，回退默认配置（TLS 拦截可能失败）")
-        opts = options.Options(listen_port=port, ssl_insecure=True)
+    # 配置选项：allow_hosts 让抽卡域名以外的流量原样透传
+    opts = _make_options(port, cert_dir)
 
     # 创建DumpMaster对象
     #   with_termlog=False  关掉终端日志
     #   with_dumper=False   关掉「每条 flow 都打到 stdout」的 dumper
-    #                       （默认是 True，日志文件会被 127.0.0.1:1469: GET http://... 刷满）
     master = DumpMaster(opts, with_termlog=False, with_dumper=False)
 
     class Lifecycle:
@@ -171,9 +439,12 @@ async def run_proxy(port=8080, auto_find_port=True, stop_event=None):
                 try:
                     if not _can_connect(port):
                         raise RuntimeError(f'代理端口 {port} 未开始监听')
-                    set_proxy('127.0.0.1', port)
+                    enabled = set_proxy('127.0.0.1', port)
                     _update_state(ready=True)
-                    print(f'[OK] mitmproxy 已就绪并接管系统代理: 127.0.0.1:{port}')
+                    if enabled:
+                        print(f'[OK] mitmproxy 已就绪并启用系统代理: 127.0.0.1:{port}')
+                    else:
+                        print('[WARN] mitmproxy 已就绪，但系统代理未接管（通常是证书未安装）')
                 except Exception as exc:
                     _update_state(error=str(exc))
                     master.shutdown()
@@ -211,6 +482,9 @@ async def run_proxy(port=8080, auto_find_port=True, stop_event=None):
             close_proxy()
 
     return port
+
+
+atexit.register(close_proxy)
 
 if __name__ == '__main__':
     asyncio.run(run_proxy(8080))

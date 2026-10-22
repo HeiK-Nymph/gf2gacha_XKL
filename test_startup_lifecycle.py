@@ -160,16 +160,24 @@ class StartupTests(unittest.TestCase):
         self.assertIsNone(proxy._active_master)
 
     def test_proxy_restores_original_settings_once(self):
-        with patch.object(proxy, 'ProxySetting') as previous, patch.object(proxy, 'p'), \
-             patch.object(proxy, '_previous_proxy', None):
+        lease = {
+            'server': '127.0.0.1:8080',
+            'port': 8080,
+            'snapshot_path': 'snapshot.json',
+            'ready_path': 'watchdog.ready',
+            'stop_path': 'watchdog.stop',
+        }
+        with patch.object(proxy, '_proxy_lease', lease), \
+             patch.object(proxy, 'load_snapshot', return_value={'server': lease['server']}), \
+             patch.object(proxy, 'restore_proxy_snapshot', return_value=True) as restore, \
+             patch.object(proxy, '_stop_watchdog') as stop, \
+             patch.object(proxy, '_cleanup_lease_files') as cleanup:
             proxy.close_proxy()
-            previous.return_value.registry_write.assert_not_called()
-            proxy.set_proxy('127.0.0.1', 8080)
-            proxy.set_proxy('127.0.0.1', 8080)
             proxy.close_proxy()
-            proxy.close_proxy()
-            previous.return_value.registry_read.assert_called_once()
-            previous.return_value.registry_write.assert_called_once()
+        restore.assert_called_once()
+        stop.assert_called_once()
+        cleanup.assert_called_once()
+        self.assertIsNone(proxy._proxy_lease)
 
     def test_first_run_certificate_exports_pkcs12(self):
         from pathlib import Path

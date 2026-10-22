@@ -11,7 +11,12 @@ import sys
 import tempfile
 import time
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from winproxy import ProxySetting
+from backend.proxy_watchdog import _write_auto_config_url, read_auto_config_url
 
 
 def find_window(pid):
@@ -39,6 +44,7 @@ def verify(source):
     assert (source / 'gf2gacha_XKL.exe').is_file(), source
     original = ProxySetting()
     original.registry_read()
+    original_auto_config = read_auto_config_url()
     process = None
     temporary = tempfile.TemporaryDirectory(prefix='xkl_frozen_')
     try:
@@ -61,7 +67,8 @@ def verify(source):
             if hwnd:
                 ctypes.windll.user32.ShowWindow(hwnd, 0)
             log = log_path.read_text(encoding='utf-8', errors='replace') if log_path.exists() else ''
-            if '[STARTUP] 五星表刷新结束' in log and '[OK] mitmproxy 已就绪' in log and hwnd:
+            proxy_ready = '[OK] mitmproxy 已就绪' in log or '[WARN] mitmproxy 已就绪' in log
+            if '[STARTUP] 五星表刷新结束' in log and proxy_ready and hwnd:
                 assert 'ModuleNotFoundError' not in log and '[ERROR]' not in log, log
                 break
             time.sleep(.2)
@@ -74,6 +81,7 @@ def verify(source):
         after = ProxySetting()
         after.registry_read()
         assert (after.enable, after.server, after.override) == (original.enable, original.server, original.override)
+        assert read_auto_config_url() == original_auto_config
         print('PASS frozen EXE: WebView + proxy + SSR startup + clean exit + proxy restoration')
         process = None
     finally:
@@ -81,6 +89,8 @@ def verify(source):
             process.kill()
             process.wait(timeout=10)
         original.registry_write()
+        exists, value, value_type = original_auto_config
+        _write_auto_config_url(value if exists else None, value_type or 1)
         temporary.cleanup()
 
 

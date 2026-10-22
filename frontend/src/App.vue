@@ -155,9 +155,9 @@
     <el-dialog v-model="logDialogVisible" title="运行状态与日志" width="620px">
       <div class="log-dialog-body">
         <div class="status-row">
-          <span class="status-dot" :class="proxyReady ? 'dot-ok' : 'dot-bad'"></span>
+          <span class="status-dot" :class="proxyReady && proxyApplied ? 'dot-ok' : 'dot-bad'"></span>
           <span class="status-label">代理</span>
-          <span class="status-value">{{ proxyReady ? `运行中 127.0.0.1:${proxyPort}` : '未启动' }}</span>
+          <span class="status-value">{{ proxyReady ? (proxyApplied ? `运行中（仅解密抽卡接口） 127.0.0.1:${proxyPort}` : '已启动，系统代理未接管（请先安装证书）') : '未启动' }}</span>
         </div>
         <div class="status-row">
           <span class="status-dot" :class="captureReplayable ? 'dot-ok' : 'dot-bad'"></span>
@@ -282,6 +282,8 @@
   // 「更新记录」只是重放上一次抓到的游戏请求，所以界面上必须能看出来
   // 代理有没有起来、有没有抓到过请求，否则用户只会看到一句没头没尾的失败。
   const proxyReady = ref(false)
+  const proxyApplied = ref(false)
+  const proxyError = ref('')
   const proxyPort = ref(null)
   const captureInfo = ref({})
   const lastSeenCapture = ref('')
@@ -308,6 +310,11 @@
     if (!proxyReady.value) {
       return '代理未启动，游戏请求不会被捕获，请重启本工具'
     }
+    if (!proxyApplied.value) {
+      return proxyError.value
+        ? `系统代理未接管：${proxyError.value}`
+        : '代理已启动，但系统代理未接管；请先安装证书'
+    }
     if (!captureReplayable.value) {
       return '打开游戏 → 进入「招募 · 访问详情」页面，然后点『更新记录』'
     }
@@ -324,6 +331,8 @@
   const applyStatus = (res, notify) => {
     if (!res || res.status !== 'success') return
     proxyReady.value = !!(res.proxy && res.proxy.ready)
+    proxyApplied.value = !!(res.proxy && res.proxy.system_proxy)
+    proxyError.value = (res.proxy && res.proxy.error) || ''
     proxyPort.value = res.proxy ? res.proxy.port : null
     captureInfo.value = res.capture || {}
     logPath.value = res.log_path || ''

@@ -128,3 +128,7 @@ XKL_admin/dist/
 
 # 发布产物（zip + version.json，上传到 R2 / GitHub Releases）
 /release/
+
+# .NET 构建产物（tools/gf2-role/reflect）
+tools/gf2-role/reflect/bin/
+tools/gf2-role/reflect/obj/
