@@ -28,7 +28,7 @@
             v-model="selectedRecordId"
             placeholder="选择抽卡记录"
             size="large"
-            style="width: 300px;"
+            style="width: 230px;"
             @change="onRecordChange"
           >
             <el-option
@@ -45,6 +45,9 @@
           <el-icon style="margin-right: 4px;"><Share /></el-icon>分享
         </el-button>
         <span class="version-info">v{{ currentVersion }}</span>
+        <el-button type="info" size="large" :loading="announcementLoading" @click="openAnnouncement" aria-label="查看公告">
+          <el-icon style="margin-right: 4px;"><Bell /></el-icon>{{ announcementUnread ? '公告 · 新' : '公告' }}
+        </el-button>
         <el-button type="info" size="large" @click="checkUpdate">检查更新</el-button>
         <el-button type="info" size="large" @click="openLogDialog">日志</el-button>
       </div>
@@ -175,6 +178,45 @@
         <el-button type="primary" @click="openLogFile">打开日志文件</el-button>
       </template>
     </el-dialog>
+
+    <!-- 「公告」窗口：文字 + 图片，首次出现新公告时自动打开 -->
+    <el-dialog
+      v-model="announcementDialogVisible"
+      width="720px"
+      class="announcement-dialog"
+      :show-close="false"
+      align-center
+      destroy-on-close
+    >
+      <template #header>
+        <div class="announcement-dialog-header">
+          <div class="announcement-kicker"><span class="announcement-kicker-line"></span>ANNOUNCEMENT / 公告</div>
+          <button class="announcement-close" type="button" aria-label="关闭公告" @click="announcementDialogVisible = false">×</button>
+          <div class="announcement-dialog-title">{{ announcement?.title || '公告' }}</div>
+          <div v-if="announcementDate" class="announcement-dialog-meta">{{ announcementDate }}</div>
+        </div>
+      </template>
+      <div class="announcement-dialog-content">
+        <div v-if="announcement?.body" class="announcement-copy">{{ announcement.body }}</div>
+        <div v-if="announcementImages.length" class="announcement-images">
+          <el-image
+            v-for="(image, index) in announcementImages"
+            :key="`${image}-${index}`"
+            class="announcement-image"
+            :src="image"
+            fit="contain"
+            :preview-src-list="announcementImages"
+            :initial-index="index"
+            preview-teleported
+          >
+            <template #error><div class="announcement-image-error">图片加载失败</div></template>
+          </el-image>
+        </div>
+      </div>
+      <template #footer>
+        <el-button type="primary" size="large" @click="announcementDialogVisible = false">知道了</el-button>
+      </template>
+    </el-dialog>
   </el-container>
   
 </template>
@@ -182,7 +224,7 @@
   
 <script setup>
   import {ref, computed, watch, onMounted, onUnmounted, nextTick} from 'vue'
-  import {Loading, Share} from '@element-plus/icons-vue'
+  import {Bell, Loading, Share} from '@element-plus/icons-vue'
   import GachaItem from './components/GachaItem.vue'
   import {ElMessage, ElMessageBox} from 'element-plus'
   import html2canvas from 'html2canvas'
@@ -198,6 +240,26 @@
   const recordList = ref([])
   const selectedRecordId = ref('')
   const currentVersion = ref(versionInfo.current_version)
+  const announcement = ref(null)
+  const announcementDialogVisible = ref(false)
+  const announcementUnread = ref(false)
+  const announcementLoading = ref(false)
+  const announcementImages = computed(() => {
+    const images = announcement.value?.images
+    return Array.isArray(images) ? images : []
+  })
+  const announcementDate = computed(() => {
+    const timestamp = Number(announcement.value?.published_at || 0)
+    if (!Number.isFinite(timestamp) || timestamp <= 0) return ''
+    try {
+      return new Intl.DateTimeFormat('zh-CN', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+      }).format(new Date(timestamp * 1000))
+    } catch (e) {
+      return ''
+    }
+  })
   const isUpdating = ref(false)
   const isLoading = ref(true)
   const isCustomPurchaseOn = ref(false)
@@ -376,6 +438,60 @@
       ElMessage.error(`打开日志文件失败: ${e.message || e}`)
     }
   }
+
+  // ---------------- R2 公告 ----------------
+  // 只在应用打开时自动检查一次；手动点「公告」会绕过缓存强制刷新。
+  let announcementPending = false
+
+  const markAnnouncementSeen = async (announcementId) => {
+    if (!announcementId || !(await waitForApi())) return
+    try {
+      await withTimeout(window.pywebview.api.mark_announcement_seen(announcementId))
+    } catch (e) {
+      console.error('[ERROR] 保存公告已读状态失败:', e)
+    }
+  }
+
+  const refreshAnnouncement = async (force = false, manual = false) => {
+    if (disposed || announcementPending) return
+    announcementPending = true
+    if (manual) announcementLoading.value = true
+    try {
+      if (!(await waitForApi()) || disposed) return
+      const res = await withTimeout(window.pywebview.api.get_announcement(!!force), 20000)
+      if (disposed) return
+      if (!res || res.status !== 'success') {
+        if (manual) ElMessage.error((res && res.message) || '公告获取失败')
+        return
+      }
+      if (manual && res.warning) ElMessage.warning(res.warning)
+      const latest = res.announcement
+      if (!latest) {
+        if (manual) ElMessage.info('暂无公告')
+        return
+      }
+      announcement.value = latest
+      announcementUnread.value = !!res.unread
+      const canAutoShow = !updateNoticeVisible.value && !logDialogVisible.value && !shareDialogVisible.value
+      if (manual || (res.unread && canAutoShow)) {
+        announcementDialogVisible.value = true
+        announcementUnread.value = false
+        markAnnouncementSeen(latest.id)
+      } else if (res.unread && announcementDialogVisible.value) {
+        // 弹窗正开着时清单又更新了：新内容已经显示在当前弹窗里，直接记为已读。
+        announcementUnread.value = false
+        markAnnouncementSeen(latest.id)
+      }
+    } catch (e) {
+      console.error('[ERROR] 获取公告失败:', e)
+      if (manual) ElMessage.error(`公告获取失败: ${e.message || e}`)
+    } finally {
+      announcementPending = false
+      if (manual) announcementLoading.value = false
+    }
+  }
+
+  const openAnnouncement = () => refreshAnnouncement(true, true)
 
 
   // 显示更新通知（远端 version.json 里带 update_info 时一并展示更新说明）
@@ -734,6 +850,8 @@
     if (source === 'error' && !ssrStore.isRefreshing) {
       ElMessage.error('无法加载五星数据')
     }
+
+    refreshAnnouncement(false)
   })
 
   onUnmounted(() => {
@@ -754,7 +872,7 @@
     right: 0;
     z-index: 1000;
     height: 64px;
-    padding: 0 20px;
+    padding: 0 14px;
     box-sizing: border-box;
     display: flex;
     justify-content: space-between;
@@ -770,7 +888,13 @@
   }
   .header-left {
     display: flex;
-    gap: 10px;  /* 按钮之间的间距 */
+    flex-shrink: 0;
+    gap: 8px;  /* 按钮之间的间距 */
+  }
+  .header-left .el-button,
+  .header-right .el-button {
+    padding-left: 12px;
+    padding-right: 12px;
   }
   .header-center {
     display: flex;
@@ -779,7 +903,8 @@
   }
   .header-right {
     display: flex;
-    gap: 10px;
+    flex-shrink: 0;
+    gap: 8px;
     align-items: center;
   }
   .record-selector {
@@ -965,5 +1090,94 @@
     width: 0 !important;
     height: 0 !important;
     display: none !important;
+  }
+
+  /* 公告弹窗：暖白纸张 + 金色索引线，和客户端其余提示层保持同一套视觉语言。 */
+  .announcement-dialog {
+    overflow: hidden;
+    border: 1px solid #d8c6a2;
+    border-radius: 8px;
+    background: #fbfaf6;
+    box-shadow: 0 28px 90px rgba(35, 31, 22, .28);
+  }
+  .announcement-dialog .el-dialog__header { margin: 0; padding: 0; }
+  .announcement-dialog .el-dialog__body { padding: 0 34px 8px; }
+  .announcement-dialog .el-dialog__footer { padding: 18px 34px 28px; }
+  .announcement-dialog-header {
+    position: relative;
+    padding: 28px 72px 22px 34px;
+    border-top: 5px solid #d9a441;
+    background: linear-gradient(115deg, #f0e5cd 0%, #fbfaf6 70%);
+  }
+  .announcement-kicker {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #9b7b43;
+    font: 12px/1.4 Consolas, monospace;
+    letter-spacing: 2px;
+  }
+  .announcement-kicker-line { width: 7px; height: 7px; background: #d9a441; }
+  .announcement-close {
+    position: absolute;
+    top: 22px;
+    right: 24px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #8a7c66;
+    font-size: 30px;
+    line-height: 36px;
+    cursor: pointer;
+  }
+  .announcement-close:hover { color: #2f392c; }
+  .announcement-dialog-title {
+    margin-top: 15px;
+    color: #2f392c;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.35;
+  }
+  .announcement-dialog-meta { margin-top: 8px; color: #958b7a; font: 12px Consolas, monospace; }
+  .announcement-dialog-content {
+    max-height: 56vh;
+    overflow-y: auto;
+    padding-top: 24px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior: contain;
+  }
+  .announcement-dialog-content::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .announcement-copy {
+    color: #4c5548;
+    font-size: 15px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .announcement-images { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+  .announcement-image {
+    width: 100%;
+    max-height: 520px;
+    border: 1px solid #ded5c2;
+    border-radius: 4px;
+    background: #f1eee7;
+    cursor: zoom-in;
+  }
+  .announcement-image .el-image__inner { max-height: 520px; object-fit: contain; }
+  .announcement-image-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+    color: #9b8e78;
+    font-size: 13px;
   }
 </style>

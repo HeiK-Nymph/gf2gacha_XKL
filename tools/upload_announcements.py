@@ -68,16 +68,26 @@ def _validate(data: dict) -> list[Path]:
         label = f"announcements[{index}]"
         if not isinstance(item, dict):
             raise SystemExit(f"{label} 必须是对象")
-        for field in ("id", "title", "body"):
+        for field in ("id", "title"):
             value = item.get(field)
             if not isinstance(value, str) or not value.strip():
                 raise SystemExit(f"{label}.{field} 不能为空")
+        body = item.get("body", "")
+        if not isinstance(body, str):
+            raise SystemExit(f"{label}.body 必须是字符串")
+        image_values = item.get("images", [])
+        if image_values is None:
+            image_values = []
+        if not isinstance(image_values, list):
+            raise SystemExit(f"{label}.images 必须是数组")
+        if not body.strip() and not image_values:
+            raise SystemExit(f"{label} 的正文和图片不能同时为空")
         item_id = item["id"].strip()
         if item_id in seen:
             raise SystemExit(f"公告 ID 重复：{item_id}")
         seen.add(item_id)
 
-        for image in item.get("images", []):
+        for image in image_values:
             if not isinstance(image, str) or not image.strip():
                 raise SystemExit(f"{label}.images 含空路径")
             parsed = urlparse(image)

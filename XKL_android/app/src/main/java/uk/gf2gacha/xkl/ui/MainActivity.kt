@@ -105,7 +105,6 @@ class MainActivity : AppCompatActivity() {
     private var announcementJob: Job? = null
     private var currentAnnouncement: AnnouncementCenter.Announcement? = null
     private var announcementDialog: AlertDialog? = null
-    private var lastAnnouncementCheckAt = 0L
     private var reauthDialog: AlertDialog? = null
     private var reauthBusy = false
     private enum class PendingAction { REFRESH, EXPORT }
@@ -760,13 +759,19 @@ class MainActivity : AppCompatActivity() {
         waiTag.visibility = if (hit.isWai) View.VISIBLE else View.INVISIBLE
 
         val weapon = SsrTable.get(this).isWeaponItem(hit.itemId)
+        avatar.visibility = View.VISIBLE
+        avatarText.visibility = View.GONE
         if (weapon) {
-            avatar.visibility = View.GONE
-            avatarText.visibility = View.VISIBLE
-            avatarText.text = "武"
+            avatar.scaleType = ImageView.ScaleType.FIT_CENTER
+            avatar.load(Gf2Api.WEAPON_IMAGE_BASE + hit.itemId + ".png") {
+                listener(onError = { _, _ ->
+                    avatar.visibility = View.GONE
+                    avatarText.visibility = View.VISIBLE
+                    avatarText.text = "武"
+                })
+            }
         } else {
-            avatar.visibility = View.VISIBLE
-            avatarText.visibility = View.GONE
+            avatar.scaleType = ImageView.ScaleType.CENTER_CROP
             avatar.load(Gf2Api.IMAGE_BASE + hit.itemId + ".png")
         }
         return row
@@ -786,20 +791,17 @@ class MainActivity : AppCompatActivity() {
     // ---------------------------------------------------------------- 公告
 
     /**
-     * 自动检查：每次回前台会检查，但 5 分钟内不重复请求。
-     * 用户点「公告」时 manual=true，强制拿最新清单；网络失败时回退到本次进程里拿到的公告。
+     * 自动检查：App 打开/回到前台时检查一次，打开期间不做定时轮询。
+     * 用户点「公告」时 manual=true，强制拿最新清单；网络失败时回退到本机持久化缓存。
      */
     private fun checkAnnouncements(manual: Boolean) {
-        val now = System.currentTimeMillis()
-        if (!manual && now - lastAnnouncementCheckAt < ANNOUNCEMENT_CHECK_INTERVAL_MS) return
         if (announcementJob?.isActive == true) {
             if (manual) toast("正在获取公告…")
             return
         }
 
-        lastAnnouncementCheckAt = now
         announcementJob = lifecycleScope.launch {
-            when (val result = AnnouncementCenter.fetch()) {
+            when (val result = AnnouncementCenter.fetch(this@MainActivity, force = manual)) {
                 is AnnouncementCenter.FetchResult.Success -> {
                     val latest = AnnouncementCenter.mostRecent(result.feed)
                     currentAnnouncement = latest
@@ -845,6 +847,7 @@ class MainActivity : AppCompatActivity() {
             "公告"
         }
         body.text = announcement.body
+        body.visibility = if (announcement.body.isBlank()) View.GONE else View.VISIBLE
 
         announcement.images.take(MAX_ANNOUNCEMENT_IMAGES).forEachIndexed { index, rawUrl ->
             val image = AspectRatioImageView(this)
@@ -1258,7 +1261,6 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         const val REQ_STORAGE = 1001
-        const val ANNOUNCEMENT_CHECK_INTERVAL_MS = 5L * 60L * 1000L
         const val MAX_ANNOUNCEMENT_IMAGES = 6
         val announcementTimeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         val timeFormat = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())

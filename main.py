@@ -32,6 +32,8 @@ from datetime import datetime
 from pathlib import Path
 import requests
 
+from backend.announcement import AnnouncementService
+
 # 添加backend路径
 sys.path.insert(0, str(Path(__file__).parent / "backend"))
 
@@ -127,6 +129,7 @@ class GachaApp:
         self.version = self._load_version()
         # 从本地 version.json 读取远程版本检查地址（R2）
         self.version_url = self.version.get("version_url", "https://r2.gf2gacha-xkl.uk/version.json")
+        self.announcement_center = AnnouncementService()
         # 先设置为空数据，延迟加载（后台线程）
         self.ssr_data = {
             "version": "loading",
@@ -279,7 +282,9 @@ class GachaApp:
             "X-Unity-Version": "2019.4.40f1",
         }
         try:
-            response = requests.post(account_url, headers=headers, json={}, timeout=10, verify=False)
+            with requests.Session() as session:
+                session.trust_env = False
+                response = session.post(account_url, headers=headers, json={}, timeout=10, verify=False)
             if response.status_code == 200:
                 account_data = response.json()
                 if account_data.get("code") == 0:
@@ -391,6 +396,7 @@ class GachaApp:
     
     def uninstall_cert(self):
         """卸载证书 - 仅卸载 gf2gacha_XKL 证书"""
+        was_proxy_active = False
         try:
             from backend.cert_generator import (
                 uninstall_certificate_windows, 
@@ -431,27 +437,36 @@ class GachaApp:
                     "msg": "证书未安装，无需卸载",
                 }
             
-            # 卸载 gf2gacha_XKL 证书
+            # 证书卸载后若代理仍指向本工具，目标域名会因证书不受信任而失败。
+            # 先恢复用户原来的代理设置；卸载失败时再按原状态恢复定向代理。
+            from backend.proxy import close_proxy, get_proxy_status
+            was_proxy_active = bool(get_proxy_status().get("system_proxy"))
+            if was_proxy_active:
+                close_proxy()
+
             success = uninstall_certificate_windows(cert_name)
-            
             if success:
                 return {
                     "status": "success",
                     "msg": "证书卸载成功！",
                 }
-            else:
-                return {
-                    "status": "error",
-                    "msg": "证书卸载失败",
-                }
+
+            if was_proxy_active:
+                self._enable_proxy_after_cert()
+            return {
+                "status": "error",
+                "msg": "证书卸载失败",
+            }
                 
         except Exception as e:
             print(f"[ERROR] 卸载证书失败: {e}")
             import traceback
             traceback.print_exc()
+            if was_proxy_active:
+                self._enable_proxy_after_cert()
             return {
                 "status": "error",
-                "msg": f"卸载证书失败: {str(e)}",
+                "msg": f"证书卸载失败: {str(e)}",
             }
     
     def check_cert_status(self):
@@ -882,6 +897,7 @@ class GachaApp:
             'prefetch_share_images', 'copy_image_to_clipboard',
             'get_update_status', 'mark_update_ok', 'dismiss_update_status',
             'rollback_update', 'start_update',
+            'get_announcement', 'mark_announcement_seen',
         )
         return SimpleNamespace(**{name: getattr(self, name) for name in names})
 
@@ -916,26 +932,20 @@ class GachaApp:
             print(f"[WARNING] 清理旧更新器失败: {e}")
     
     def check_update(self):
-        """检查更新"""
+        """检查更新（直连 R2，不修改系统代理）"""
         print("=" * 50)
         print("[UPDATE] 开始检查更新...")
         print(f"[UPDATE] 版本检查URL: {self.version_url}")
 
-        # 暂时关闭系统代理以检查更新
-        from backend.proxy import close_proxy
-        print("[UPDATE] 暂时关闭系统代理...")
-        close_proxy()
-
         try:
             print("[UPDATE] 正在请求 r2...")
-            # 关键：关掉 trust_env，避免走注册表里"本工具自己设的代理"
-            # （主程序被强杀后那个代理是死的，走它就必然"检查更新失败"）
-            session = requests.Session()
-            session.trust_env = False
-            response = session.get(self.version_url, timeout=8)
+            # 程序自身请求固定直连，不读取 Windows 注册表代理。
+            with requests.Session() as session:
+                session.trust_env = False
+                response = session.get(self.version_url, timeout=8)
+                response.raise_for_status()
+                remote_data = response.json()
             print(f"[UPDATE] HTTP状态码: {response.status_code}")
-
-            remote_data = response.json()
             print(f"[UPDATE] 远程数据: {remote_data}")
 
             remote_version = remote_data.get("current_version", "1.0.0")
@@ -946,7 +956,6 @@ class GachaApp:
 
             if _version_tuple(remote_version) > _version_tuple(local_version):
                 print("[UPDATE] 发现新版本！")
-                # 发现新版本，不恢复代理
                 return {
                     "status": "success",
                     "has_update": True,
@@ -957,31 +966,15 @@ class GachaApp:
                     "notes": remote_data.get("update_info", ""),
                     "message": f"发现新版本 v{remote_version}"
                 }
-            else:
-                print("[UPDATE] 当前已是最新版本")
-                # 已是最新版本，恢复代理
-                print("[UPDATE] 恢复系统代理...")
-                self.enable_system_proxy()
-                return {
-                    "status": "success",
-                    "has_update": False,
-                    "message": "当前已是最新版本"
-                }
-        except requests.exceptions.ProxyError as e:
-            print(f"[UPDATE] 代理错误: {e}")
-            # 检查出错，恢复代理
-            print("[UPDATE] 恢复系统代理...")
-            self.enable_system_proxy()
+
+            print("[UPDATE] 当前已是最新版本")
             return {
-                "status": "error",
+                "status": "success",
                 "has_update": False,
-                "message": "网络连接失败，请检查代理设置"
+                "message": "当前已是最新版本"
             }
         except requests.exceptions.Timeout as e:
             print(f"[UPDATE] 请求超时: {e}")
-            # 检查出错，恢复代理
-            print("[UPDATE] 恢复系统代理...")
-            self.enable_system_proxy()
             return {
                 "status": "error",
                 "has_update": False,
@@ -989,9 +982,6 @@ class GachaApp:
             }
         except requests.exceptions.ConnectionError as e:
             print(f"[UPDATE] 连接错误: {e}")
-            # 检查出错，恢复代理
-            print("[UPDATE] 恢复系统代理...")
-            self.enable_system_proxy()
             return {
                 "status": "error",
                 "has_update": False,
@@ -1001,15 +991,12 @@ class GachaApp:
             print(f"[UPDATE] 未知错误: {e}")
             import traceback
             traceback.print_exc()
-            # 检查出错，恢复代理
-            print("[UPDATE] 恢复系统代理...")
-            self.enable_system_proxy()
             return {
                 "status": "error",
                 "has_update": False,
                 "message": f"检查更新失败: {str(e)}"
             }
-    
+
     def start_update(self):
         """启动更新器并关闭主程序"""
         print("=" * 50)
@@ -1054,11 +1041,7 @@ class GachaApp:
             
             print("[UPDATE] 更新器已启动，主程序即将退出...")
             
-            # 关闭代理
-            from backend.proxy import close_proxy
-            close_proxy()
-            
-            # 关闭主程序
+            # 关闭主程序；on_closed 会统一停止代理并恢复用户原来的系统代理。
             if self.window:
                 self.window.destroy()
             
@@ -1584,9 +1567,7 @@ class GachaApp:
                 creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
             )
             print("[UPDATE] 已启动回滚流程，主程序即将退出")
-            from backend.proxy import close_proxy
-
-            close_proxy()
+            # 与正常更新一致，由 on_closed 统一恢复代理，避免重复切换。
             if self.window:
                 self.window.destroy()
             return {"status": "success", "msg": "正在回滚"}
@@ -1655,6 +1636,26 @@ class GachaApp:
         except Exception as e:
             print(f"[ERROR] 打开日志文件失败: {e}")
             return {"status": "error", "msg": f"打开日志文件失败: {e}"}
+
+    def get_announcement(self, force=False):
+        """读取最新公告；force=True 用于用户点「公告」时强制刷新。"""
+        try:
+            result = self.announcement_center.latest(force=bool(force))
+            announcement = result.get('announcement') if isinstance(result, dict) else None
+            if announcement:
+                print(f"[ANNOUNCEMENT] 最新公告: {announcement.get('id')} unread={result.get('unread')} stale={result.get('stale')}")
+            return result
+        except Exception as exc:
+            print(f"[ERROR] 获取公告失败: {exc}")
+            return {"status": "error", "message": f"公告获取失败：{exc}"}
+
+    def mark_announcement_seen(self, announcement_id):
+        """记录本机最后看过的公告 ID，下次只对新公告显示「新」标记。"""
+        try:
+            return self.announcement_center.mark_seen(announcement_id)
+        except Exception as exc:
+            print(f"[ERROR] 保存公告已读状态失败: {exc}")
+            return {"status": "error", "message": f"保存公告已读状态失败：{exc}"}
 
     def clear_capture(self):
         """清空捕获文件（里面有 Authorization，允许用户手动抹掉）"""

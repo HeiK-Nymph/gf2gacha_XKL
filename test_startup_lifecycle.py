@@ -5,7 +5,7 @@ import time
 import types
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import main
 from backend import proxy
@@ -44,6 +44,8 @@ class StartupTests(unittest.TestCase):
                     thread.join(1)
         self.assertFalse(touched)
         self.assertTrue(callable(window._js_api.get_startup_ssr_data))
+        self.assertTrue(callable(window._js_api.get_announcement))
+        self.assertTrue(callable(window._js_api.mark_announcement_seen))
         self.assertFalse(hasattr(window._js_api, 'window'))
 
     def test_slow_parser_does_not_block_startup_and_refresh_is_single_flight(self):
@@ -72,6 +74,32 @@ class StartupTests(unittest.TestCase):
         result = self.app.get_startup_ssr_data()
         self.assertEqual(result['source'], 'local-proto')
         self.assertFalse(result['refreshing'])
+
+    def test_check_update_bypasses_proxy_without_toggling_system_proxy(self):
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = {"current_version": "999.0.0", "download_url": "https://example/update.zip"}
+        with patch.object(main.requests, 'Session') as session_cls, \
+             patch.object(proxy, 'close_proxy') as close_proxy, \
+             patch.object(self.app, 'enable_system_proxy') as enable_proxy:
+            session = session_cls.return_value.__enter__.return_value
+            session.get.return_value = response
+            result = self.app.check_update()
+        self.assertTrue(result['has_update'])
+        self.assertFalse(session.trust_env)
+        close_proxy.assert_not_called()
+        enable_proxy.assert_not_called()
+
+    def test_fetch_uid_bypasses_environment_proxy(self):
+        response = Mock()
+        response.status_code = 200
+        response.json.return_value = {"code": 0, "data": {"uid": "1234567"}}
+        with patch('backend.capture.load_capture', return_value={"headers": {"Authorization": "token"}}), \
+             patch.object(main.requests, 'Session') as session_cls:
+            session = session_cls.return_value.__enter__.return_value
+            session.post.return_value = response
+            self.assertEqual(self.app._fetch_uid(), "1234567")
+        self.assertFalse(session.trust_env)
 
     def test_remote_ssr_bypasses_environment_proxy(self):
         with patch.object(main.requests, 'Session') as session:
@@ -105,11 +133,12 @@ class StartupTests(unittest.TestCase):
             with patch.object(main, '_app_root', return_value=root), \
                  patch.object(main, '_write_update_state'), \
                  patch.object(main.subprocess, 'Popen') as launch, \
-                 patch.object(proxy, 'close_proxy'):
+                 patch.object(proxy, 'close_proxy') as close_proxy:
                 result = self.app.start_update()
             self.assertEqual(result['status'], 'success', result)
             self.assertEqual(launch.call_args.kwargs['cwd'], str(root))
             self.app.window.destroy.assert_called_once()
+            close_proxy.assert_not_called()
 
     def test_proxy_only_enables_after_listening_and_stops_on_close(self):
         self._exercise_proxy(stop_before_ready=False)

@@ -4,6 +4,7 @@ python tools/verify_frozen_build.py dist/slim/gf2gacha_XKL
 """
 import ctypes
 from ctypes import wintypes
+import winreg
 from pathlib import Path
 import shutil
 import subprocess
@@ -15,8 +16,13 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from winproxy import ProxySetting
-from backend.proxy_watchdog import _write_auto_config_url, read_auto_config_url
+from backend.proxy_watchdog import (
+    _delete_value,
+    _set_value,
+    _settings_key,
+    notify_proxy_change,
+    read_proxy_values,
+)
 
 
 def find_window(pid):
@@ -42,9 +48,7 @@ def find_window(pid):
 def verify(source):
     source = Path(source).resolve()
     assert (source / 'gf2gacha_XKL.exe').is_file(), source
-    original = ProxySetting()
-    original.registry_read()
-    original_auto_config = read_auto_config_url()
+    original_values = read_proxy_values()
     process = None
     temporary = tempfile.TemporaryDirectory(prefix='xkl_frozen_')
     try:
@@ -78,19 +82,21 @@ def verify(source):
         ctypes.windll.user32.PostMessageW(hwnd, 0x0010, 0, 0)
         process.wait(timeout=10)
         assert process.returncode == 0, process.returncode
-        after = ProxySetting()
-        after.registry_read()
-        assert (after.enable, after.server, after.override) == (original.enable, original.server, original.override)
-        assert read_auto_config_url() == original_auto_config
+        after_values = read_proxy_values()
+        assert after_values == original_values
         print('PASS frozen EXE: WebView + proxy + SSR startup + clean exit + proxy restoration')
         process = None
     finally:
         if process is not None and process.poll() is None:
             process.kill()
             process.wait(timeout=10)
-        original.registry_write()
-        exists, value, value_type = original_auto_config
-        _write_auto_config_url(value if exists else None, value_type or 1)
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, _settings_key(), 0, winreg.KEY_SET_VALUE) as key:
+            for name, item in original_values.items():
+                if item.get("exists"):
+                    _set_value(key, name, item.get("value"), int(item.get("type") or winreg.REG_SZ))
+                else:
+                    _delete_value(key, name)
+        notify_proxy_change()
         temporary.cleanup()
 
 

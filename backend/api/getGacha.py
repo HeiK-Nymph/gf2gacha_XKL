@@ -200,7 +200,7 @@ async def get_gacha_pool_async(pool_type_id, pool_name, session, base_request) -
 
 async def _get_all_pools_async(base_request):
     """并行获取所有池子数据"""
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(trust_env=False) as session:
         return await asyncio.gather(
             *[
                 get_gacha_pool_async(pool_type_id, pool_name, session, base_request)

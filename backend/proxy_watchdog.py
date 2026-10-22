@@ -200,14 +200,30 @@ def _delete_value(key, name: str) -> None:
         pass
 
 
+def merge_proxy_override(value: Any) -> str:
+    """保留用户原有绕过规则，并确保本机/局域网继续直连。"""
+    items = []
+    seen = set()
+    for part in str(value or "").split(";"):
+        item = part.strip()
+        key = item.lower()
+        if item and key not in seen:
+            seen.add(key)
+            items.append(item)
+    if "<local>" not in seen:
+        items.append("<local>")
+    return ";".join(items)
+
+
 def apply_manual_proxy(server: str) -> None:
     """把系统代理指向本机 mitmproxy，并清掉 PAC 以免两套配置互相影响。"""
     _require_windows()
     try:
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, _settings_key(), 0, winreg.KEY_SET_VALUE) as key:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, _settings_key(), 0, winreg.KEY_READ | winreg.KEY_SET_VALUE) as key:
+            _, previous_override, _ = _read_value(key, PROXY_OVERRIDE)
             _set_value(key, PROXY_ENABLE, 1, winreg.REG_DWORD)
             _set_value(key, PROXY_SERVER, str(server), winreg.REG_SZ)
-            _set_value(key, PROXY_OVERRIDE, ACTIVE_PROXY_OVERRIDE, winreg.REG_SZ)
+            _set_value(key, PROXY_OVERRIDE, merge_proxy_override(previous_override), winreg.REG_SZ)
             _delete_value(key, AUTO_CONFIG_URL)
             enabled, current = read_manual_proxy()
             if enabled != 1 or current != str(server):

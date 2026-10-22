@@ -317,8 +317,8 @@ object ShareCard {
         val cy = y + ROW_H / 2f
         val avatarBmp = avatars[hit.itemId]
 
-        // 头像 / 武
-        if (!isWeapon && avatarBmp != null) {
+        // 头像 / 武器图 / 占位字
+        if (avatarBmp != null) {
             val save = canvas.save()
             val path = Path().apply {
                 addCircle(PAD + AVATAR / 2f, cy, AVATAR / 2f, Path.Direction.CW)
@@ -406,19 +406,18 @@ object ShareCard {
         return if (ssr == 0) "—" else Math.round(total.toFloat() / ssr).toString() + "抽"
     }
 
-    /** 并行拉本池五星人形的头像（失败就画占位圈） */
+    /** 并行拉本池五星角色 / 武器图片（失败就画占位圈） */
     private fun loadAvatars(result: PoolResult, table: SsrTable): Map<Int, Bitmap> {
         val ids = LinkedHashSet<Int>()
-        for (hit in result.ssrHits) {
-            if (!table.isWeaponItem(hit.itemId)) ids.add(hit.itemId)
-        }
+        for (hit in result.ssrHits) ids.add(hit.itemId)
         if (ids.isEmpty()) return emptyMap()
         val executor = Executors.newFixedThreadPool(6)
         val out = HashMap<Int, Bitmap>()
         val futures = ids.map { id ->
             executor.submit {
                 try {
-                    val request = Request.Builder().url(Gf2Api.IMAGE_BASE + id + ".png").build()
+                    val base = if (table.isWeaponItem(id)) Gf2Api.WEAPON_IMAGE_BASE else Gf2Api.IMAGE_BASE
+                    val request = Request.Builder().url(base + id + ".png").build()
                     client.newCall(request).execute().use { response ->
                         if (response.isSuccessful) {
                             val bitmap = BitmapFactory.decodeStream(response.body?.byteStream())

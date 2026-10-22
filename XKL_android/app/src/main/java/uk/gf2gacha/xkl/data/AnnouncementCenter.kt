@@ -24,6 +24,9 @@ object AnnouncementCenter {
 
     private const val PREFS = "announcement_state"
     private const val KEY_LAST_SEEN = "last_seen_id"
+    private const val KEY_CACHE_JSON = "manifest_cache_json"
+    private const val KEY_CACHE_FETCHED_AT = "manifest_cache_fetched_at"
+    private const val CACHE_TTL_SECONDS = 10L * 60L
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
@@ -45,11 +48,29 @@ object AnnouncementCenter {
     )
 
     sealed class FetchResult {
-        data class Success(val feed: Feed) : FetchResult()
+        data class Success(
+            val feed: Feed,
+            val cached: Boolean = false,
+            val stale: Boolean = false
+        ) : FetchResult()
         data class Failed(val message: String) : FetchResult()
     }
 
-    suspend fun fetch(): FetchResult = withContext(Dispatchers.IO) {
+    suspend fun fetch(context: Context, force: Boolean = false): FetchResult = withContext(Dispatchers.IO) {
+        val preferences = prefs(context)
+        val cachedText = preferences.getString(KEY_CACHE_JSON, null).orEmpty()
+        val cachedAt = preferences.getLong(KEY_CACHE_FETCHED_AT, 0L)
+        val now = System.currentTimeMillis() / 1000L
+        val cacheFresh = cachedText.isNotBlank() && cachedAt > 0L && now - cachedAt in 0L..CACHE_TTL_SECONDS
+
+        if (!force && cacheFresh) {
+            try {
+                return@withContext FetchResult.Success(parse(cachedText), cached = true)
+            } catch (_: Exception) {
+                preferences.edit().remove(KEY_CACHE_JSON).remove(KEY_CACHE_FETCHED_AT).apply()
+            }
+        }
+
         try {
             val request = Request.Builder()
                 .url(BuildConfig.ANNOUNCEMENT_MANIFEST_URL)
@@ -59,9 +80,20 @@ object AnnouncementCenter {
                 if (!response.isSuccessful) throw IOException("HTTP " + response.code)
                 val text = response.body?.string().orEmpty()
                 if (text.isBlank()) throw IOException("服务器返回空内容")
-                FetchResult.Success(parse(text))
+                val feed = parse(text)
+                preferences.edit()
+                    .putString(KEY_CACHE_JSON, text)
+                    .putLong(KEY_CACHE_FETCHED_AT, now)
+                    .apply()
+                FetchResult.Success(feed)
             }
         } catch (e: Exception) {
+            if (cachedText.isNotBlank()) {
+                try {
+                    return@withContext FetchResult.Success(parse(cachedText), cached = true, stale = true)
+                } catch (_: Exception) {
+                }
+            }
             FetchResult.Failed(e.message ?: e.javaClass.simpleName)
         }
     }
@@ -79,7 +111,7 @@ object AnnouncementCenter {
             val id = obj.optString("id").trim()
             val title = obj.optString("title").trim()
             val body = obj.optString("body").trim()
-            if (id.isEmpty() || title.isEmpty() || body.isEmpty()) continue
+            if (id.isEmpty() || title.isEmpty()) continue
 
             val expiresAt = obj.optLong("expires_at", 0L)
             if (expiresAt > 0L && expiresAt <= now) continue
@@ -92,6 +124,7 @@ object AnnouncementCenter {
                     if (image.isNotEmpty()) images.add(image)
                 }
             }
+            if (body.isEmpty() && images.isEmpty()) continue
 
             items.add(
                 Announcement(

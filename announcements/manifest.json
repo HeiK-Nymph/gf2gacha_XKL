@@ -1,16 +1,17 @@
 {
   "schema": 1,
-  "updated_at": 1792680717,
+  "updated_at": 1792694603,
   "announcements": [
     {
-      "id": "2026-10-22-announcement-launch",
+      "id": "2026-10-23-wechat-miniapp-launch",
       "active": true,
-      "title": "公告功能已上线",
-      "body": "以后版本更新、服务状态和重要提醒都会显示在这里。\n\n点击主页右上角的「公告」可以随时重新查看；公告内容与图片会从 R2 及时同步。",
+      "title": "「夏克里助手」微信小程序正式上线",
+      "body": "",
       "images": [
-        "images/announcement-launch.png"
+        "images/announcement-wechat-miniapp-launch.png",
+        "images/announcement-wechat-miniapp-card.jpg"
       ],
-      "published_at": 1792680717,
+      "published_at": 1792694603,
       "expires_at": 0
     }
   ]

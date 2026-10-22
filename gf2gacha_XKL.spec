@@ -5,6 +5,25 @@ from pathlib import Path
 
 block_cipher = None
 
+
+def collect_data_tree(source, destination, excluded_names=None):
+    """Collect source files while keeping runtime captures and caches out of the bundle."""
+    source_path = Path(source)
+    destination_path = Path(destination)
+    excluded = set(excluded_names or ())
+    items = []
+    for path in source_path.rglob('*'):
+        if not path.is_file():
+            continue
+        relative = path.relative_to(source_path)
+        if '__pycache__' in relative.parts or path.suffix == '.pyc':
+            continue
+        if path.name in excluded or path.name.startswith('test_'):
+            continue
+        items.append((str(path), str(destination_path / relative.parent)))
+    return items
+
+
 # 自动查找 Python.Runtime.dll
 try:
     import pythonnet
@@ -26,12 +45,14 @@ a_main = Analysis(
     ['main.py'],
     pathex=['.'],
     binaries=[(runtime_dll_path, 'pythonnet/runtime')],
-    datas=[
-        ('backend', 'backend'),
-        ('json', 'json'),
-        ('frontend/dist', 'frontend/dist'),
-        ('version.json', '.'),
-    ],
+    datas=(
+        collect_data_tree('backend', 'backend', {'ssr_parsed.json'})
+        + collect_data_tree('json', 'json', {'latest_request.json'})
+        + [
+            ('frontend/dist', 'frontend/dist'),
+            ('version.json', '.'),
+        ]
+    ),
     hiddenimports=[
         'clr',
         'pythonnet',

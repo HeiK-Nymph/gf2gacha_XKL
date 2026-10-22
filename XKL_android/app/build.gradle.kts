@@ -22,8 +22,8 @@ android {
         applicationId = "uk.gf2gacha.xkl"
         minSdk = 24
         targetSdk = 34
-        versionCode = 14
-        versionName = "0.1.6"
+        versionCode = 15
+        versionName = "0.1.7"
         buildConfigField("String", "BILI_APP_KEY", "\"$biliAppKey\"")
         testInstrumentationRunner = "uk.gf2gacha.xkl.MiniProgramKeyInstrumentation"
         resourceConfigurations += listOf("zh", "en")

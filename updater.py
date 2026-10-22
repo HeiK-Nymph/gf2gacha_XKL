@@ -212,24 +212,6 @@ def http_get(url, timeout=30):
     return SESSION.get(url, timeout=timeout, verify=False)
 
 
-def proxy_cleanup():
-    """尽力把系统代理恢复成"关闭"状态
-
-    主程序如果被强杀，注册表里会留着指向已经死掉的 mitmproxy 的代理设置，
-    那样用户整台机器都上不了网。回滚/收尾时顺手清一下。
-    """
-    try:
-        from winproxy import ProxySetting
-
-        setting = ProxySetting()
-        if getattr(setting, "enable", False):
-            setting.enable = False
-            setting.registry_write()
-            log("[UPDATER] 已关闭遗留的系统代理设置")
-    except Exception as exc:
-        log(f"[UPDATER] 清理系统代理失败（可忽略）: {exc}")
-
-
 # ============================================================
 # 版本 / 检查更新
 # ============================================================
@@ -641,7 +623,6 @@ def do_rollback(reason: str, relaunch: bool = True) -> bool:
         return False
 
     setup_logging()
-    proxy_cleanup()
     write_state(phase="rolled_back", error=reason)
     log("[UPDATER] 已回滚到上一版本")
     if relaunch:

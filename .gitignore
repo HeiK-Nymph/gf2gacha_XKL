@@ -129,6 +129,14 @@ XKL_admin/dist/
 # 发布产物（zip + version.json，上传到 R2 / GitHub Releases）
 /release/
 
+# 公告本地草稿与历史归档（不参与发布）
+/announcements/archive/
+/announcements/drafts/
+/announcements/manifest.draft.json
+
+# 本地测试构建（桌面端 / 安卓测试包，不提交）
+/test/
+
 # .NET 构建产物（tools/gf2-role/reflect）
 tools/gf2-role/reflect/bin/
 tools/gf2-role/reflect/obj/

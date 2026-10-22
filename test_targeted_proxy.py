@@ -52,6 +52,8 @@ class TargetedProxyTests(unittest.TestCase):
                 snapshot = proxy_watchdog.capture_proxy_snapshot("127.0.0.1:8080")
                 proxy_watchdog.apply_manual_proxy("127.0.0.1:8080")
                 self.assertEqual(proxy_watchdog.read_manual_proxy(), (1, "127.0.0.1:8080"))
+                with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_READ) as key:
+                    self.assertEqual(winreg.QueryValueEx(key, "ProxyOverride")[0], "*.corp.example;<local>")
                 self.assertFalse(proxy_watchdog.read_auto_config_url()[0])
                 self.assertTrue(proxy_watchdog.restore_proxy_snapshot(snapshot))
                 self.assertEqual(proxy_watchdog.read_manual_proxy(), (1, "corp.proxy:3128"))

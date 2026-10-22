@@ -5,7 +5,7 @@
 | 客户端 | 下载文件 | 需要什么 | 怎么拿记录 |
 |---|---|---|---|
 | **PC 版（Windows）** | `gf2gacha_XKL.zip` | 电脑 + 装一次 mitmproxy 证书 | 内置代理抓一次游戏请求，之后重放 |
-| **安卓版 0.1.0（新）** | `gf2gacha_XKL_android.apk` | **只要手机** | 手机号 + 短信验证码登录后直接查（不用电脑 / root / 证书 / VPN） |
+| **安卓版 0.1.7（新）** | `gf2gacha_XKL_android.apk` | **只要手机** | 手机号 + 短信验证码登录后直接查（不用电脑 / root / 证书 / VPN） |
 
 下载：**[GitHub Releases](https://github.com/HeiK-Nymph/gf2gacha_XKL/releases)**
 · R2 直链：[PC 版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL.zip) / [安卓版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL_android.apk)
@@ -41,6 +41,9 @@
 3. 回到工具，界面上方的状态栏会变成「捕获：已捕获 xx:xx:xx」
 4. 这时再点「更新记录」
 
+界面右上角点「公告」可以查看最新公告；新公告会在应用打开时检查并自动弹出，
+公告清单在本机缓存 10 分钟，短时间内重新打开不会重复请求 R2；也可以随时点按钮强制刷新。
+
 界面右上角点「日志」会弹出一个小窗口，运行状态都在里面：
 
 | 显示 | 含义 |
@@ -53,6 +56,8 @@
 | `日志文件` | 当前日志文件的完整路径 |
 
 桌面端会把系统代理临时指向本机 mitmproxy，但 mitmproxy 只解密 `gf2-gacha-record.sunborngame.com`，其他流量一律原样透传（不解密、不要求证书），因此开着工具时其他网站照常可用。主程序异常退出时，独立看门狗进程会恢复原来的系统代理设置；证书未安装时也不会接管系统代理。新版启动时还会自动关闭旧版遗留的失效 `127.0.0.1:8080-8179` 全局代理。
+
+程序自身的检查更新、公告和 R2 数据请求都固定直连，不依赖内置 mitmproxy；检查更新也不会临时关闭或重新开启系统代理。接管系统代理时会保留用户原有的绕过列表，并追加本机直连规则。
 
 > 注意：游戏进程只在启动时读取一次系统代理，所以务必**先开本工具、再开游戏**；已经开着游戏再去开工具，通常要重启游戏才能抓到请求。
 
@@ -78,7 +83,7 @@
 - 点击「检查更新」按钮可查看是否有新版本
 - 如有更新，可跳转到 GitHub 下载
 
-## 📱 安卓版 0.1.4
+## 📱 安卓版 0.1.7
 
 **只要一台 64 位 ARM 安卓手机（Android 7.0+）**：支持官服和B服，不需要电脑、root、证书或 VPN。
 
@@ -104,12 +109,22 @@
 
 ```powershell
 # PC 版
-python tools\make_release.py --version 1.1.6 --notes "这次改了什么"
+python tools\make_release.py --version 1.1.8 --notes "这次改了什么"
 # 安卓版（先改 XKL_android/app/build.gradle.kts 的 versionCode/versionName 并 assembleRelease）
-python tools\make_release.py --android --version 0.1.0 --notes "这次改了什么"
+python tools\make_release.py --android --version 0.1.7 --notes "这次改了什么"
 ```
 
 **上传顺序：先传包（zip / apk），最后传 json** —— 反了会让用户读到新版本号却下不到包。
+
+本地测试构建统一放在 `test/`，该目录已加入 `.gitignore`：
+
+```text
+test/
+├── desktop/gf2gacha_XKL/       # 桌面端测试目录，直接运行 gf2gacha_XKL.exe
+└── android/gf2gacha_XKL_test.apk  # 安卓 debug 测试包
+```
+
+以后重新构建测试版也覆盖到这两个位置，不再散落在 `dist/`、`release/` 或安卓构建输出目录。
 
 ## ⚠️ 注意事项
 

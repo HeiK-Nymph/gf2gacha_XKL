@@ -81,9 +81,10 @@ object Gf2Api {
     /**
      * 角色头像 CDN。与 `r2.gf2gacha-xkl.uk` 指向**同一个 R2 桶**（实测同一张图 ETag 相同），
      * 也是 PC 版 `getImagePath` 用的地址 —— 所以新角色图一上传到 R2，App 不用更新就能显示。
-     * 武器没有图（404），界面用「武」字代替，不会去请求这个地址。
+     * 武器图使用同一图床的 /images/weapon/ 目录，命名规则与微信小程序端一致。
      */
     const val IMAGE_BASE = "https://static.gf2gacha-xkl.uk/images/character/"
+    const val WEAPON_IMAGE_BASE = "https://static.gf2gacha-xkl.uk/images/weapon/"
 
     const val POOL_PERMANENT = 1
     const val POOL_CHARACTER = 3
