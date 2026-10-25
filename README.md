@@ -116,6 +116,18 @@ python tools\make_release.py --android --version 0.1.7 --notes "这次改了什�
 
 **上传顺序：先传包（zip / apk），最后传 json** —— 反了会让用户读到新版本号却下不到包。
 
+正式发布必须完成以下步骤，R2 和 GitHub Releases 缺一不可：
+
+1. 修改 `version.json` 的版本号，同步更新 README 和 `XKL_site/src/data/releases.js` 的兜底信息。
+2. 重新构建前端 `frontend/dist`，再运行 PyInstaller 生成 `dist/gf2gacha_XKL`。
+3. 运行发布前测试，包括真实冻结版 EXE 启动验证。
+4. 执行 `make_release.py` 生成 ZIP、`version.json` 和 SHA256。
+5. 提交发布改动，创建并推送 `vX.Y.Z` 标签。
+6. 上传 R2：先传安装包，最后传版本清单；随后检查公网版本、文件大小和 SHA256。
+7. 在 GitHub 创建同一标签的 Release，标题使用「夏克里助手 vX.Y.Z」，
+   上传桌面端 ZIP 和 `SHA256SUMS.txt`；安卓包只在安卓版本发生变化时上传。
+8. GitHub Release 发布后再检查 R2 与 GitHub 两处下载入口均可用。
+
 本地测试构建统一放在 `test/`，该目录已加入 `.gitignore`：
 
 ```text
