@@ -1,45 +1,74 @@
 <template>
-  <div class="gacha-item-container" :class="{ 'is-share': shareMode }">
-    <div class="gacha-summary">一共<span>{{ totalDrawCount }}</span>条抽卡记录，已垫<span>{{ currentPadCount }}</span>抽</div>
-    <div class="gacha-summary">共获得五星<span>{{ ssrTotal }}</span>个，歪了<span v-if="props.pool_type !== 'permanent'"><span>{{ waiCount }}</span></span>个，具体如下：</div>
-    <div class="ssr-grid" v-if="ssrTotal > 0">
-      <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" class="ssr-grid-avatar" :title="item.name">
-        <img v-if="!imageFailures[item.item]" :src="getImagePath(item.item)" :alt="item.name" @error="imageFailures[item.item] = true" />
-        <span v-else class="grid-avatar-fallback">{{ isWeaponItem(item.item) ? '武' : item.name.slice(0, 1) }}</span>
+  <div class="gacha-item-container" :class="{ 'is-share': props.shareMode, 'is-collapsed': props.collapsed }">
+    <div class="gacha-metrics">
+      <div class="gacha-summary">
+        <span class="metric-label">累计抽数</span>
+        <span class="metric-value">{{ totalDrawCount }}</span>
+        <span class="metric-unit">DRAWS</span>
+        <span class="metric-note">当前垫 {{ currentPadCount }}</span>
       </div>
-    </div>
-    <div class="ssr-details">
-      <div v-if="totalDrawCount > 0" class="ssr-item pity-row tone-gold">
-        <div class="record-avatar question-avatar" aria-label="当前垫抽">?</div>
-        <span class="draw-cost">{{ currentPadCount }}</span>
-        <div class="draw-bar" role="progressbar" aria-label="当前垫抽" :aria-valuenow="currentPadCount" aria-valuemin="0" :aria-valuemax="Math.max(80, currentPadCount)">
-          <div class="bar-fill" :style="{ width: progressWidth(currentPadCount) }"></div>
-        </div>
-        <span class="wai-tag wai-hidden" aria-hidden="true">歪</span>
-        <span class="ssr-name pity-name" :title="`已垫 ${currentPadCount} 抽`">已垫 {{ currentPadCount }} 抽</span>
-      </div>
-      <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" class="ssr-item" :class="progressTone(item.costDraws)">
-        <div class="record-avatar" :title="item.name">
-          <img v-if="!imageFailures[item.item]" :src="getImagePath(item.item)" :alt="item.name" @error="imageFailures[item.item] = true" />
-          <span v-else class="avatar-fallback">{{ isWeaponItem(item.item) ? '武' : item.name.slice(0, 1) }}</span>
-        </div>
-        <span class="draw-cost" :title="`${item.costDraws} 抽`">{{ item.costDraws }}</span>
-        <div class="draw-bar" role="progressbar" :aria-label="`${item.name}出金抽数`" :aria-valuenow="item.costDraws" aria-valuemin="0" :aria-valuemax="Math.max(80, item.costDraws)">
-          <div class="bar-fill" :style="{ width: progressWidth(item.costDraws) }"></div>
-        </div>
-        <span class="wai-tag" :class="{ 'wai-hidden': !item.isWai || props.pool_type === 'permanent' }" :aria-hidden="!item.isWai || props.pool_type === 'permanent'">歪</span>
-        <span class="ssr-name" :title="item.name">{{ item.name }}</span>
+      <div class="gacha-summary">
+        <span class="metric-label">五星记录</span>
+        <span class="metric-value">{{ ssrTotal }}</span>
+        <span class="metric-unit">SSR</span>
+        <span v-if="props.pool_type !== 'permanent'" class="metric-wai" :title="`歪出 ${waiCount} 个五星`">
+          <small>歪出</small><strong>{{ waiCount }}</strong>
+        </span>
+        <span v-else class="metric-note">常驻档案</span>
       </div>
     </div>
 
+    <div class="gacha-body" :class="{ 'is-collapsed': props.collapsed }" :aria-hidden="props.collapsed">
+      <div class="gacha-body-inner">
+        <div v-if="totalDrawCount === 0" class="gacha-empty" aria-label="暂无抽卡记录">
+      <span class="empty-reticle" aria-hidden="true" />
+      <strong>暂无作战记录</strong>
+      <p>点击顶部「更新记录」同步最新抽卡档案。</p>
+      <span class="empty-code">AWAITING DATA // 00</span>
+    </div>
+
+    <template v-else>
+      <div class="ssr-grid" v-if="ssrTotal > 0" aria-label="五星记录缩略图">
+        <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" class="ssr-grid-avatar" :title="item.name">
+          <img v-if="!imageFailures[item.item]" :src="getImagePath(item.item)" :alt="item.name" @error="imageFailures[item.item] = true" />
+          <span v-else class="grid-avatar-fallback">{{ isWeaponItem(item.item) ? '武' : item.name.slice(0, 1) }}</span>
+        </div>
+      </div>
+      <div class="ssr-details">
+        <div class="ssr-item pity-row tone-gold">
+          <div class="record-avatar question-avatar" aria-label="当前垫抽">?</div>
+          <span class="draw-cost">{{ currentPadCount }}</span>
+          <div class="draw-bar" role="progressbar" aria-label="当前垫抽" :aria-valuenow="currentPadCount" aria-valuemin="0" :aria-valuemax="Math.max(80, currentPadCount)">
+            <div class="bar-fill" :style="{ width: progressWidth(currentPadCount) }"></div>
+          </div>
+          <span class="wai-tag wai-hidden" aria-hidden="true">歪</span>
+          <span class="ssr-name pity-name" :title="`已垫 ${currentPadCount} 抽`">已垫 {{ currentPadCount }} 抽</span>
+        </div>
+        <div v-for="item in ssrList" :key="`${item.drawTime}-${item.item}-${item.drawIndex}`" class="ssr-item" :class="progressTone(item.costDraws)">
+          <div class="record-avatar" :title="item.name">
+            <img v-if="!imageFailures[item.item]" :src="getImagePath(item.item)" :alt="item.name" @error="imageFailures[item.item] = true" />
+            <span v-else class="avatar-fallback">{{ isWeaponItem(item.item) ? '武' : item.name.slice(0, 1) }}</span>
+          </div>
+          <span class="draw-cost" :title="`${item.costDraws} 抽`">{{ item.costDraws }}</span>
+          <div class="draw-bar" role="progressbar" :aria-label="`${item.name}出金抽数`" :aria-valuenow="item.costDraws" aria-valuemin="0" :aria-valuemax="Math.max(80, item.costDraws)">
+            <div class="bar-fill" :style="{ width: progressWidth(item.costDraws) }"></div>
+          </div>
+          <span class="wai-tag" :class="{ 'wai-hidden': !item.isWai || props.pool_type === 'permanent' }" :aria-hidden="!item.isWai || props.pool_type === 'permanent'">歪</span>
+          <span class="ssr-name" :title="item.name">{{ item.name }}</span>
+        </div>
+      </div>
+        </template>
+      </div>
+    </div>
   </div>
 
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useGachaRecordStore } from '@/stores/gachaRecord'
 import { useSSRStore } from '@/stores/ssr'
+import { useImageCacheStore } from '@/stores/imageCache'
 
 // 1. 定义props并添加类型/默认值校验
 const props = defineProps({
@@ -52,24 +81,30 @@ const props = defineProps({
   shareMode: {
     type: Boolean,
     default: false
+  },
+  collapsed: {
+    type: Boolean,
+    default: false
   }
 })
 
 // 2. 获取仓库实例
 const gachaRecordStore = useGachaRecordStore()
 const ssrStore = useSSRStore()
+const imageCacheStore = useImageCacheStore()
 
 // 所有行共用相同的80抽标尺；保留实际抽数，视觉宽度最多100%。
 const imageFailures = ref({})
+watch(() => imageCacheStore.images, () => { imageFailures.value = {} })
 const progressWidth = (draws) => `${Math.max(0, Math.min(100, draws * 1.25))}%`
 const progressTone = (draws) => draws < 30 ? 'tone-green' : draws < 60 ? 'tone-yellow' : 'tone-red'
 
 // 动态获取图片路径（R2）
 const getImagePath = (itemId) => {
-  if (itemId === 'question') {
-    return 'https://static.gf2gacha-xkl.uk/images/character/question.png'
-  }
-  return `https://static.gf2gacha-xkl.uk/images/${isWeaponItem(itemId) ? 'weapon' : 'character'}/${itemId}.png`
+  const remoteUrl = itemId === 'question'
+    ? 'https://static.gf2gacha-xkl.uk/images/character/question.png'
+    : `https://static.gf2gacha-xkl.uk/images/${isWeaponItem(itemId) ? 'weapon' : 'character'}/${itemId}.png`
+  return imageCacheStore.images[remoteUrl] || remoteUrl
 }
 
 // 判断道具类型，以选择图片目录和加载失败时的占位文字。
@@ -269,145 +304,257 @@ const ssrIntervals = computed(() => {
 
 <style scoped>
 .gacha-item-container {
-  box-sizing: border-box;
   width: 100%;
-  padding: 16px;
-  /* border: 1px solid #e5e7eb; */
-  border-radius: 8px;
-  background: #EBEEF5;
- 
+  color: #1a1d1f;
+  font-family: var(--font-ui);
 }
-.gacha-summary span{
-  color: red;
+
+.gacha-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-bottom: 10px;
+  border: 1px solid #d1cabc;
+  background: #d1cabc;
+  transition: margin-bottom 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.gacha-item-container.is-collapsed .gacha-metrics { margin-bottom: 0; }
+.gacha-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  overflow: hidden;
+  transition:
+    grid-template-rows 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+  will-change: grid-template-rows, opacity;
+}
+.gacha-body.is-collapsed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+.gacha-body-inner { min-height: 0; overflow: hidden; }
+.gacha-summary {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: baseline;
+  column-gap: 5px;
+  padding: 8px 9px 7px;
+  background: #eeeadf;
+}
+.metric-label {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: #858075;
+  font-size: 8.5px;
+  letter-spacing: 0.4px;
+}
+.metric-value {
+  color: #171a1c;
+  font: 700 19px/1 var(--font-technical);
+  font-variant-numeric: tabular-nums;
+}
+.metric-unit { color: #9b5f42; font: 7px/1 var(--font-technical); letter-spacing: 0.7px; }
+.metric-wai {
+  justify-self: end;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 5px 1px;
+  color: #a6372a;
+  background: rgba(216, 77, 62, 0.1);
+  border: 1px solid rgba(196, 62, 49, 0.34);
+  line-height: 1;
+  white-space: nowrap;
+}
+.metric-wai small { color: #9b5147; font-size: 8px; letter-spacing: 0.25px; }
+.metric-wai strong {
+  color: #b4382b;
+  font: 700 13px/1 var(--font-technical);
+  font-variant-numeric: tabular-nums;
+}
+.metric-note {
+  justify-self: end;
+  overflow: hidden;
+  color: #706b62;
+  font-size: 8.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gacha-empty {
+  position: relative;
+  min-height: 232px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 24px 12px;
+  background:
+    linear-gradient(rgba(37, 40, 41, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 40, 41, 0.035) 1px, transparent 1px),
+    #e5e0d5;
+  background-size: 18px 18px;
+  border: 1px solid #d1cabc;
+  text-align: center;
+}
+.gacha-empty::before,
+.gacha-empty::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: #a49e91;
+  border-style: solid;
+}
+.gacha-empty::before { left: 8px; top: 8px; border-width: 1px 0 0 1px; }
+.gacha-empty::after { right: 8px; bottom: 8px; border-width: 0 1px 1px 0; }
+.empty-reticle {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 12px;
+  border: 1px solid #8e8a80;
+  border-radius: 50%;
+}
+.empty-reticle::before,
+.empty-reticle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #8e8a80;
+  transform: translate(-50%, -50%);
+}
+.empty-reticle::before { width: 20px; height: 1px; }
+.empty-reticle::after { width: 1px; height: 20px; }
+.gacha-empty strong {
+  color: #343634;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.gacha-empty p { margin: 6px 0 11px; color: #7c786f; font-size: 9.5px; line-height: 1.5; }
+.empty-code { color: #aaa497; font: 7.5px/1 var(--font-technical); letter-spacing: 1px; }
+
 .ssr-grid {
   display: grid;
-  margin: 30px 0;
-  margin-top: 15px;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
-  padding: 5px;
-  background-color: gold;
-  border-radius: 15px;
+  gap: 6px;
+  margin: 9px 0 11px;
+  padding: 7px;
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 5px, transparent 5px 10px),
+    #202428;
+  border-left: 2px solid var(--signal);
 }
 .ssr-grid > div { min-width: 0; }
 .ssr-grid-avatar {
+  width: 100%;
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 35px;
-  height: 35px;
+  overflow: hidden;
+  background: #34393d;
+  border: 1px solid #4d5357;
 }
-.ssr-grid-avatar img {
-  width: 35px;
-  height: 35px;
-  object-fit: contain;
+.ssr-grid-avatar img { width: 100%; height: 100%; object-fit: contain; }
+
+.ssr-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
 }
 .ssr-item {
   display: grid;
-  grid-template-columns: 34px 32px minmax(0, 1fr) 20px 72px;
+  grid-template-columns: 29px 28px minmax(0, 1fr) 18px 68px;
   align-items: center;
-  column-gap: 6px;
-  min-height: 38px;
-  margin: 10px 0;
+  gap: 5px;
+  min-height: 39px;
+  padding: 5px 7px;
+  background: #e9e5db;
+  border: 1px solid #c9c2b4;
+}
+.pity-row {
+  padding-left: 5px;
+  background-color: #e9e5db;
+  background-image: linear-gradient(90deg, rgba(212, 160, 39, 0.12), transparent 72%);
+  border-left: 3px solid #c69432;
 }
 .record-avatar {
-  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
   overflow: hidden;
-  border-radius: 50%;
-  background: #dce1e9;
+  background: #ddd8cd;
+  border: 1px solid #c3bcae;
 }
-.record-avatar img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.avatar-fallback {
-  font-size: 13px;
-  color: #626977;
-}
-.question-avatar {
-  color: #9b741d;
-  font-size: 23px;
-  font-weight: bold;
-}
+.record-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.avatar-fallback { color: #626761; font-size: 11px; }
+.question-avatar { color: #9b702e; font: 700 18px/1 var(--font-technical); }
 .draw-cost {
-  text-align: center;
   color: var(--draw-color);
-  font-size: 15px;
-  font-weight: bold;
+  font: 700 13px/1 var(--font-technical);
+  text-align: center;
   font-variant-numeric: tabular-nums;
 }
-.draw-bar {
-  min-width: 0;
-  height: 22px;
-}
+.draw-bar { min-width: 0; height: 17px; background: #d5cfc3; }
 .bar-fill {
   height: 100%;
-  border-radius: 6px;
   background-color: var(--bar-base);
-  /* 普通线性渐变平铺，兼容 html2canvas 的静态分享图。 */
   background-image: linear-gradient(45deg,
     var(--bar-light) 25%, var(--bar-base) 25%, var(--bar-base) 50%,
     var(--bar-light) 50%, var(--bar-light) 75%, var(--bar-base) 75%);
-  background-size: 28px 28px;
+  background-size: 20px 20px;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 50%, calc(100% - 5px) 100%, 0 100%);
   animation: stripe-move 1.8s linear infinite;
 }
-@keyframes stripe-move {
-  from { background-position: 0 0; }
-  to { background-position: 28px 0; }
-}
-.tone-green { --bar-base: #00b050; --bar-light: #92d050; --draw-color: #278747; }
-.tone-yellow { --bar-base: #ffc000; --bar-light: #ffd966; --draw-color: #936a00; }
-.tone-red { --bar-base: #c00000; --bar-light: #c24146; --draw-color: #c00000; }
-.tone-gold { --bar-base: #d9a93c; --bar-light: #efc964; --draw-color: #946c14; }
+@keyframes stripe-move { from { background-position: 0 0; } to { background-position: 20px 0; } }
+.tone-green { --bar-base: #3b9b6b; --bar-light: #64bb8e; --draw-color: #28734f; }
+.tone-yellow { --bar-base: #d2a02d; --bar-light: #e7c15f; --draw-color: #8c681a; }
+.tone-red { --bar-base: #c84a39; --bar-light: #df7060; --draw-color: #a32d25; }
+.tone-gold { --bar-base: #c69432; --bar-light: #e2bd64; --draw-color: #956a1c; }
+
 .wai-tag {
-  box-sizing: border-box;
-  width: 20px;
+  width: 18px;
   padding: 2px 0;
-  font-size: 11px;
-  line-height: 16px;
   color: #fff;
-  background: #e15d65;
-  border-radius: 4px;
+  background: #d84d3e;
+  font-size: 9px;
+  line-height: 14px;
   text-align: center;
 }
 .wai-hidden { visibility: hidden; }
 .ssr-name {
   min-width: 0;
   overflow: hidden;
-  color: #514d40;
-  font-size: 12px;
-  line-height: 1.5;
+  color: #4d4f4c;
+  font-size: 10.5px;
+  line-height: 1.4;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.pity-name { color: #946c14; }
-.is-share .ssr-name {
-  overflow: visible;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
+.pity-name { color: #87621f; }
+.is-share .ssr-name { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+.is-share .draw-bar { background: #bcb4a5; box-shadow: inset 0 0 0 1px #9d9587; }
 .is-share .bar-fill { animation: none; background-position: 0 0; }
-@media (prefers-reduced-motion: reduce) {
-  .bar-fill { animation: none; }
-}
-
 .grid-avatar-fallback {
+  width: 100%;
+  height: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  color: #626977;
-  background: #dce1e9;
+  color: #d8d8d2;
+  background: #3c4246;
+  font-size: 11px;
 }
 
+@media (prefers-reduced-motion: reduce) { .bar-fill { animation: none; } }
 </style>

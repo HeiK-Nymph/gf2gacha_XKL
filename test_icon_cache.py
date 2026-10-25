@@ -6,6 +6,7 @@
 运行：python test_icon_cache.py
 """
 import json
+import os
 import sys
 import tempfile
 import time
@@ -105,6 +106,42 @@ def main():
                           set(stats) >= {"total", "hit", "downloaded", "failed", "seconds"}, stats)
         failures += check("磁盘已有 -> 记为 hit（不再下载）",
                           stats["downloaded"] == 0 and stats["hit"] == 1 and session5.calls == 0, stats)
+
+    print("[测试] 启动/退出时清理超过 24 小时的缓存")
+    with tempfile.TemporaryDirectory() as tmp:
+        session6 = _FakeSession()
+        _reset(tmp, session6)
+        expired_url = "https://static.gf2gacha-xkl.uk/images/character/expired.png"
+        fresh_url = "https://static.gf2gacha-xkl.uk/images/weapon/fresh.png"
+        icon_cache.get_data_uri(expired_url)
+        icon_cache.get_data_uri(fresh_url)
+
+        expired_meta = None
+        for meta_path in Path(icon_cache.CACHE_ROOT).glob("*.json"):
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            if meta.get("url") == expired_url:
+                meta["ts"] = time.time() - icon_cache.DEFAULT_TTL - 60
+                meta_path.write_text(json.dumps(meta), encoding="utf-8")
+                expired_meta = meta_path
+                break
+        failures += check("找到过期缓存元数据", expired_meta is not None)
+
+        orphan_old = Path(icon_cache.CACHE_ROOT) / "orphan-old.png"
+        orphan_fresh = Path(icon_cache.CACHE_ROOT) / "orphan-fresh.png"
+        orphan_old.write_bytes(b"old")
+        orphan_fresh.write_bytes(b"fresh")
+        old_time = time.time() - icon_cache.DEFAULT_TTL - 60
+        os.utime(orphan_old, (old_time, old_time))
+
+        purge_stats = icon_cache.purge_expired()
+        failures += check("删除过期图片、元数据和孤立旧图", purge_stats["removed"] == 3, purge_stats)
+        failures += check("统计释放空间", purge_stats["freed_bytes"] > 0, purge_stats)
+        failures += check("24 小时内缓存保留",
+                          (Path(icon_cache.CACHE_ROOT) / f"{icon_cache._key(fresh_url)}.png").exists(),
+                          purge_stats)
+        failures += check("未过期孤立图片保留", orphan_fresh.exists())
+        failures += check("过期 URL 移出内存", expired_url not in icon_cache._mem)
+        failures += check("新鲜 URL 仍在内存", fresh_url in icon_cache._mem)
 
     print("=" * 60)
     if failures:

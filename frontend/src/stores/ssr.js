@@ -6,6 +6,8 @@ export const useSSRStore = defineStore('ssr', () => {
   const SSR_character = ref({})
   const SSR_weapon = ref({})
   const SSR_permanent = ref({})
+  const SR_character = ref({})
+  const SR_weapon = ref({})
   const SSR_custom_character = ref({})
   const SSR_custom_weapon = ref({})
   const SSR_version = ref('')
@@ -24,6 +26,8 @@ export const useSSRStore = defineStore('ssr', () => {
     SSR_character.value = data.SSR_character || {}
     SSR_weapon.value = data.SSR_weapon || {}
     SSR_permanent.value = data.SSR_permanent || {}
+    SR_character.value = data.SR_character || {}
+    SR_weapon.value = data.SR_weapon || {}
     SSR_custom_character.value = SSR_character.value
     SSR_custom_weapon.value = SSR_weapon.value
     SSR_version.value = data.version || ''
@@ -73,6 +77,7 @@ export const useSSRStore = defineStore('ssr', () => {
 
   return {
     SSR_character, SSR_weapon, SSR_permanent, SSR_custom_character, SSR_custom_weapon,
+    SR_character, SR_weapon,
     SSR_version, SSR_fromRemote, loadData, isLoaded, source, isRefreshing, stopRefresh,
   }
 })

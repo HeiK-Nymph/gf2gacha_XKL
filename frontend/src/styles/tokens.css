@@ -1,0 +1,162 @@
+/* ============================================================
+   GF2 Desktop design system
+   Direction: tactical operations console, field-paper cards,
+   signal orange, graphite hardware, technical typography.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  /* Graphite hardware */
+  --ink-1000: #0b0d0f;
+  --ink-950: #101316;
+  --ink-900: #15191c;
+  --ink-850: #1b2024;
+  --ink-800: #23282d;
+  --ink-700: #30363b;
+  --ink-600: #464d52;
+  --ink-500: #697177;
+
+  /* Field paper */
+  --paper-0: #f6f3eb;
+  --paper-1: #e9e5da;
+  --paper-2: #ded8ca;
+  --paper-3: #cec7b7;
+  --paper-line: #b9b2a3;
+
+  /* Signal & status */
+  --signal: #ef642f;
+  --signal-hi: #ff7e49;
+  --signal-deep: #b94318;
+  --signal-soft: rgba(239, 100, 47, 0.14);
+  --signal-glow: rgba(239, 100, 47, 0.34);
+  --cyan: #67d4cc;
+  --ok: #59b77a;
+  --bad: #d95143;
+  --warning: #d4a027;
+
+  /* Default context is dark hardware. Content panels override these. */
+  --text-1: #f0ede4;
+  --text-2: #b8b9b5;
+  --text-3: #80868b;
+  --border: #343a3f;
+  --border-strong: #4b5359;
+  --bg-panel: #191d21;
+  --bg-panel-soft: #22272c;
+  --bg-input: #14181b;
+  --bg-hover: rgba(255, 255, 255, 0.065);
+  --button-quiet-bg: #22272c;
+  --button-quiet-border: #3b4248;
+
+  --radius-panel: 3px;
+  --radius-control: 2px;
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 26px rgba(24, 25, 23, 0.12);
+  --shadow-dialog: 0 26px 80px rgba(0, 0, 0, 0.64);
+
+  --font-ui: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --font-display: "Bahnschrift Condensed", "Bahnschrift", "Microsoft YaHei UI", sans-serif;
+  --font-technical: "Bahnschrift", "Cascadia Mono", Consolas, monospace;
+  --font-mono: "Cascadia Mono", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--ink-1000);
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#app { height: 100%; }
+
+::selection {
+  background: var(--signal);
+  color: #fff;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #696b68 transparent;
+}
+*::-webkit-scrollbar { width: 7px; height: 7px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: #777870;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 8px;
+}
+
+/* Light-paper workspace. UI primitives consume these contextual tokens. */
+.content {
+  --text-1: #171a1c;
+  --text-2: #505559;
+  --text-3: #7a7b76;
+  --border: var(--paper-line);
+  --border-strong: #989182;
+  --bg-panel: var(--paper-0);
+  --bg-panel-soft: #ede9df;
+  --bg-input: #f9f7f1;
+  --bg-hover: rgba(26, 30, 32, 0.065);
+  --button-quiet-bg: #1d2125;
+  --button-quiet-border: #1d2125;
+}
+
+/* Inputs */
+.app-input {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--bg-input);
+  color: var(--text-1);
+  font: 13.5px var(--font-ui);
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+.app-input::placeholder { color: var(--text-3); }
+.app-input:hover { border-color: var(--border-strong); }
+.app-input:focus {
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px var(--signal-soft);
+}
+
+/* Status light */
+.app-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.app-dot.ok { background: var(--ok); box-shadow: 0 0 0 3px rgba(89, 183, 122, 0.14), 0 0 9px rgba(89, 183, 122, 0.55); }
+.app-dot.bad { background: var(--bad); box-shadow: 0 0 0 3px rgba(217, 81, 67, 0.14), 0 0 9px rgba(217, 81, 67, 0.48); }
+
+/* Loading indicator */
+.app-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: app-spin 0.72s linear infinite;
+  flex: none;
+}
+@keyframes app-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -13,7 +13,7 @@
 
     1. 内存缓存：同一次运行里同一 URL 只读一次；
     2. 磁盘缓存：<程序目录>/cache/icons/，下次启动也直接命中；
-    3. TTL 跟随响应里的 Cache-Control max-age，默认 3 天、最多 7 天。
+    3. TTL 跟随响应里的 Cache-Control max-age，统一限制为最多 24 小时。
 
 另外所有请求都关掉 trust_env：本工具会把系统代理指向自己的 mitmproxy，而
 requests 会读 Windows 注册表代理，不关的话自己的图片下载会绕经自己的代理，
@@ -34,8 +34,8 @@ import requests
 from requests.adapters import HTTPAdapter
 
 CACHE_ROOT = Path(__file__).resolve().parent.parent / "cache" / "icons"
-DEFAULT_TTL = 3 * 24 * 3600      # 响应没给 Cache-Control 时的默认有效期
-MAX_TTL = 7 * 24 * 3600          # 最多缓存 7 天
+DEFAULT_TTL = 24 * 3600          # 角色/武器图标默认缓存 24 小时
+MAX_TTL = 24 * 3600              # 强制最多缓存 24 小时
 
 _mem: dict[str, str] = {}
 _lock = threading.Lock()
@@ -203,6 +203,101 @@ def prefetch(urls, workers: int = 8) -> dict:
         "seconds": round(time.time() - started, 2),
     }
     print(f"[icon-cache] 预热完成: {stats}")
+    return stats
+
+
+def get_data_uris(urls, workers: int = 8) -> dict[str, str]:
+    """批量取得图标 data URI（用于主页/分享图，磁盘命中时无需联网）。"""
+    unique = [u for u in dict.fromkeys(urls) if isinstance(u, str) and u.startswith("http")]
+    unique = unique[:500]
+    if not unique:
+        return {}
+    prefetch(unique, workers=workers)
+    result = {}
+    for url in unique:
+        data_uri = get_data_uri(url, download=False)
+        if data_uri:
+            result[url] = data_uri
+    return result
+
+def purge_expired(max_age_seconds: float = DEFAULT_TTL) -> dict:
+    """删除超过有效期的磁盘缓存，返回清理统计。
+
+    只处理缓存目录中的图片及其元数据：
+    - 有元数据时以写入时间为准；
+    - 元数据缺失或损坏时以文件修改时间为准；
+    - 清理失败只记录，不影响程序退出或启动。
+    """
+    started = time.time()
+    stats = {"removed": 0, "freed_bytes": 0, "failed": 0, "seconds": 0.0}
+    if not CACHE_ROOT.exists():
+        return stats
+
+    try:
+        max_age = max(0.0, float(max_age_seconds))
+    except (TypeError, ValueError):
+        max_age = float(DEFAULT_TTL)
+    now = time.time()
+    paths: set[Path] = set()
+    expired_urls: set[str] = set()
+
+    def is_expired(path: Path) -> bool:
+        try:
+            return now - path.stat().st_mtime > max_age
+        except OSError:
+            return False
+
+    meta_paths = set(CACHE_ROOT.glob("*.json"))
+    for meta_path in meta_paths:
+        data_path = meta_path.with_suffix(".png")
+        meta = {}
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+        try:
+            timestamp = float(meta.get("ts", 0))
+        except (TypeError, ValueError, AttributeError):
+            timestamp = 0
+        try:
+            if timestamp <= 0:
+                timestamp = data_path.stat().st_mtime if data_path.exists() else meta_path.stat().st_mtime
+        except OSError:
+            continue
+
+        if now - timestamp <= max_age:
+            continue
+        paths.add(meta_path)
+        if data_path.exists():
+            paths.add(data_path)
+        if isinstance(meta, dict) and isinstance(meta.get("url"), str):
+            expired_urls.add(meta["url"])
+
+    # 清理没有元数据的孤立图片；它们无法再被命中，只会占用磁盘。
+    for data_path in CACHE_ROOT.glob("*.png"):
+        if data_path.with_suffix(".json") not in meta_paths:
+            if is_expired(data_path):
+                paths.add(data_path)
+
+    for path in paths:
+        try:
+            size = path.stat().st_size
+            path.unlink()
+            stats["removed"] += 1
+            stats["freed_bytes"] += size
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            stats["failed"] += 1
+            print(f"[icon-cache] 清理失败 {path.name}: {exc}")
+
+    if expired_urls:
+        with _lock:
+            for url in expired_urls:
+                _mem.pop(url, None)
+
+    stats["seconds"] = round(time.time() - started, 3)
     return stats
 
 

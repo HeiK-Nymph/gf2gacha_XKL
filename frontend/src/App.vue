@@ -1,93 +1,368 @@
 <template>
-  <el-container>
+  <div class="app-shell">
+    <!-- 自绘窗口标题栏 -->
+    <header class="window-titlebar">
+      <div class="window-titlebar-drag pywebview-drag-region">
+        <img class="window-titlebar-logo" :src="appIconUrl" alt="" aria-hidden="true">
+        <span class="window-titlebar-title">夏克里助手</span>
+        <span class="window-titlebar-sub">XKL // DESKTOP TERMINAL</span>
+      </div>
+      <div class="window-controls" aria-label="窗口控制">
+        <button type="button" class="window-control" aria-label="最小化" title="最小化" @click="windowControl('window_minimize')">
+          <AppIcon name="window-minimize" :size="13" />
+        </button>
+        <button type="button" class="window-control" :aria-label="windowMaximized ? '还原' : '最大化'" :title="windowMaximized ? '还原' : '最大化'" @click="windowControl('window_toggle_maximize')">
+          <AppIcon :name="windowMaximized ? 'window-restore' : 'window-maximize'" :size="12" />
+        </button>
+        <button type="button" class="window-control window-control--close" aria-label="关闭" title="关闭" @click="windowControl('window_close')">
+          <AppIcon name="close" :size="14" />
+        </button>
+      </div>
+    </header>
+
     <!-- 全屏加载遮罩 -->
     <div v-if="isLoading" class="loading-overlay">
       <div class="loading-content">
-        <el-icon class="loading-spinner" :size="50"><Loading /></el-icon>
+        <span class="app-spinner spinner-big" />
         <span class="loading-text">正在加载角色数据...</span>
       </div>
     </div>
 
-    <el-header class="app-header">
-
-      <div class="header-left">
-        <el-button type="warning" size="large" @click="installCert">安装证书</el-button>
-        <el-button type="danger" size="large" @click="uninstallCert">卸载证书</el-button>
-        <el-button type="success" size="large" @click="updateRecord" :loading="isUpdating">更新记录</el-button>
-        <el-button 
-          :type="isCustomPurchaseOn ? 'success' : 'info'" 
-          size="large" 
-          @click="toggleCustomPurchase"
-        >
-          自选采购：{{ isCustomPurchaseOn ? '开' : '关' }}
-        </el-button>
-      </div>
-      <div class="header-center">
-        <div class="record-selector">
-          <el-select
-            v-model="selectedRecordId"
-            placeholder="选择抽卡记录"
-            size="large"
-            style="width: 230px;"
-            @change="onRecordChange"
-          >
-            <el-option
-              v-for="record in recordList"
-              :key="record"
-              :label="record"
-              :value="record"
-            />
-          </el-select>
+    <!-- 侧边导航 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><img :src="appIconUrl" alt="夏克里助手 Logo"></div>
+        <div class="brand-text">
+          <div class="brand-name">夏克里助手</div>
+          <div class="brand-sub">GF2 // ARCHIVE UNIT</div>
         </div>
       </div>
-      <div class="header-right">
-        <el-button type="primary" size="large" @click="openShareDialog" :loading="isSharing">
-          <el-icon style="margin-right: 4px;"><Share /></el-icon>分享
-        </el-button>
-        <span class="version-info">v{{ currentVersion }}</span>
-        <el-button type="info" size="large" :loading="announcementLoading" @click="openAnnouncement" aria-label="查看公告">
-          <el-icon style="margin-right: 4px;"><Bell /></el-icon>{{ announcementUnread ? '公告 · 新' : '公告' }}
-        </el-button>
-        <el-button type="info" size="large" @click="checkUpdate">检查更新</el-button>
-        <el-button type="info" size="large" @click="openLogDialog">日志</el-button>
+      <div class="nav-label">TACTICAL MENU</div>
+      <nav class="side-nav">
+        <button type="button" class="nav-item" :class="{ active: view === 'overview' }" @click="view = 'overview'">
+          <AppIcon name="grid" :size="16" />
+          <span class="nav-copy"><strong>总览</strong><small>OVERVIEW</small></span>
+          <span class="nav-index">01</span>
+        </button>
+        <button type="button" class="nav-item" :class="{ active: view === 'tools' }" @click="switchToTools">
+          <AppIcon name="tool" :size="16" />
+          <span class="nav-copy"><strong>工具</strong><small>SYSTEMS</small></span>
+          <span class="nav-index">02</span>
+        </button>
+      </nav>
+      <div class="side-footer">
+        <div class="side-status">
+          <span class="app-dot" :class="statusDotClass" />
+          <span>{{ statusShort }}</span>
+        </div>
+        <div class="side-meta"><span>v{{ currentVersion }}</span><span>LOCAL AUTH</span></div>
       </div>
-    </el-header>
+    </aside>
 
-    <el-main class="app-main">
+    <!-- 主列：顶栏 + 内容 -->
+    <div class="main-col">
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="archive-code"><span>ARCHIVE</span><strong>01</strong></div>
+          <div class="record-field">
+            <span class="record-label">抽卡记录 / DRAW LOG</span>
+            <AppSelect
+              v-model="selectedRecordId"
+              :options="recordList"
+              placeholder="选择抽卡记录"
+              @change="onRecordChange"
+            />
+          </div>
+        </div>
+        <div class="topbar-right">
+          <AppButton variant="primary" :loading="isUpdating" @click="updateRecord">
+            <AppIcon name="refresh" :size="14" />
+            更新记录
+          </AppButton>
+          <AppButton variant="quiet" :loading="isSharing" @click="openShareDialog">
+            <AppIcon name="share" :size="14" />
+            分享
+          </AppButton>
+          <button
+            type="button"
+            class="bell-btn"
+            :class="{ unread: announcementUnread }"
+            aria-label="查看公告"
+            @click="openAnnouncement"
+          >
+            <AppIcon name="bell" :size="16" />
+            <span v-if="announcementUnread" class="bell-badge" />
+          </button>
+        </div>
+      </header>
 
-  
+      <main ref="contentRef" class="content" @scroll.passive="onContentScroll">
+        <transition name="view-shift" mode="out-in">
+          <!-- 总览 -->
+          <section v-if="view === 'overview'" key="overview" class="view-panel">
+            <div class="overview-hero">
+              <div class="hero-copy">
+                <div class="section-kicker"><span class="section-index">01</span> OPERATIONS / RECORD MONITOR</div>
+                <h2 class="page-title">抽卡总览</h2>
+                <p class="page-desc">追踪作战档案、五星获取与当前保底进度。</p>
+              </div>
+              <div class="hero-side">
+                <div class="quick-stats" aria-label="抽卡数据摘要">
+                  <div class="quick-stat"><span>记录总数</span><strong>{{ overviewStats.draws }}</strong><small>DRAWS</small></div>
+                  <div class="quick-stat"><span>五星记录</span><strong>{{ overviewStats.ssr }}</strong><small>SSR</small></div>
+                  <div class="quick-stat"><span>活跃卡池</span><strong>{{ overviewStats.activePools }}</strong><small>POOLS</small></div>
+                </div>
+                <div class="display-mode-wrap">
+                  <span>DISPLAY MODE</span>
+                  <div class="display-mode-switch" role="group" aria-label="抽卡显示模式">
+                    <button type="button" :class="{ active: homeMode === 'records' }" :aria-pressed="homeMode === 'records'" @click="homeMode = 'records'">
+                      <AppIcon name="grid" :size="12" />记录
+                    </button>
+                    <button type="button" :class="{ active: homeMode === 'analytics' }" :aria-pressed="homeMode === 'analytics'" @click="homeMode = 'analytics'">
+                      <AppIcon name="chart" :size="12" />统计
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    
-      <el-row :gutter="40">
-        <el-col :span="8"><div class="app-main-item" >
-          <span>角色池</span>
-          <GachaItem pool_type="character" style="margin-right: auto;"></GachaItem>
-        </div></el-col>
-        <el-col :span="8"><div class="app-main-item" >
-          <span>武器池</span>
-          <GachaItem pool_type="weapon" style="margin-right: auto;"></GachaItem>
-        </div></el-col>
-        <el-col :span="8"><div class="app-main-item" >
-          <span>常驻池</span>
-          <GachaItem pool_type="permanent" style="margin-right: auto;"></GachaItem>
-        </div></el-col>
-      </el-row>
-      
-      <el-row :gutter="40" v-if="isCustomPurchaseOn">
-        <el-col :span="8"><div class="app-main-item" >
-          <span>自选角色池</span>
-          <GachaItem pool_type="custom_character" style="margin-right: auto;"></GachaItem>
-        </div></el-col>
-        <el-col :span="8"><div class="app-main-item" >
-          <span>自选武器池</span>
-          <GachaItem pool_type="custom_weapon" style="margin-right: auto;"></GachaItem>
-        </div></el-col>
-      </el-row>
-    </el-main>
+            <transition name="mode-shift" mode="out-in">
+            <div v-if="homeMode === 'records'" key="records" class="home-mode-panel">
+            <div class="section-bar">
+              <div>
+                <span class="section-kicker">02 / ARCHIVE BREAKDOWN</span>
+                <h3>卡池记录</h3>
+              </div>
+              <div class="section-actions">
+                <span class="section-status">LIVE DATA · {{ overviewStats.activePools }} ACTIVE</span>
+                <button
+                  type="button"
+                  class="row-collapse-btn"
+                  :class="{ collapsed: collapsedPoolRows.main }"
+                  :aria-expanded="!collapsedPoolRows.main"
+                  @click="togglePoolRow('main')"
+                >
+                  {{ collapsedPoolRows.main ? '展开本行' : '收起本行' }}
+                  <AppIcon name="chevron-down" :size="11" class="row-collapse-icon" />
+                </button>
+              </div>
+            </div>
 
-    <!-- 离屏截图容器（用于生成分享图片） -->
-    <div ref="screenshotContainerRef" class="screenshot-container">
-      <div class="screenshot-pools-row">
+            <div class="pool-grid" :class="{ 'is-collapsed': collapsedPoolRows.main }">
+              <article class="pool-card">
+                <header class="pool-card-head">
+                  <div><span class="pool-code">POOL / 01</span><h4 class="pool-name">角色池</h4></div>
+                  <span class="pool-type">CHARACTER</span>
+                </header>
+                <GachaItem pool_type="character" :collapsed="collapsedPoolRows.main" />
+              </article>
+              <article class="pool-card">
+                <header class="pool-card-head">
+                  <div><span class="pool-code">POOL / 02</span><h4 class="pool-name">武器池</h4></div>
+                  <span class="pool-type">WEAPON</span>
+                </header>
+                <GachaItem pool_type="weapon" :collapsed="collapsedPoolRows.main" />
+              </article>
+              <article class="pool-card">
+                <header class="pool-card-head">
+                  <div><span class="pool-code">POOL / 03</span><h4 class="pool-name">常驻池</h4></div>
+                  <span class="pool-type">STANDARD</span>
+                </header>
+                <GachaItem pool_type="permanent" :collapsed="collapsedPoolRows.main" />
+              </article>
+            </div>
+
+            <div class="custom-pools-block">
+              <div class="section-bar section-bar--compact">
+                <div>
+                  <span class="section-kicker">03 / CUSTOM PROCUREMENT</span>
+                  <h3>自选采购记录</h3>
+                </div>
+                <div class="section-actions">
+                  <span class="section-status">AUTO TARGETING</span>
+                  <button
+                    type="button"
+                    class="row-collapse-btn"
+                    :class="{ collapsed: collapsedPoolRows.custom }"
+                    :aria-expanded="!collapsedPoolRows.custom"
+                    @click="togglePoolRow('custom')"
+                  >
+                    {{ collapsedPoolRows.custom ? '展开本行' : '收起本行' }}
+                    <AppIcon name="chevron-down" :size="11" class="row-collapse-icon" />
+                  </button>
+                </div>
+              </div>
+              <div class="pool-grid pool-grid--two" :class="{ 'is-collapsed': collapsedPoolRows.custom }">
+                <article class="pool-card">
+                  <header class="pool-card-head">
+                    <div><span class="pool-code">POOL / C1</span><h4 class="pool-name">自选角色池</h4></div>
+                    <span class="pool-type">TARGET</span>
+                  </header>
+                  <GachaItem pool_type="custom_character" :collapsed="collapsedPoolRows.custom" />
+                </article>
+                <article class="pool-card">
+                  <header class="pool-card-head">
+                    <div><span class="pool-code">POOL / C2</span><h4 class="pool-name">自选武器池</h4></div>
+                    <span class="pool-type">TARGET</span>
+                  </header>
+                  <GachaItem pool_type="custom_weapon" :collapsed="collapsedPoolRows.custom" />
+                </article>
+              </div>
+            </div>
+            </div>
+
+            <div v-else key="analytics" class="home-mode-panel analytics-mode">
+              <div class="section-bar">
+                <div>
+                  <span class="section-kicker">02 / COMBAT STATISTICS</span>
+                  <h3>卡池统计</h3>
+                </div>
+                <span class="section-status">RARITY ANALYSIS · {{ analyticsPools.length }} POOLS</span>
+              </div>
+              <div class="analytics-grid">
+                <PoolAnalytics v-for="pool in analyticsPools" :key="pool.key" :pool="pool" />
+              </div>
+            </div>
+            </transition>
+          </section>
+          <!-- 工具 -->
+          <section v-else key="tools" class="tools-view view-panel">
+            <div class="tools-intro">
+              <div>
+                <div class="section-kicker"><span class="section-index">02</span> SYSTEMS / DIAGNOSTICS</div>
+                <h2 class="page-title">工具与状态</h2>
+                <p class="page-desc">检查捕获链路、导出凭证并维护本地运行环境。</p>
+              </div>
+              <div class="system-ready">
+                <span class="app-dot" :class="statusDotClass" />
+                <div><strong>{{ statusShort }}</strong><small>SYSTEM STATUS</small></div>
+              </div>
+            </div>
+            <div class="tools-grid">          <div class="tool-card">
+            <div class="tool-head">
+              <AppIcon name="key" :size="16" class="tool-icon" />
+              <h3>小程序导入钥匙</h3>
+            </div>
+            <p class="tool-desc">
+              把当前捕获的游戏凭证导出成 XKL1 钥匙，在微信小程序「夏克里助手」→ 抽卡分析
+              里粘贴导入。钥匙是短期凭证，导入完成后不要保存。
+            </p>
+            <div class="key-grid">
+              <div class="key-field">
+                <span class="key-label">捕获状态</span>
+                <span class="key-value">{{ keyCaptureText }}</span>
+              </div>
+              <div class="key-field">
+                <span class="key-label">游戏渠道</span>
+                <span class="key-value">{{ keyStatus?.channel_label || '—' }}</span>
+              </div>
+              <div class="key-field">
+                <span class="key-label">凭证有效期</span>
+                <span class="key-value" :class="{ expired: keyStatus?.expired }">{{ keyStatus?.remaining_text || '未知' }}</span>
+              </div>
+            </div>
+            <div v-if="keyStatus?.needs_manual_uid && keyReady" class="key-uid-row">
+              <label class="key-label" for="key-uid-input">B服钥匙需要补填游戏 UID（游戏内个人信息页可见）</label>
+              <input
+                id="key-uid-input"
+                v-model="keyUidInput"
+                class="app-input"
+                placeholder="游戏 UID（4-32 位数字）"
+                inputmode="numeric"
+                maxlength="32"
+              />
+            </div>
+            <div class="tool-actions">
+              <AppButton size="sm" variant="ghost" :loading="keyStatusLoading" @click="refreshKeyStatus">
+                <AppIcon name="refresh" :size="13" />
+                刷新状态
+              </AppButton>
+              <AppButton size="sm" variant="primary" :loading="keyVerifying" :disabled="!keyReady" @click="startExportKey">
+                生成导出钥匙
+              </AppButton>
+            </div>
+          </div>
+
+          <!-- 运行状态 -->
+          <div class="tool-card">
+            <div class="tool-head">
+              <span class="app-dot" :class="statusDotClass" />
+              <h3>运行状态</h3>
+            </div>
+            <div class="status-rows">
+              <div class="status-row">
+                <span class="status-label">代理</span>
+                <span class="status-value">{{ proxyStatusText }}</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">捕获</span>
+                <span class="status-value">{{ captureText }}</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">日志文件</span>
+                <span class="status-value status-path">{{ logPath || '（尚未生成）' }}</span>
+              </div>
+              <div class="status-hint">{{ statusHint }}</div>
+            </div>
+            <div class="tool-actions">
+              <AppButton size="sm" variant="quiet" @click="openLogFile">
+                <AppIcon name="external" :size="13" />
+                打开日志文件
+              </AppButton>
+            </div>
+          </div>
+
+          <!-- 抓包证书 -->
+          <div class="tool-card">
+            <div class="tool-head">
+              <AppIcon name="shield" :size="16" class="tool-icon" />
+              <h3>抓包证书</h3>
+            </div>
+            <p class="tool-desc">安装一次本工具生成的专属证书，游戏流量才能被解密捕获；卸载会移除证书并解除系统代理。</p>
+            <div class="tool-actions">
+              <AppButton size="sm" variant="quiet" @click="installCert">安装证书</AppButton>
+              <AppButton size="sm" variant="danger" @click="uninstallCert">卸载证书</AppButton>
+            </div>
+          </div>
+
+          <!-- 版本 -->
+          <div class="tool-card">
+            <div class="tool-head">
+              <h3>版本</h3>
+            </div>
+            <div class="status-rows">
+              <div class="status-row">
+                <span class="status-label">当前版本</span>
+                <span class="status-value">v{{ currentVersion }}</span>
+              </div>
+            </div>
+            <div class="tool-actions">
+              <AppButton size="sm" variant="quiet" @click="checkUpdate">
+                <AppIcon name="refresh" :size="13" />
+                检查更新
+              </AppButton>
+              <AppButton size="sm" variant="ghost" @click="openGitHub">
+                <AppIcon name="github" :size="13" />
+                GitHub 主页
+              </AppButton>
+            </div>
+          </div>
+            </div>
+          </section>
+        </transition>
+        <transition name="backtop">
+          <button v-if="showBackToTop && view === 'overview'" type="button" class="back-to-top" aria-label="回到顶部" title="回到顶部" @click="scrollOverviewToTop">
+            <AppIcon name="chevron-down" :size="14" />
+            <span>TOP</span>
+          </button>
+        </transition>
+      </main>
+    </div>
+
+    <!-- 离屏截图容器（用于生成分享图片，保持浅色样式） -->
+    <div ref="screenshotContainerRef" class="screenshot-container" :class="{ 'is-analytics-share': shareStyle === 'analytics' }">
+      <div v-show="shareStyle === 'records'" class="share-record-layout">
+        <div class="screenshot-pools-row">
         <div class="screenshot-pool-item" v-show="sharePoolChecked('character')">
           <span class="screenshot-pool-title">角色池</span>
           <GachaItem pool_type="character" share-mode />
@@ -109,12 +384,42 @@
           <GachaItem pool_type="custom_weapon" share-mode />
         </div>
       </div>
+      </div>
+
+      <div v-show="shareStyle === 'analytics'" class="share-analytics-layout">
+        <header class="share-report-head">
+          <div class="share-report-brand"><span>XKL</span> / FIELD RECORD ANALYSIS</div>
+          <div class="share-report-title">抽卡统计报告</div>
+          <div class="share-report-meta">
+            <span>卡池 {{ shareAnalyticsSummary.pools }}</span>
+            <span>累计 {{ shareAnalyticsSummary.total }} 抽</span>
+            <span>五星 {{ shareAnalyticsSummary.ssr }}</span>
+          </div>
+        </header>
+        <div class="share-analytics-grid">
+          <PoolAnalytics v-for="pool in shareAnalyticsPools" :key="pool.key" :pool="pool" />
+        </div>
+      </div>
     </div>
 
-    <!-- 「分享」窗口：先勾选要分享的卡池，再出图 -->
-    <el-dialog v-model="shareDialogVisible" title="选择要分享的卡池" width="460px">
+    <!-- 分享：先勾选要分享的卡池，再出图 -->
+    <AppDialog v-model="shareDialogVisible" title="生成分享图" width="500px">
+      <div class="share-style-section">
+        <span class="share-section-label">分享样式 / SHARE STYLE</span>
+        <div class="share-style-options">
+          <button type="button" class="share-style-option" :class="{ active: shareStyle === 'records' }" @click="shareStyle = 'records'">
+            <AppIcon name="grid" :size="15" />
+            <span><strong>记录视图</strong><small>卡池详情与五星记录</small></span>
+          </button>
+          <button type="button" class="share-style-option" :class="{ active: shareStyle === 'analytics' }" @click="shareStyle = 'analytics'">
+            <AppIcon name="chart" :size="15" />
+            <span><strong>统计视图</strong><small>星级分布与作战指标</small></span>
+          </button>
+        </div>
+      </div>
+      <span class="share-section-label share-section-label--pools">选择卡池 / POOLS</span>
       <div class="share-pool-list">
-        <el-checkbox
+        <AppCheck
           v-for="pool in sharePoolOptions"
           :key="pool.key"
           :model-value="selectedSharePools.includes(pool.key)"
@@ -123,24 +428,25 @@
         >
           <span class="share-pool-name">{{ pool.label }}</span>
           <span v-if="!sharePoolHasRecords(pool.storeKey)" class="share-pool-empty">（无记录）</span>
-        </el-checkbox>
+        </AppCheck>
       </div>
       <template #footer>
-        <el-button @click="shareDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
+        <AppButton variant="quiet" @click="shareDialogVisible = false">取消</AppButton>
+        <AppButton
+          variant="primary"
           :disabled="selectedSharePools.length === 0"
           :loading="isSharing"
           @click="confirmShare"
-        >生成分享图</el-button>
+        >生成分享图</AppButton>
       </template>
-    </el-dialog>
+    </AppDialog>
 
-    <!-- 「上次更新未完成」提示：查看日志 / 一键回滚 / 继续使用 -->
-    <el-dialog
+    <!-- 上次更新未完成：查看日志 / 一键回滚 / 继续使用 -->
+    <AppDialog
       v-model="updateNoticeVisible"
       :title="updateNotice.rolled_back ? '更新失败，已自动回滚' : '上次更新未完成'"
-      width="560px"
+      width="540px"
+      :close-on-click-outside="false"
     >
       <div class="update-notice">
         <p class="update-notice-text">{{ updateNoticeText }}</p>
@@ -148,94 +454,101 @@
         <p class="update-notice-tip">更新日志：{{ updateNotice.updater_log }}</p>
       </div>
       <template #footer>
-        <el-button @click="openUpdateLog">查看更新日志</el-button>
-        <el-button v-if="updateNotice.can_rollback" type="warning" @click="rollbackUpdate">回滚到上一版本</el-button>
-        <el-button type="primary" @click="dismissUpdateNotice">继续使用</el-button>
+        <AppButton variant="quiet" @click="openUpdateLog">查看更新日志</AppButton>
+        <AppButton v-if="updateNotice.can_rollback" variant="danger" @click="rollbackUpdate">回滚到上一版本</AppButton>
+        <AppButton variant="primary" @click="dismissUpdateNotice">继续使用</AppButton>
       </template>
-    </el-dialog>
+    </AppDialog>
 
-    <!-- 「日志」窗口：代理 / 捕获 / 日志文件这些信息都收在这里 -->
-    <el-dialog v-model="logDialogVisible" title="运行状态与日志" width="620px">
-      <div class="log-dialog-body">
-        <div class="status-row">
-          <span class="status-dot" :class="proxyReady && proxyApplied ? 'dot-ok' : 'dot-bad'"></span>
-          <span class="status-label">代理</span>
-          <span class="status-value">{{ proxyReady ? (proxyApplied ? `运行中（仅解密抽卡接口） 127.0.0.1:${proxyPort}` : '已启动，系统代理未接管（请先安装证书）') : '未启动' }}</span>
-        </div>
-        <div class="status-row">
-          <span class="status-dot" :class="captureReplayable ? 'dot-ok' : 'dot-bad'"></span>
-          <span class="status-label">捕获</span>
-          <span class="status-value">{{ captureText }}</span>
-        </div>
-        <div class="status-row">
-          <span class="status-dot" :class="logPath ? 'dot-ok' : 'dot-bad'"></span>
-          <span class="status-label">日志文件</span>
-          <span class="status-value status-path">{{ logPath || '（尚未生成）' }}</span>
-        </div>
-        <div class="status-hint">{{ statusHint }}</div>
-      </div>
-      <template #footer>
-        <el-button type="primary" @click="openLogFile">打开日志文件</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 「公告」窗口：文字 + 图片，首次出现新公告时自动打开 -->
-    <el-dialog
-      v-model="announcementDialogVisible"
-      width="720px"
-      class="announcement-dialog"
-      :show-close="false"
-      align-center
-      destroy-on-close
-    >
+    <!-- 公告：文字 + 图片，首次出现新公告时自动打开 -->
+    <AppDialog v-model="announcementDialogVisible" width="680px" :show-close="false" :close-on-click-outside="false">
       <template #header>
-        <div class="announcement-dialog-header">
+        <div class="announcement-header">
           <div class="announcement-kicker"><span class="announcement-kicker-line"></span>ANNOUNCEMENT / 公告</div>
-          <button class="announcement-close" type="button" aria-label="关闭公告" @click="announcementDialogVisible = false">×</button>
-          <div class="announcement-dialog-title">{{ announcement?.title || '公告' }}</div>
-          <div v-if="announcementDate" class="announcement-dialog-meta">{{ announcementDate }}</div>
+          <button type="button" class="announcement-close" aria-label="关闭公告" @click="announcementDialogVisible = false">
+            <AppIcon name="close" :size="16" />
+          </button>
+          <div class="announcement-title">{{ announcement?.title || '公告' }}</div>
+          <div v-if="announcementDate" class="announcement-meta">{{ announcementDate }}</div>
         </div>
       </template>
-      <div class="announcement-dialog-content">
+      <div class="announcement-content">
         <div v-if="announcement?.body" class="announcement-copy">{{ announcement.body }}</div>
         <div v-if="announcementImages.length" class="announcement-images">
-          <el-image
+          <img
             v-for="(image, index) in announcementImages"
             :key="`${image}-${index}`"
             class="announcement-image"
             :src="image"
-            fit="contain"
-            :preview-src-list="announcementImages"
-            :initial-index="index"
-            preview-teleported
-          >
-            <template #error><div class="announcement-image-error">图片加载失败</div></template>
-          </el-image>
+            alt="公告图片"
+            loading="lazy"
+            @click="openLightbox(index)"
+          />
         </div>
       </div>
       <template #footer>
-        <el-button type="primary" size="large" @click="announcementDialogVisible = false">知道了</el-button>
+        <AppButton variant="primary" @click="announcementDialogVisible = false">知道了</AppButton>
       </template>
-    </el-dialog>
-  </el-container>
-  
+    </AppDialog>
+
+    <!-- 钥匙已核验：确认后复制（复制动作不再发网络请求） -->
+    <AppDialog v-model="keyDialogVisible" title="钥匙已核验" width="460px" :close-on-click-outside="false">
+      <div class="key-confirm-rows">
+        <div class="status-row">
+          <span class="status-label">UID</span>
+          <span class="status-value">{{ keyVerified?.uid }}</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">渠道</span>
+          <span class="status-value">{{ keyVerified?.channel_label }}</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">有效期</span>
+          <span class="status-value" :class="{ expired: keyVerified?.expired }">{{ keyVerified?.remaining_text || '未知' }}</span>
+        </div>
+      </div>
+      <p class="key-confirm-tip">
+        点「复制到剪贴板」后，打开微信小程序「夏克里助手」→ 抽卡分析 → 粘贴钥匙即可导入。
+        钥匙是短期凭证，导入完成后不要保存或发给他人。
+      </p>
+      <template #footer>
+        <AppButton variant="quiet" @click="keyDialogVisible = false">取消</AppButton>
+        <AppButton variant="primary" :loading="copyingKey" @click="copyKey">复制到剪贴板</AppButton>
+      </template>
+    </AppDialog>
+
+    <AppLightbox v-model="lightboxVisible" v-model:index="lightboxIndex" :images="announcementImages" />
+    <AppToastHost />
+    <AppConfirmHost />
+  </div>
 </template>
 
-  
 <script setup>
   import {ref, computed, watch, onMounted, onUnmounted, nextTick} from 'vue'
-  import {Bell, Loading, Share} from '@element-plus/icons-vue'
   import GachaItem from './components/GachaItem.vue'
-  import {ElMessage, ElMessageBox} from 'element-plus'
+  import PoolAnalytics from './components/PoolAnalytics.vue'
   import html2canvas from 'html2canvas'
   import {useGachaRecordStore} from '@/stores/gachaRecord'
   import {useSSRStore} from '@/stores/ssr'
+  import {useImageCacheStore} from '@/stores/imageCache'
   import versionInfo from '@/../../version.json'
   import {waitForApi, withTimeout} from './utils/bridge'
+  import appIconUrl from '../public/favicon.ico'
 
+  import AppButton from './ui/AppButton.vue'
+  import AppCheck from './ui/AppCheck.vue'
+  import AppDialog from './ui/AppDialog.vue'
+  import AppIcon from './ui/AppIcon.vue'
+  import AppLightbox from './ui/AppLightbox.vue'
+  import AppSelect from './ui/AppSelect.vue'
+  import AppToastHost from './ui/AppToastHost.vue'
+  import AppConfirmHost from './ui/AppConfirmHost.vue'
+  import {toast} from './ui/toast'
+  import {confirmDialog} from './ui/confirm'
 
   const gachaRecordStore = useGachaRecordStore()
   const ssrStore = useSSRStore()
+  const imageCacheStore = useImageCacheStore()
 
   const recordList = ref([])
   const selectedRecordId = ref('')
@@ -262,9 +575,130 @@
   })
   const isUpdating = ref(false)
   const isLoading = ref(true)
-  const isCustomPurchaseOn = ref(false)
   const isSharing = ref(false)
   const screenshotContainerRef = ref(null)
+  const windowMaximized = ref(false)
+  const contentRef = ref(null)
+  const showBackToTop = ref(false)
+  const collapsedPoolRows = ref({ main: false, custom: false })
+
+  // 总览摘要：按卡池去重统计展示，不改变 GachaItem 的保底计算口径
+  const overviewStats = computed(() => {
+    const permanent = ssrStore.SSR_permanent || {}
+    const pools = [
+      { records: gachaRecordStore.characterGacha, map: { ...permanent, ...(ssrStore.SSR_character || {}) } },
+      { records: gachaRecordStore.weaponGacha, map: { ...permanent, ...(ssrStore.SSR_weapon || {}) } },
+      { records: gachaRecordStore.permanentGacha, map: permanent },
+      { records: gachaRecordStore.customCharacterGacha, map: { ...permanent, ...(ssrStore.SSR_custom_character || {}) } },
+      { records: gachaRecordStore.customWeaponGacha, map: { ...permanent, ...(ssrStore.SSR_custom_weapon || {}) } },
+    ]
+    let draws = 0
+    let ssr = 0
+    let activePools = 0
+    for (const pool of pools) {
+      const pages = Array.isArray(pool.records) ? pool.records : []
+      const list = pages.flatMap((page) => page?.data?.list || [])
+      if (list.length) activePools++
+      draws += list.length
+      for (const draw of list) {
+        if (Object.prototype.hasOwnProperty.call(pool.map, String(draw.item))) ssr++
+      }
+    }
+    return { draws, ssr, activePools }
+  })
+
+  const analyticsPools = computed(() => {
+    const permanent = ssrStore.SSR_permanent || {}
+    const permanentSet = new Set(Object.keys(permanent).map(String))
+    const srMap = { ...(ssrStore.SR_character || {}), ...(ssrStore.SR_weapon || {}) }
+    const definitions = [
+      { key: 'character', code: 'POOL / 01', label: '角色池', type: 'CHARACTER', records: gachaRecordStore.characterGacha, ssrMap: { ...permanent, ...(ssrStore.SSR_character || {}) }, isPermanent: false },
+      { key: 'weapon', code: 'POOL / 02', label: '武器池', type: 'WEAPON', records: gachaRecordStore.weaponGacha, ssrMap: { ...permanent, ...(ssrStore.SSR_weapon || {}) }, isPermanent: false },
+      { key: 'permanent', code: 'POOL / 03', label: '常驻池', type: 'STANDARD', records: gachaRecordStore.permanentGacha, ssrMap: permanent, isPermanent: true },
+      { key: 'custom_character', code: 'POOL / C1', label: '自选角色池', type: 'TARGET', records: gachaRecordStore.customCharacterGacha, ssrMap: { ...permanent, ...(ssrStore.SSR_custom_character || {}) }, isPermanent: false },
+      { key: 'custom_weapon', code: 'POOL / C2', label: '自选武器池', type: 'TARGET', records: gachaRecordStore.customWeaponGacha, ssrMap: { ...permanent, ...(ssrStore.SSR_custom_weapon || {}) }, isPermanent: false },
+    ]
+
+    return definitions.map((definition) => {
+      const pages = Array.isArray(definition.records) ? definition.records : []
+      const draws = pages.flatMap((page, pageIndex) =>
+        (page?.data?.list || []).map((draw) => ({ ...draw, pageIndex }))
+      ).sort((a, b) => {
+        if (b.time !== a.time) return b.time - a.time
+        return a.pageIndex - b.pageIndex
+      }).map((draw, drawIndex) => ({ ...draw, drawIndex }))
+
+      const rarity = { 5: 0, 4: 0, 3: 0 }
+      for (const draw of draws) {
+        const item = String(draw.item)
+        if (Object.prototype.hasOwnProperty.call(definition.ssrMap, item)) rarity[5]++
+        else if (Object.prototype.hasOwnProperty.call(srMap, item)) rarity[4]++
+        else rarity[3]++
+      }
+
+      const ssrDraws = draws
+        .filter((draw) => Object.prototype.hasOwnProperty.call(definition.ssrMap, String(draw.item)))
+        .map((draw) => ({
+          item: String(draw.item),
+          name: definition.ssrMap[String(draw.item)],
+          time: draw.time,
+          drawIndex: draw.drawIndex,
+          isWai: !definition.isPermanent && permanentSet.has(String(draw.item)),
+        }))
+
+      const fiveStars = ssrDraws.map((item, index) => {
+        const next = ssrDraws[index + 1]
+        const costDraws = next ? next.drawIndex - item.drawIndex : draws.length - item.drawIndex
+        return { ...item, costDraws }
+      })
+      const upCount = fiveStars.filter((item) => !item.isWai).length
+      const waiCount = fiveStars.filter((item) => item.isWai).length
+      const expectedPulls = (hits) => hits > 0 ? (draws.length / hits).toFixed(1) : '—'
+
+      return {
+        ...definition,
+        total: draws.length,
+        pad: fiveStars.length ? fiveStars[0].drawIndex : draws.length,
+        rarity,
+        fiveStars,
+        avgSSR: expectedPulls(rarity[5]),
+        avgUp: definition.isPermanent ? '—' : expectedPulls(upCount),
+        waiRate: definition.isPermanent ? '—' : (fiveStars.length ? ((waiCount / fiveStars.length) * 100).toFixed(1) : '0.0'),
+      }
+    })
+  })
+  // ---------------- 视图与卡池行收缩 ----------------
+  const view = ref('overview')
+  const onContentScroll = () => {
+    showBackToTop.value = (contentRef.value?.scrollTop || 0) > 360
+  }
+  const scrollOverviewToTop = () => {
+    contentRef.value?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  const homeMode = ref('records')
+  const togglePoolRow = (row) => {
+    collapsedPoolRows.value[row] = !collapsedPoolRows.value[row]
+  }
+
+  // 自绘标题栏控制；浏览器预览时接口不存在则静默跳过
+  const windowControl = async (method) => {
+    const api = window.pywebview?.api
+    if (!api || typeof api[method] !== 'function') return
+    try {
+      const result = await api[method]()
+      if (method === 'window_toggle_maximize' && result?.status === 'success') {
+        windowMaximized.value = !!result.maximized
+      }
+    } catch (e) {
+      toast.error(`窗口操作失败: ${e.message || e}`)
+    }
+  }
+  const switchToTools = () => {
+    view.value = 'tools'
+    // 状态面板的信息要新；钥匙状态是纯本地解码，顺手刷一次也不贵
+    refreshStatus(false)
+    if (!keyStatus.value) refreshKeyStatus()
+  }
 
   // ---------------- 分享：选择要分享的卡池 ----------------
   // 顺序与主界面一致；勾选只影响出图，不影响主界面显示（和「自选采购」开关互不干扰）
@@ -277,7 +711,15 @@
   ]
   const shareDialogVisible = ref(false)
   const selectedSharePools = ref([])
-
+  const shareStyle = ref('records')
+  const shareAnalyticsPools = computed(() =>
+    analyticsPools.value.filter((pool) => selectedSharePools.value.includes(pool.key))
+  )
+  const shareAnalyticsSummary = computed(() => ({
+    pools: shareAnalyticsPools.value.length,
+    total: shareAnalyticsPools.value.reduce((sum, pool) => sum + pool.total, 0),
+    ssr: shareAnalyticsPools.value.reduce((sum, pool) => sum + (pool.rarity?.[5] || 0), 0),
+  }))
   const sharePoolHasRecords = (storeKey) => {
     const pages = (gachaRecordStore.gacha || {})[storeKey] || []
     return Array.isArray(pages) && pages.some((page) => ((page || {}).data || {}).list?.length > 0)
@@ -300,10 +742,11 @@
   const openShareDialog = () => {
     const withRecords = sharePoolOptions.filter((pool) => sharePoolHasRecords(pool.storeKey))
     if (withRecords.length === 0) {
-      ElMessage.warning('还没有抽卡记录，先点「更新记录」或导入一份记录吧')
+      toast.warning('还没有抽卡记录，先点「更新记录」或导入一份记录吧')
       return
     }
     selectedSharePools.value = withRecords.map((pool) => pool.key)
+    shareStyle.value = homeMode.value === 'analytics' ? 'analytics' : 'records'
     shareDialogVisible.value = true
   }
 
@@ -316,6 +759,29 @@
   // 将 html2canvas 暴露到全局，供后端 evaluate_js 调用
   window.html2canvas = html2canvas
 
+  // 角色/武器图片走 24 小时磁盘缓存，避免每次重启都重新拉取
+  const isWeaponImage = (itemId) => {
+    const key = String(itemId)
+    const weaponMaps = [ssrStore.SSR_weapon, ssrStore.SSR_custom_weapon]
+    const characterMaps = [ssrStore.SSR_character, ssrStore.SSR_custom_character]
+    if (weaponMaps.some((map) => map && Object.prototype.hasOwnProperty.call(map, key))) return true
+    if (characterMaps.some((map) => map && Object.prototype.hasOwnProperty.call(map, key))) return false
+    return key.length === 5
+  }
+  const collectGachaImageUrls = (gacha = gachaRecordStore.gacha) => {
+    const draws = Object.values(gacha || {}).flatMap((pages) =>
+      (Array.isArray(pages) ? pages : []).flatMap((page) => page?.data?.list || [])
+    )
+    const urls = draws.map((draw) => {
+      const item = String(draw.item)
+      return `https://static.gf2gacha-xkl.uk/images/${isWeaponImage(item) ? 'weapon' : 'character'}/${item}.png`
+    })
+    return [...new Set(urls)]
+  }
+  const preloadGachaImages = async (gacha = gachaRecordStore.gacha) => {
+    const urls = collectGachaImageUrls(gacha)
+    if (urls.length) await imageCacheStore.ensureImages(urls)
+  }
   // ---------------- 分享图标预热 ----------------
   // 分享慢的根源是要把每张五星图标下载成 base64（图床没有 CORS 头，画进 canvas
   // 会被跨域污染，所以只能由 Python 下载）。这里在数据一到位时就把图标交给后端
@@ -338,7 +804,10 @@
       }
     }, 1200)
   }
-  watch(() => gachaRecordStore.gacha, () => prefetchShareIcons())
+  watch(() => gachaRecordStore.gacha, () => {
+    preloadGachaImages()
+    prefetchShareIcons()
+  })
 
   // ---------------- 代理 / 捕获状态 ----------------
   // 「更新记录」只是重放上一次抓到的游戏请求，所以界面上必须能看出来
@@ -349,7 +818,6 @@
   const proxyPort = ref(null)
   const captureInfo = ref({})
   const lastSeenCapture = ref('')
-  const logDialogVisible = ref(false)
   const logPath = ref('')
   let statusTimer = null
 
@@ -366,6 +834,23 @@
     const time = (info.captured_at || '').substring(11, 19)
     const age = info.age_text ? `（${info.age_text}）` : ''
     return `已捕获 ${time}${age}`
+  })
+
+  const proxyStatusText = computed(() => {
+    if (!proxyReady.value) return '未启动（请重启本工具）'
+    if (!proxyApplied.value) {
+      return proxyError.value
+        ? `系统代理未接管：${proxyError.value}`
+        : '已启动，系统代理未接管（请先安装证书）'
+    }
+    return `运行中（仅解密抽卡接口） 127.0.0.1:${proxyPort.value}`
+  })
+
+  const statusDotClass = computed(() => (proxyReady.value && proxyApplied.value ? 'ok' : 'bad'))
+  const statusShort = computed(() => {
+    if (!proxyReady.value) return '代理未启动'
+    if (!proxyApplied.value) return '代理未接管'
+    return '代理运行中'
   })
 
   const statusHint = computed(() => {
@@ -401,7 +886,7 @@
 
     const stamp = captureInfo.value.captured_at || ''
     if (notify && stamp && lastSeenCapture.value && stamp !== lastSeenCapture.value) {
-      ElMessage.success('已捕获到游戏抽卡请求，现在可以点「更新记录」了')
+      toast.success('已捕获到游戏抽卡请求，现在可以点「更新记录」了')
     }
     if (stamp) lastSeenCapture.value = stamp
   }
@@ -420,24 +905,92 @@
     }
   }
 
-  // 打开「日志」窗口：顺带刷新一次状态，保证看到的是最新的
-  const openLogDialog = () => {
-    logDialogVisible.value = true
-    refreshStatus(false)
-  }
-
   // 用系统默认程序直接打开日志文件本身
   const openLogFile = async () => {
     if (!(await waitForApi())) return
     try {
       const res = await window.pywebview.api.open_log_file()
       if (!res || res.status !== 'success') {
-        ElMessage.error((res && res.msg) || '打开日志文件失败')
+        toast.error((res && res.msg) || '打开日志文件失败')
       }
     } catch (e) {
-      ElMessage.error(`打开日志文件失败: ${e.message || e}`)
+      toast.error(`打开日志文件失败: ${e.message || e}`)
     }
   }
+
+  // ---------------- 小程序钥匙导出 ----------------
+  const keyStatus = ref(null)
+  const keyStatusLoading = ref(false)
+  const keyUidInput = ref('')
+  const keyVerifying = ref(false)
+  const keyVerified = ref(null)
+  const keyDialogVisible = ref(false)
+  const copyingKey = ref(false)
+
+  const keyReady = computed(() => !!(keyStatus.value && keyStatus.value.has_credential))
+
+  const keyCaptureText = computed(() => {
+    const status = keyStatus.value
+    if (!status) return '读取中…'
+    const capture = status.capture || {}
+    if (!capture.exists) return '尚未捕获（先在游戏里打开「招募 · 访问详情」页面）'
+    if (!status.has_credential) return '捕获异常：缺少 Authorization'
+    return `已捕获${capture.age_text ? ` ${capture.age_text}` : ''}`
+  })
+
+  const refreshKeyStatus = async () => {
+    if (disposed || !(await waitForApi())) return
+    keyStatusLoading.value = true
+    try {
+      const res = await withTimeout(window.pywebview.api.get_key_export_status())
+      if (!disposed && res && res.ok !== false) keyStatus.value = res
+    } catch (e) {
+      console.error('[ERROR] 读取钥匙导出状态失败:', e)
+    } finally {
+      keyStatusLoading.value = false
+    }
+  }
+
+  const startExportKey = async () => {
+    if (!(await waitForApi()) || keyVerifying.value) return
+    keyVerifying.value = true
+    try {
+      // B服钥匙需要用户补填 UID；官服不填（官服 UID 由后端向官方接口核对）
+      const uid = keyUidInput.value.trim() || null
+      const res = await withTimeout(window.pywebview.api.start_key_export(uid), 30000)
+      if (res.status === 'success') {
+        keyVerified.value = res.data
+        keyDialogVisible.value = true
+      } else {
+        toast.error(res.msg || '导出失败')
+      }
+    } catch (e) {
+      toast.error(`导出失败: ${e.message || e}`)
+    } finally {
+      keyVerifying.value = false
+    }
+  }
+
+  const copyKey = async () => {
+    if (!(await waitForApi()) || copyingKey.value) return
+    copyingKey.value = true
+    try {
+      const res = await withTimeout(window.pywebview.api.copy_key_to_clipboard())
+      if (res.status === 'success') {
+        toast.success(res.msg)
+        keyDialogVisible.value = false
+      } else {
+        toast.error(res.msg || '复制失败')
+      }
+    } catch (e) {
+      toast.error(`复制失败: ${e.message || e}`)
+    } finally {
+      copyingKey.value = false
+    }
+  }
+
+  // 游戏侧重新抓包（captured_at 变化）后，过期时间等要跟着刷新（纯本地解码，代价为零）
+  watch(() => captureInfo.value.captured_at, () => refreshKeyStatus())
 
   // ---------------- R2 公告 ----------------
   // 只在应用打开时自动检查一次；手动点「公告」会绕过缓存强制刷新。
@@ -461,18 +1014,18 @@
       const res = await withTimeout(window.pywebview.api.get_announcement(!!force), 20000)
       if (disposed) return
       if (!res || res.status !== 'success') {
-        if (manual) ElMessage.error((res && res.message) || '公告获取失败')
+        if (manual) toast.error((res && res.message) || '公告获取失败')
         return
       }
-      if (manual && res.warning) ElMessage.warning(res.warning)
+      if (manual && res.warning) toast.warning(res.warning)
       const latest = res.announcement
       if (!latest) {
-        if (manual) ElMessage.info('暂无公告')
+        if (manual) toast.info('暂无公告')
         return
       }
       announcement.value = latest
       announcementUnread.value = !!res.unread
-      const canAutoShow = !updateNoticeVisible.value && !logDialogVisible.value && !shareDialogVisible.value
+      const canAutoShow = !updateNoticeVisible.value && !shareDialogVisible.value && !keyDialogVisible.value
       if (manual || (res.unread && canAutoShow)) {
         announcementDialogVisible.value = true
         announcementUnread.value = false
@@ -484,7 +1037,7 @@
       }
     } catch (e) {
       console.error('[ERROR] 获取公告失败:', e)
-      if (manual) ElMessage.error(`公告获取失败: ${e.message || e}`)
+      if (manual) toast.error(`公告获取失败: ${e.message || e}`)
     } finally {
       announcementPending = false
       if (manual) announcementLoading.value = false
@@ -493,22 +1046,24 @@
 
   const openAnnouncement = () => refreshAnnouncement(true, true)
 
+  // 公告图片放大查看
+  const lightboxVisible = ref(false)
+  const lightboxIndex = ref(0)
+  const openLightbox = (index) => {
+    lightboxIndex.value = index
+    lightboxVisible.value = true
+  }
 
   // 显示更新通知（远端 version.json 里带 update_info 时一并展示更新说明）
   const showUpdateNotification = (latestVersion, notes = '') => {
     const detail = notes ? `\n\n更新内容：\n${notes}` : ''
-    ElMessageBox.confirm(
-      `发现新版本 v${latestVersion}，是否更新？${detail}`,
-      '更新提示',
-      {
-        confirmButtonText: '更新',
-        cancelButtonText: '稍后',
-        type: 'info',
-      }
-    ).then(() => {
-      startUpdate()
-    }).catch(() => {
-      // 用户取消
+    confirmDialog({
+      title: '更新提示',
+      message: `发现新版本 v${latestVersion}，是否更新？${detail}`,
+      confirmText: '更新',
+      cancelText: '稍后',
+    }).then((ok) => {
+      if (ok) startUpdate()
     })
   }
 
@@ -517,14 +1072,14 @@
     try {
       const res = await window.pywebview.api.start_update()
       if (res.status == 'success') {
-        ElMessage.success('正在启动更新器...')
+        toast.success('正在启动更新器...')
         // 更新器会自动关闭主程序
       } else {
-        ElMessage.error(`启动更新失败: ${res.message || '未知错误'}`)
+        toast.error(`启动更新失败: ${res.message || '未知错误'}`)
       }
     } catch (e) {
       console.error('[ERROR] 启动更新异常:', e)
-      ElMessage.error(`启动更新失败: ${e.message || e}`)
+      toast.error(`启动更新失败: ${e.message || e}`)
     }
   }
 
@@ -540,11 +1095,11 @@
         console.log('[INFO] 记录列表加载成功:', res.data)
       } else {
         console.error('[ERROR] 加载记录列表失败:', res.msg)
-        ElMessage.error(`加载记录列表失败: ${res.msg}`)
+        toast.error(`加载记录列表失败: ${res.msg}`)
       }
     } catch (e) {
       console.error('[ERROR] 加载记录列表异常:', e)
-      ElMessage.error(`加载记录列表失败: ${e.message || e}`)
+      toast.error(`加载记录列表失败: ${e.message || e}`)
     }
   }
 
@@ -592,23 +1147,21 @@
 
   // 一键回滚：后端会拉起 updater.exe --rollback 并关掉本程序
   const rollbackUpdate = async () => {
-    try {
-      await ElMessageBox.confirm(
-        '将回滚到上一个版本并自动重新启动程序，确定吗？',
-        '回滚确认',
-        { confirmButtonText: '回滚', cancelButtonText: '取消', type: 'warning' }
-      )
-    } catch (e) {
-      return
-    }
+    const ok = await confirmDialog({
+      title: '回滚确认',
+      message: '将回滚到上一个版本并自动重新启动程序，确定吗？',
+      confirmText: '回滚',
+      danger: true,
+    })
+    if (!ok) return
     updateNoticeVisible.value = false
     try {
       const res = await window.pywebview.api.rollback_update()
       if (!res || res.status !== 'success') {
-        ElMessage.error((res && res.msg) || '启动回滚失败')
+        toast.error((res && res.msg) || '启动回滚失败')
       }
     } catch (e) {
-      ElMessage.error(`启动回滚失败: ${e.message || e}`)
+      toast.error(`启动回滚失败: ${e.message || e}`)
     }
   }
 
@@ -621,15 +1174,15 @@
         if (res.has_update) {
           showUpdateNotification(res.latest_version, res.notes)
         } else {
-          ElMessage.success('当前已是最新版本')
+          toast.success('当前已是最新版本')
         }
       } else {
         console.error('[ERROR] 检查更新失败:', res.message)
-        ElMessage.error(`检查更新失败: ${res.message || '未知错误'}`)
+        toast.error(`检查更新失败: ${res.message || '未知错误'}`)
       }
     } catch (e) {
       console.error('[ERROR] 检查更新异常:', e)
-      ElMessage.error(`检查更新失败: ${e.message || e}`)
+      toast.error(`检查更新失败: ${e.message || e}`)
     }
   }
 
@@ -649,11 +1202,11 @@
         // 不显示导入成功提示，因为用户可能快速切换
       } else {
         console.error('[ERROR] 导入记录失败:', res.msg)
-        ElMessage.error(res.msg)
+        toast.error(res.msg)
       }
     } catch (e) {
       console.error('[ERROR] 导入记录异常:', e)
-      ElMessage.error(`导入记录失败: ${e.message || e}`)
+      toast.error(`导入记录失败: ${e.message || e}`)
     }
   }
 
@@ -663,11 +1216,11 @@
       const res = await window.pywebview.api.open_github()
       if (res.status !== 'success') {
         console.error('[ERROR] 打开GitHub主页失败:', res.message)
-        ElMessage.error(`打开GitHub主页失败: ${res.message || '未知错误'}`)
+        toast.error(`打开GitHub主页失败: ${res.message || '未知错误'}`)
       }
     } catch (e) {
       console.error('[ERROR] 打开GitHub主页异常:', e)
-      ElMessage.error(`打开GitHub主页失败: ${e.message || e}`)
+      toast.error(`打开GitHub主页失败: ${e.message || e}`)
     }
   }
 
@@ -677,51 +1230,46 @@
     // 而不是让他等一句和网络故障长得一模一样的失败提示
     await refreshStatus(false)
     if (!captureReplayable.value) {
-      ElMessage.warning(statusHint.value)
+      toast.warning(statusHint.value)
       return
     }
 
     isUpdating.value = true
-    const loadingMessage = ElMessage({
-      message: '正在获取抽卡记录...',
-      type: 'info',
-      duration: 0,
-      showClose: false
-    })
+    const closeLoading = toast.loading('正在获取抽卡记录...')
 
     try{
        const res = await window.pywebview.api.get_gacha()
-       loadingMessage.close()
+       closeLoading()
 
        if (res.status == 'success'){
-          ElMessage.success(res.msg)
+          toast.success(res.msg)
           // 新的数据结构包含uid和gacha
           gachaRecordStore.gacha = res.data.gacha
-          
+
           // 自动保存记录，使用uid作为记录名称
           if (res.data.uid) {
             const uid = res.data.uid.toString()
             const saveRes = await window.pywebview.api.export_record(uid, gachaRecordStore.gacha)
             if (saveRes.status == 'success') {
-              ElMessage.success(`记录已自动保存: ${uid}`)
+              toast.success(`记录已自动保存: ${uid}`)
               // 刷新记录列表并选中刚保存的记录
               await loadRecordList()
               selectedRecordId.value = uid
             } else {
               console.error('[ERROR] 自动保存记录失败:', saveRes.msg)
-              ElMessage.error(`自动保存记录失败: ${saveRes.msg}`)
+              toast.error(`自动保存记录失败: ${saveRes.msg}`)
             }
           }
        }else{
           console.error('[ERROR] 获取记录失败:', res.code, res.msg)
-          ElMessage.error(res.msg)
+          toast.error(res.msg)
           // 失败原因可能来自 token 过期 / 接口变动，刷新状态让用户看到最新情况
           refreshStatus(false)
         }
    }catch (e) {
-      loadingMessage.close()
+      closeLoading()
       console.error('[ERROR] 获取记录异常:', e)
-      ElMessage.error(`获取记录失败: ${e.message || e}`)
+      toast.error(`获取记录失败: ${e.message || e}`)
    } finally {
       isUpdating.value = false
    }
@@ -732,55 +1280,46 @@
     try{
       const res = await window.pywebview.api.install_cert()
       if (res.status == 'success'){
-        ElMessage.success(res.msg || '证书安装成功')
+        toast.success(res.msg || '证书安装成功')
       }else{
         console.error('[ERROR] 安装证书失败:', res.msg)
-        ElMessage.error(res.msg)
+        toast.error(res.msg)
       }
     }catch (e) {
       console.error('[ERROR] 安装证书异常:', e)
-      ElMessage.error(`安装证书失败: ${e.message || e}`)
+      toast.error(`安装证书失败: ${e.message || e}`)
     }
   }
 
   // 卸载证书
   const uninstallCert = async () => {
-    try{
-      // 确认对话框
-      await ElMessageBox.confirm(
-        '确定要卸载 gf2gacha_XKL 证书吗？',
-        '警告',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-      )
-      
+    const ok = await confirmDialog({
+      title: '警告',
+      message: '确定要卸载 gf2gacha_XKL 证书吗？',
+      confirmText: '确定',
+      danger: true,
+    })
+    if (!ok) return
+
+    try {
       const res = await window.pywebview.api.uninstall_cert()
       if (res.status == 'success'){
-        ElMessage.success(res.msg || '证书卸载成功')
+        toast.success(res.msg || '证书卸载成功')
       }else{
         console.error('[ERROR] 卸载证书失败:', res.msg)
-        ElMessage.error(res.msg)
+        toast.error(res.msg)
       }
-    }catch (e) {
-      if (e !== 'cancel') {
-        console.error('[ERROR] 卸载证书异常:', e)
-        ElMessage.error(`卸载证书失败: ${e.message || e}`)
-      }
+    } catch (e) {
+      console.error('[ERROR] 卸载证书异常:', e)
+      toast.error(`卸载证书失败: ${e.message || e}`)
     }
   }
 
-  // 切换自选采购开关
-  const toggleCustomPurchase = () => {
-    isCustomPurchaseOn.value = !isCustomPurchaseOn.value
-  }
 
   // 分享截图功能
   const shareScreenshot = async () => {
     if (!screenshotContainerRef.value) {
-      ElMessage.error('截图容器未就绪')
+      toast.error('截图容器未就绪')
       return
     }
 
@@ -791,13 +1330,13 @@
       // 截图和剪贴板操作全部由后端通过 evaluate_js 完成（避免大数据通过 api 参数被截断）
       const res = await window.pywebview.api.copy_image_to_clipboard()
       if (res && res.status === 'success') {
-        ElMessage.success('截图已复制到剪贴板，可直接粘贴使用')
+        toast.success('截图已复制到剪贴板，可直接粘贴使用')
       } else {
-        ElMessage.error(`复制失败: ${res?.message || '未知错误'}`)
+        toast.error(`复制失败: ${res?.message || '未知错误'}`)
       }
     } catch (e) {
       console.error('[ERROR] 截图失败:', e)
-      ElMessage.error(`截图失败: ${e.message || e}`)
+      toast.error(`截图失败: ${e.message || e}`)
     } finally {
       isSharing.value = false
     }
@@ -807,13 +1346,13 @@
   watch(() => [ssrStore.source, ssrStore.isRefreshing], ([source, refreshing]) => {
     if (disposed || refreshing) return
     if (source === 'local-proto') {
-      ElMessage.success('正在使用最新五星数据')
+      toast.success('正在使用最新五星数据')
     } else if (source === 'remote') {
-      ElMessage.success('正在使用远端五星数据')
+      toast.success('正在使用远端五星数据')
     } else if (source === 'local-json') {
-      ElMessage.warning('正在使用本地五星数据(可能不是最新)')
+      toast.warning('正在使用本地五星数据(可能不是最新)')
     } else if (source === 'error') {
-      ElMessage.error('无法加载五星数据')
+      toast.error('无法加载五星数据')
     }
   })
 
@@ -829,11 +1368,15 @@
       refreshStatus(false)
       statusTimer = setInterval(() => refreshStatus(true), 3000)
 
+      // 钥匙导出的无网络预览（捕获状态 / 渠道 / 过期时间）
+      refreshKeyStatus()
+
       // 加载SSR数据（前端主动控制）
       source = await ssrStore.loadData()
+      preloadGachaImages()
     } catch (e) {
       console.error('[ERROR] 初始化失败:', e)
-      ElMessage.error(`初始化失败: ${e.message || e}`)
+      toast.error(`初始化失败: ${e.message || e}`)
     } finally {
       // 关闭遮罩
       isLoading.value = false
@@ -846,9 +1389,9 @@
         console.error('[ERROR] 收尾更新流程失败:', e)
       }
     }
-    
+
     if (source === 'error' && !ssrStore.isRefreshing) {
-      ElMessage.error('无法加载五星数据')
+      toast.error('无法加载五星数据')
     }
 
     refreshAnnouncement(false)
@@ -862,322 +1405,987 @@
   })
 
 </script>
-  
-<style scoped>
-  /* 固定顶部栏：半透白 + 高斯模糊（磨砂质感）+ 一条细微下阴影 */
-  .app-header{
-    position: fixed;
+
+<style>
+  /* ============================================================
+     Application shell — GF2 tactical operations console
+     ============================================================ */
+  .app-shell {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 224px minmax(0, 1fr);
+    grid-template-rows: 31px minmax(0, 1fr);
+    overflow: hidden;
+    background: var(--ink-1000);
+  }
+
+  /* ---------- Custom window title bar ---------- */
+  .window-titlebar {
+    position: relative;
+    z-index: 10000;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    height: 31px;
+    display: flex;
+    align-items: stretch;
+    color: #8d9498;
+    background: #090b0d;
+    border-bottom: 1px solid #282d31;
+    user-select: none;
+  }
+  .window-titlebar-drag {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding-left: 12px;
+    cursor: default;
+    -webkit-app-region: drag;
+  }
+  .window-titlebar-logo {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    object-fit: contain;
+  }
+  .window-titlebar-title {
+    color: #c6c8c5;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+  }
+  .window-titlebar-sub {
+    padding-left: 9px;
+    border-left: 1px solid #30363a;
+    color: #555d62;
+    font: 7.5px/1 var(--font-technical);
+    letter-spacing: 1.05px;
+  }
+  .window-controls {
+    display: flex;
+    height: 100%;
+    flex: none;
+    -webkit-app-region: no-drag;
+  }
+  .window-control {
+    width: 43px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-left: 1px solid transparent;
+    background: transparent;
+    color: #777f84;
+    cursor: pointer;
+    transition: background 0.13s ease, color 0.13s ease;
+  }
+  .window-control:hover { background: #20252a; color: #fff; }
+  .window-control:focus-visible { outline: 1px solid var(--signal); outline-offset: -2px; }
+  .window-control--close:hover { background: #b84136; color: #fff; }
+
+  /* ---------- Left command rail ---------- */
+  .sidebar {
+    position: relative;
+    z-index: 5;
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background:
+      linear-gradient(180deg, rgba(239, 100, 47, 0.08), transparent 180px),
+      repeating-linear-gradient(90deg, transparent 0 31px, rgba(255, 255, 255, 0.018) 31px 32px),
+      var(--ink-950);
+    border-right: 1px solid var(--ink-700);
+  }
+  .sidebar::after {
+    content: "";
+    position: absolute;
     top: 0;
+    right: -1px;
+    width: 2px;
+    height: 96px;
+    background: linear-gradient(180deg, var(--signal), transparent);
+    pointer-events: none;
+  }
+
+  .brand {
+    position: relative;
+    flex: none;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--ink-700);
+    background: rgba(0, 0, 0, 0.12);
+  }
+  .brand-mark {
+    position: relative;
+    width: 43px;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    overflow: hidden;
+    background: #0b0d0f;
+    border: 1px solid #4a3a2a;
+    clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+  .brand-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .brand-text { min-width: 0; }
+  .brand-name {
+    color: var(--text-1);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+  }
+  .brand-sub {
+    margin-top: 4px;
+    color: var(--text-3);
+    font: 8.5px/1.2 var(--font-technical);
+    letter-spacing: 1.25px;
+    white-space: nowrap;
+  }
+
+  .nav-label {
+    flex: none;
+    padding: 20px 18px 8px;
+    color: #5f666b;
+    font: 8.5px/1 var(--font-technical);
+    letter-spacing: 1.8px;
+  }
+  .side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 10px;
+  }
+  .nav-item {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 0 12px 0 14px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-2);
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
+  }
+  .nav-item::before {
+    content: "";
+    position: absolute;
     left: 0;
-    right: 0;
-    z-index: 1000;
-    height: 64px;
-    padding: 0 14px;
-    box-sizing: border-box;
+    top: 50%;
+    width: 3px;
+    height: 0;
+    background: var(--signal);
+    transform: translateY(-50%);
+    transition: height 0.16s ease;
+  }
+  .nav-item:hover { background: rgba(255, 255, 255, 0.045); color: var(--text-1); }
+  .nav-item:focus-visible { outline: 1px solid var(--signal); outline-offset: -3px; }
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(239, 100, 47, 0.16), rgba(239, 100, 47, 0.025));
+    color: #fff;
+  }
+  .nav-item.active::before { height: 25px; }
+  .nav-item .app-icon { flex: none; opacity: 0.86; }
+  .nav-item.active .app-icon { color: var(--signal-hi); opacity: 1; }
+  .nav-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .nav-copy strong { font-size: 13.5px; font-weight: 650; letter-spacing: 0.6px; }
+  .nav-copy small { color: #666d72; font: 8px/1 var(--font-technical); letter-spacing: 1.2px; }
+  .nav-item.active .nav-copy small { color: #9b7563; }
+  .nav-index {
+    margin-left: auto;
+    color: #4e555a;
+    font: 9px/1 var(--font-technical);
+    letter-spacing: 0.8px;
+  }
+  .nav-item.active .nav-index { color: var(--signal-hi); }
+
+  .side-footer {
+    margin-top: auto;
+    padding: 15px 18px 17px;
+    border-top: 1px solid var(--ink-700);
+    background: rgba(0, 0, 0, 0.12);
+  }
+  .side-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-2);
+    font-size: 11px;
+  }
+  .side-meta {
     display: flex;
     justify-content: space-between;
-    align-items: center;          /* 这一行在顶栏里上下居中 */
-
-    background: rgba(255, 255, 255, 0.72);
-    -webkit-backdrop-filter: blur(14px) saturate(180%);
-    backdrop-filter: blur(14px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow:
-      0 1px 0 rgba(0, 0, 0, 0.03),
-      0 4px 16px rgba(0, 0, 0, 0.06);
-  }
-  .header-left {
-    display: flex;
-    flex-shrink: 0;
-    gap: 8px;  /* 按钮之间的间距 */
-  }
-  .header-left .el-button,
-  .header-right .el-button {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-  .header-center {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .header-right {
-    display: flex;
-    flex-shrink: 0;
     gap: 8px;
-    align-items: center;
+    margin-top: 8px;
+    color: #555d62;
+    font: 8.5px/1 var(--font-technical);
+    letter-spacing: 0.65px;
   }
-  .record-selector {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .version-info {
-    font-size: 14px;
-    color: #909399;
-  }
-  .log-dialog-body {
+  .side-meta span:last-child::before { content: "· "; color: var(--signal); }
+
+  /* ---------- Main column / top bar ---------- */
+  .main-col {
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    font-size: 14px;
-    color: #303133;
+    overflow: hidden;
   }
+  .topbar {
+    position: relative;
+    z-index: 4;
+    flex: none;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 0 22px;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025), transparent 34%),
+      var(--ink-900);
+    border-bottom: 1px solid var(--ink-700);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.16);
+  }
+  .topbar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 72px;
+    height: 2px;
+    background: var(--signal);
+  }
+  .topbar-left { min-width: 0; display: flex; align-items: center; gap: 15px; }
+  .archive-code {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 38px;
+    flex: none;
+    border-right: 1px solid var(--ink-700);
+    color: #727a80;
+    font: 8px/1.1 var(--font-technical);
+    letter-spacing: 1.1px;
+  }
+  .archive-code strong { margin-top: 4px; color: var(--text-1); font-size: 13px; letter-spacing: 0.8px; }
+  .record-field { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  .record-label { color: #777e83; font: 8px/1 var(--font-technical); letter-spacing: 1.1px; }
+  .topbar .app-select { width: 258px; }
+  .topbar-right { display: flex; align-items: center; gap: 9px; flex: none; }
+
+  .bell-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--ink-700);
+    border-radius: var(--radius-control);
+    background: var(--ink-850);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+  }
+  .bell-btn:hover { border-color: var(--ink-600); background: var(--ink-800); color: #fff; }
+  .bell-btn:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .bell-btn.unread { color: var(--signal-hi); border-color: rgba(239, 100, 47, 0.55); }
+  .bell-badge {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 0 2px var(--ink-850), 0 0 8px var(--signal-glow);
+  }
+
+  /* ---------- Field-paper workspace ---------- */
+  .content {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 24px 26px 42px;
+    background-color: var(--paper-1);
+    background-image:
+      linear-gradient(rgba(35, 38, 39, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(35, 38, 39, 0.045) 1px, transparent 1px),
+      radial-gradient(circle at 88% 5%, rgba(239, 100, 47, 0.09), transparent 27%);
+    background-size: 32px 32px, 32px 32px, auto;
+  }
+  .content::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }  .content::before {
+    content: "";
+    position: fixed;
+    right: 28px;
+    top: 96px;
+    width: 84px;
+    height: 84px;
+    opacity: 0.18;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--ink-900), var(--ink-900)) center / 1px 100% no-repeat,
+      linear-gradient(90deg, var(--ink-900), var(--ink-900)) center / 100% 1px no-repeat;
+    border: 1px solid var(--ink-900);
+    border-radius: 50%;
+  }
+  .view-panel { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; }
+
+  .section-kicker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-3);
+    font: 8.5px/1 var(--font-technical);
+    letter-spacing: 1.35px;
+    text-transform: uppercase;
+  }
+  .section-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 23px;
+    height: 16px;
+    padding: 0 4px;
+    background: var(--signal);
+    color: #fff;
+    font: 700 8.5px/1 var(--font-technical);
+    letter-spacing: 0.8px;
+  }
+  .page-title {
+    margin: 7px 0 0;
+    color: var(--text-1);
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: 1.2px;
+  }
+  .page-desc {
+    margin: 7px 0 0;
+    color: var(--text-3);
+    font-size: 11.5px;
+    line-height: 1.5;
+    letter-spacing: 0.2px;
+  }
+
+  /* overview hero */
+  .overview-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 28px;
+    min-height: 142px;
+    padding: 22px 24px;
+    overflow: hidden;
+    color: var(--text-1);
+    background:
+      linear-gradient(112deg, rgba(255, 255, 255, 0.045), transparent 40%),
+      var(--ink-900);
+    border-left: 3px solid var(--signal);
+    box-shadow: 0 12px 30px rgba(31, 31, 28, 0.18);
+  }
+  .overview-hero::before {
+    content: "";
+    position: absolute;
+    top: -24px;
+    right: 88px;
+    width: 170px;
+    height: 210px;
+    transform: skewX(-23deg);
+    background: repeating-linear-gradient(90deg, rgba(239, 100, 47, 0.105) 0 3px, transparent 3px 14px);
+    pointer-events: none;
+  }
+  .overview-hero::after {
+    content: "";
+    position: absolute;
+    right: 17px;
+    top: 16px;
+    width: 19px;
+    height: 19px;
+    border-top: 1px solid rgba(255, 255, 255, 0.31);
+    border-right: 1px solid rgba(255, 255, 255, 0.31);
+  }
+  .hero-copy,
+  .hero-side { position: relative; z-index: 1; }
+  .hero-copy .page-title { color: #fff; font-size: 34px; }
+  .hero-copy .page-desc { max-width: 450px; color: #9da2a5; }
+  .hero-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 13px;
+  }
+  .quick-stats { display: flex; gap: 7px; }
+  .quick-stat {
+    min-width: 70px;
+    padding: 8px 10px 7px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    background: rgba(255, 255, 255, 0.045);
+  }
+  .quick-stat span { display: block; color: #858c91; font-size: 8.5px; letter-spacing: 0.5px; }
+  .quick-stat strong {
+    display: inline-block;
+    margin-top: 3px;
+    color: #fff;
+    font: 600 22px/1 var(--font-technical);
+    font-variant-numeric: tabular-nums;
+  }
+  .quick-stat small { margin-left: 5px; color: var(--signal-hi); font: 7.5px/1 var(--font-technical); letter-spacing: 0.7px; }
+  .display-mode-wrap { display: flex; align-items: center; gap: 8px; }
+  .display-mode-wrap > span { color: #626a6f; font: 7px/1 var(--font-technical); letter-spacing: 1px; }
+  .display-mode-switch { display: inline-flex; gap: 2px; padding: 2px; background: rgba(0,0,0,.28); border: 1px solid rgba(255,255,255,.13); border-radius: var(--radius-control); }
+  .display-mode-switch button { height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; border: 0; border-radius: 1px; background: transparent; color: #8e9599; font: 9.5px/1 var(--font-ui); cursor: pointer; transition: background .16s ease, color .16s ease; }
+  .display-mode-switch button:hover { color: #fff; background: rgba(255,255,255,.06); }
+  .display-mode-switch button.active { color: #191c1e; background: #ede9df; }
+  .display-mode-switch button:focus-visible { outline: 1px solid var(--signal); outline-offset: 1px; }
+  /* section heading */
+  .section-bar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 25px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(31, 35, 37, 0.24);
+  }
+  .section-bar h3 {
+    margin: 5px 0 0;
+    color: var(--text-1);
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: 0.6px;
+  }
+  .section-status {
+    color: var(--text-3);
+    font: 8.5px/1 var(--font-technical);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .section-status::before { content: "■"; margin-right: 6px; color: var(--signal); font-size: 7px; }
+  .section-actions { display: flex; align-items: center; gap: 11px; }
+  .row-collapse-btn {
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 7px;
+    border: 1px solid #aaa395;
+    border-radius: var(--radius-control);
+    background: rgba(246, 243, 235, 0.62);
+    color: #66645e;
+    font: 9px/1 var(--font-ui);
+    cursor: pointer;
+    transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  }
+  .row-collapse-btn:hover { color: #222529; border-color: #7f7a70; background: var(--paper-0); }
+  .row-collapse-btn:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .row-collapse-icon { transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+  .row-collapse-btn:not(.collapsed) .row-collapse-icon { transform: rotate(180deg); }
+  .section-bar--compact { margin-top: 22px; }
+  .analytics-mode { min-width: 0; }
+  .analytics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 14px; }
+  /* pool cards */
+  .pool-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 14px;
+  }
+  .pool-grid--two { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pool-card {
+    position: relative;
+    min-width: 0;
+    padding: 13px;
+    background: var(--paper-0);
+    border: 1px solid #b8b1a3;
+    border-top: 3px solid var(--ink-900);
+    box-shadow: var(--shadow-panel);
+  }
+  .pool-card::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: 14px;
+    width: 38px;
+    height: 3px;
+    background: var(--signal);
+  }
+  .pool-card::after {
+    content: "";
+    position: absolute;
+    right: 7px;
+    bottom: 7px;
+    width: 10px;
+    height: 10px;
+    border-right: 1px solid #bbb4a5;
+    border-bottom: 1px solid #bbb4a5;
+    pointer-events: none;
+  }
+  .pool-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 9px;
+    margin-bottom: 9px;
+    border-bottom: 1px solid #d4cec1;
+  }
+  .pool-code { display: block; color: #8b877d; font: 7.5px/1 var(--font-technical); letter-spacing: 1px; }
+  .pool-name {
+    margin: 4px 0 0;
+    color: #171a1c;
+    font-size: 16px;
+    font-weight: 760;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+  }
+  .pool-type {
+    padding: 3px 5px 2px;
+    color: #6f6a60;
+    border: 1px solid #c2bbad;
+    font: 7.5px/1 var(--font-technical);
+    letter-spacing: 0.8px;
+  }
+  .custom-pools-block { animation: section-reveal 0.22s ease both; }
+
+  /* ---------- Tools / systems ---------- */
+  .tools-view { display: flex; flex-direction: column; gap: 0; }
+  .tools-intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 2px 0 18px;
+    border-bottom: 1px solid rgba(31, 35, 37, 0.28);
+  }
+  .system-ready {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 150px;
+    padding: 9px 12px;
+    background: var(--paper-0);
+    border: 1px solid var(--paper-line);
+    border-left: 2px solid var(--signal);
+  }
+  .system-ready div { display: flex; flex-direction: column; gap: 3px; }
+  .system-ready strong { color: var(--text-1); font-size: 11.5px; font-weight: 650; }
+  .system-ready small { color: var(--text-3); font: 7.5px/1 var(--font-technical); letter-spacing: 1px; }
+  .tools-grid {
+    counter-reset: toolcard;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .tool-card {
+    counter-increment: toolcard;
+    position: relative;
+    min-width: 0;
+    padding: 18px 19px 16px;
+    background: var(--paper-0);
+    border: 1px solid #b8b1a3;
+    border-top: 3px solid var(--ink-900);
+    box-shadow: var(--shadow-panel);
+  }
+  .tool-card::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: 15px;
+    width: 46px;
+    height: 3px;
+    background: var(--signal);
+  }
+  .tool-card::after {
+    content: "SYS-0" counter(toolcard);
+    position: absolute;
+    top: 9px;
+    right: 12px;
+    color: #a09a8e;
+    font: 7.5px/1 var(--font-technical);
+    letter-spacing: 0.9px;
+  }
+  .tool-card:first-child,
+  .tool-card:last-child { grid-column: 1 / -1; }
+  .tool-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 9px;
+    padding-right: 48px;
+  }
+  .tool-head h3 {
+    margin: 0;
+    color: #171a1c;
+    font-size: 16px;
+    font-weight: 750;
+    letter-spacing: 0.5px;
+  }
+  .tool-icon { color: var(--signal); }
+  .tool-desc {
+    margin: 0 0 14px;
+    max-width: 780px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    line-height: 1.75;
+  }
+  .tool-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+
+  .status-rows { display: flex; flex-direction: column; gap: 8px; }
   .status-row {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    font-size: 12.5px;
   }
   .status-label {
-    color: #909399;
-    width: 72px;
+    width: 70px;
     flex: none;
+    color: var(--text-3);
+    font-size: 10.5px;
+    letter-spacing: 0.35px;
   }
-  .status-value {
-    word-break: break-all;
-  }
-  .status-path {
-    color: #606266;
-    font-size: 13px;
-  }
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .dot-ok {
-    background: #67c23a;
-  }
-  .dot-bad {
-    background: #f56c6c;
-  }
+  .status-value { color: var(--text-1); word-break: break-all; }
+  .status-value.expired { color: var(--bad); }
+  .status-path { color: var(--text-2); font: 10.5px/1.6 var(--font-mono); }
   .status-hint {
-    color: #909399;
-    line-height: 1.6;
-    padding-top: 4px;
-    border-top: 1px solid #ebeef5;
-  }
-  .app-main{
-    /* background-color: blue; */
-    height: 100%;
-    /* 顶栏是 fixed 的，这里补上它占掉的高度，避免内容被压在栏下面 */
-    padding-top: 84px;
-  }
-  .app-main-item{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
-    
-  }
-  .app-main-item span{
-    font-size: 20px;
-    font-weight: bold;
+    margin-top: 2px;
+    padding-top: 9px;
+    border-top: 1px solid #d7d1c5;
+    color: var(--text-3);
+    font-size: 10.5px;
+    line-height: 1.65;
   }
 
-  /* 全屏加载遮罩 */
+  .key-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+  .key-field {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 9px 11px;
+    background: var(--paper-1);
+    border: 1px solid #d2ccbf;
+    border-left: 2px solid #9b9589;
+  }
+  .key-label { color: var(--text-3); font-size: 9.5px; letter-spacing: 0.4px; }
+  .key-value {
+    overflow: hidden;
+    color: var(--text-1);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .key-value.expired { color: var(--bad); }
+  .key-uid-row { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+  .key-confirm-rows { margin-bottom: 13px; }
+  .key-confirm-tip {
+    margin: 0;
+    padding-top: 11px;
+    border-top: 1px solid var(--border);
+    color: var(--text-3);
+    font-size: 11.5px;
+    line-height: 1.75;
+  }
+
+  /* ---------- Loading ---------- */
   .loading-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    inset: 0;
     z-index: 9999;
-  }
-
-  .loading-content {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 20px;
+    justify-content: center;
+    background:
+      repeating-linear-gradient(90deg, transparent 0 39px, rgba(255, 255, 255, 0.018) 39px 40px),
+      rgba(11, 13, 15, 0.95);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
   }
-
-  .loading-spinner {
-    animation: spin 1s linear infinite;
-    color: #409eff;
+  .loading-content { position: relative; display: flex; flex-direction: column; align-items: center; gap: 17px; }
+  .loading-content::before {
+    content: "XKL // DESKTOP TERMINAL";
+    position: absolute;
+    bottom: calc(100% + 18px);
+    color: #696f73;
+    font: 8px/1 var(--font-technical);
+    letter-spacing: 1.8px;
+    white-space: nowrap;
   }
+  .spinner-big { width: 34px; height: 34px; border-width: 2px; color: var(--signal); }
+  .loading-text { color: #aaaeb0; font-size: 11.5px; letter-spacing: 1.1px; }
 
-  .loading-text {
-    font-size: 18px;
-    color: #606266;
-  }
-
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  /* 离屏截图容器样式 */
+  /* ---------- Offscreen share canvas: keep light and poster-like ---------- */
   .screenshot-container {
     position: fixed;
     left: -9999px;
     top: 0;
     width: auto;
-    background: #ffffff;
     padding: 20px 24px;
+    background: #fff;
     z-index: -1;
   }
-
-  .screenshot-pools-row {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
+  .screenshot-container.is-analytics-share {
+    width: 1040px;
+    padding: 24px;
+    background:
+      linear-gradient(rgba(35, 38, 39, .045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(35, 38, 39, .045) 1px, transparent 1px),
+      #e9e5da;
+    background-size: 28px 28px;
   }
-
+  .share-analytics-layout { width: 992px; }
+  .share-report-head {
+    position: relative;
+    margin-bottom: 16px;
+    padding: 18px 20px 16px;
+    color: #f2efe7;
+    background: #15191c;
+    border-left: 3px solid var(--signal);
+    overflow: hidden;
+  }
+  .share-report-head::after {
+    content: "";
+    position: absolute;
+    top: -18px;
+    right: 44px;
+    width: 140px;
+    height: 150px;
+    transform: skewX(-22deg);
+    background: repeating-linear-gradient(90deg, rgba(239,100,47,.1) 0 3px, transparent 3px 14px);
+  }
+  .share-report-brand { position: relative; z-index: 1; color: #8e969a; font: 8px/1 var(--font-technical); letter-spacing: 1.4px; }
+  .share-report-brand span { display: inline-block; margin-right: 6px; padding: 3px 5px; color: #fff; background: var(--signal); font-size: 9px; }
+  .share-report-title { position: relative; z-index: 1; margin-top: 8px; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+  .share-report-meta { position: relative; z-index: 1; display: flex; gap: 17px; margin-top: 8px; color: #9fa5a8; font-size: 9.5px; }
+  .share-report-meta span::before { content: "■"; margin-right: 5px; color: var(--signal); font-size: 6px; }
+  .share-analytics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+  .share-analytics-grid > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    width: calc(50% - 7px);
+    justify-self: center;
+  }
+  .screenshot-pools-row { display: flex; gap: 16px; align-items: flex-start; }
   .screenshot-pool-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     min-width: 280px;
     max-width: 320px;
     flex: 1;
-  }
-
-  .update-notice p {
-    margin: 0 0 10px;
-    line-height: 1.7;
-    font-size: 14px;
-    color: #303133;
-  }
-  .update-notice-error {
-    color: #f56c6c;
-  }
-  .update-notice-tip {
-    color: #909399;
-    font-size: 12.5px;
-    word-break: break-all;
-  }
-  .share-pool-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-  }
-  .share-pool-name {
-    font-size: 14px;
-  }
-  .share-pool-empty {
-    color: #c0c4cc;
-    font-size: 12px;
-    margin-left: 4px;
+    align-items: center;
   }
   .screenshot-pool-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #303133;
     margin-bottom: 8px;
-  }
-</style>
-
-<!-- 全局样式：不能加 scoped，否则选择器会变成 html[data-v-xxx]，匹配不到 html/body -->
-<style>
-  /* 去掉窗口右侧的系统默认滚动条（WebView2 / Chromium）。
-     滚动本身仍然可用，只是不再显示那条灰条 */
-  html,
-  body {
-    scrollbar-width: none;      /* 新版 Chromium / Firefox */
-    -ms-overflow-style: none;   /* 旧 Edge */
-  }
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  *::-webkit-scrollbar {
-    width: 0 !important;
-    height: 0 !important;
-    display: none !important;
+    color: #242629;
+    font-size: 18px;
+    font-weight: 700;
   }
 
-  /* 公告弹窗：暖白纸张 + 金色索引线，和客户端其余提示层保持同一套视觉语言。 */
-  .announcement-dialog {
-    overflow: hidden;
-    border: 1px solid #d8c6a2;
-    border-radius: 8px;
-    background: #fbfaf6;
-    box-shadow: 0 28px 90px rgba(35, 31, 22, .28);
+  /* ---------- Dialog content ---------- */
+  .app-dialog {
+    --text-1: #efede5;
+    --text-2: #b7b9b7;
+    --text-3: #81878b;
+    --border: #343a3e;
+    --border-strong: #485056;
+    --bg-panel: #191d21;
+    --bg-panel-soft: #22272c;
+    --bg-hover: rgba(255, 255, 255, 0.06);
   }
-  .announcement-dialog .el-dialog__header { margin: 0; padding: 0; }
-  .announcement-dialog .el-dialog__body { padding: 0 34px 8px; }
-  .announcement-dialog .el-dialog__footer { padding: 18px 34px 28px; }
-  .announcement-dialog-header {
+  .share-section-label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--text-3);
+    font: 8px/1 var(--font-technical);
+    letter-spacing: 1.1px;
+  }
+  .share-section-label--pools { margin-top: 16px; }
+  .share-style-section { margin-bottom: 2px; }
+  .share-style-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .share-style-option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 11px;
+    text-align: left;
+    color: var(--text-2);
+    background: var(--bg-panel-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition: border-color .16s ease, background .16s ease, color .16s ease;
+  }
+  .share-style-option:hover { border-color: var(--border-strong); color: var(--text-1); }
+  .share-style-option.active { border-color: var(--signal); background: var(--signal-soft); color: var(--text-1); }
+  .share-style-option:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .share-style-option span { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .share-style-option strong { font-size: 11px; font-weight: 650; }
+  .share-style-option small { color: var(--text-3); font-size: 8.5px; }
+  .share-pool-list { display: flex; flex-direction: column; gap: 8px; }
+  .share-pool-list .app-check {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel-soft);
+  }
+  .share-pool-name { font-size: 12.5px; }
+  .share-pool-empty { margin-left: 4px; color: var(--text-3); font-size: 10.5px; }
+
+  .update-notice p { margin: 0 0 10px; color: var(--text-1); font-size: 12.5px; line-height: 1.75; }
+  .update-notice-error { color: #ef8d80 !important; }
+  .update-notice-tip { color: var(--text-3) !important; font: 10px/1.6 var(--font-mono); word-break: break-all; }
+
+  /* ---------- Announcement ---------- */
+  .announcement-header {
     position: relative;
-    padding: 28px 72px 22px 34px;
-    border-top: 5px solid #d9a441;
-    background: linear-gradient(115deg, #f0e5cd 0%, #fbfaf6 70%);
+    padding: 4px 42px 8px 0;
+    border-top: 3px solid var(--signal);
   }
   .announcement-kicker {
     display: flex;
     align-items: center;
-    gap: 9px;
-    color: #9b7b43;
-    font: 12px/1.4 Consolas, monospace;
-    letter-spacing: 2px;
+    gap: 8px;
+    color: #858a8d;
+    font: 8.5px/1 var(--font-technical);
+    letter-spacing: 1.6px;
   }
-  .announcement-kicker-line { width: 7px; height: 7px; background: #d9a441; }
+  .announcement-kicker-line { width: 6px; height: 6px; background: var(--signal); }
   .announcement-close {
     position: absolute;
-    top: 22px;
-    right: 24px;
-    width: 38px;
-    height: 38px;
+    top: -2px;
+    right: -6px;
+    width: 29px;
+    height: 29px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 0;
-    border: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
     background: transparent;
-    color: #8a7c66;
-    font-size: 30px;
-    line-height: 36px;
+    color: var(--text-3);
     cursor: pointer;
   }
-  .announcement-close:hover { color: #2f392c; }
-  .announcement-dialog-title {
-    margin-top: 15px;
-    color: #2f392c;
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    line-height: 1.35;
+  .announcement-close:hover { border-color: var(--border); background: var(--bg-hover); color: var(--text-1); }
+  .announcement-title {
+    margin-top: 12px;
+    color: var(--text-1);
+    font: 750 23px/1.35 var(--font-ui);
+    letter-spacing: 0.8px;
   }
-  .announcement-dialog-meta { margin-top: 8px; color: #958b7a; font: 12px Consolas, monospace; }
-  .announcement-dialog-content {
-    max-height: 56vh;
+  .announcement-meta { margin-top: 7px; color: var(--text-3); font: 10px/1 var(--font-mono); }
+  .announcement-content {
+    max-height: 54vh;
     overflow-y: auto;
-    padding-top: 24px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    padding-top: 16px;
     overscroll-behavior: contain;
   }
-  .announcement-dialog-content::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-  }
   .announcement-copy {
-    color: #4c5548;
-    font-size: 15px;
+    color: var(--text-1);
+    font-size: 13px;
     line-height: 1.9;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
-  .announcement-images { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+  .announcement-images { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
   .announcement-image {
     width: 100%;
-    max-height: 520px;
-    border: 1px solid #ded5c2;
-    border-radius: 4px;
-    background: #f1eee7;
+    max-height: 500px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    background: var(--bg-panel-soft);
     cursor: zoom-in;
   }
-  .announcement-image .el-image__inner { max-height: 520px; object-fit: contain; }
-  .announcement-image-error {
+
+  .back-to-top {
+    position: fixed;
+    right: 28px;
+    bottom: 24px;
+    z-index: 20;
+    width: 42px;
+    height: 42px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 140px;
-    color: #9b8e78;
-    font-size: 13px;
+    gap: 1px;
+    padding: 0;
+    color: #eeeae0;
+    background: #191d21;
+    border: 1px solid #4b5257;
+    border-top: 2px solid var(--signal);
+    border-radius: var(--radius-control);
+    box-shadow: 0 8px 22px rgba(20, 20, 18, 0.28);
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
   }
+  .back-to-top .app-icon { transform: rotate(180deg); color: var(--signal-hi); }
+  .back-to-top span { color: #8b9296; font: 7px/1 var(--font-technical); letter-spacing: 0.7px; }
+  .back-to-top:hover { transform: translateY(-2px); background: #22272b; border-color: var(--signal); }
+  .back-to-top:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+  .backtop-enter-active, .backtop-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+  .backtop-enter-from, .backtop-leave-to { opacity: 0; transform: translateY(8px); }
+  /* ---------- Motion ---------- */
+  .mode-shift-enter-active,
+  .mode-shift-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+  .mode-shift-enter-from { opacity: 0; transform: translateY(7px); }
+  .mode-shift-leave-to { opacity: 0; transform: translateY(-5px); }  .view-shift-enter-active,
+  .view-shift-leave-active { transition: opacity 0.16s ease, transform 0.16s ease; }
+  .view-shift-enter-from { opacity: 0; transform: translateY(7px); }
+  .view-shift-leave-to { opacity: 0; transform: translateY(-4px); }
+  @keyframes section-reveal {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 1060px) {
+    .app-shell { grid-template-columns: 78px minmax(0, 1fr); }
+    .brand { justify-content: center; padding: 0; }
+    .brand-text, .nav-label, .nav-copy, .nav-index, .side-meta { display: none; }
+    .side-nav { padding: 14px 9px; }
+    .nav-item { justify-content: center; padding: 0; }
+    .nav-item::before { left: -9px; }
+    .side-footer { display: flex; justify-content: center; padding: 15px 0; }
+    .side-status span:last-child { display: none; }
+    .content { padding: 20px; }
+    .overview-hero { grid-template-columns: 1fr; }
+    .hero-side { align-items: flex-start; }
+    .pool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pool-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .analytics-grid { grid-template-columns: 1fr; }
+    .display-mode-wrap > span { display: none; }  }
 </style>

@@ -150,3 +150,6 @@ json/.table_hash.json
 
 # taste-skill 本地检查产物（插件已关，别提交）
 .taste-skill/
+
+# Codex 工具运行完整日志（本地可重建，不提交）
+/.runtime/

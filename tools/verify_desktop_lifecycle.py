@@ -54,8 +54,13 @@ def child(scenario):
                 if scenario == 'fresh-data':
                     deadline = time.monotonic() + 8
                     while time.monotonic() < deadline:
-                        notice = app.window.evaluate_js("""Array.from(document.querySelectorAll('.el-message')).map(
-                            element => ({text: element.textContent, success: element.classList.contains('el-message--success')})
+                        # 2026-10 UI 改版后 toast 是自研组件（src/ui/AppToastHost.vue）：
+                        # .app-toast + 类型类名，文案在 .app-toast-text 里
+                        notice = app.window.evaluate_js("""Array.from(document.querySelectorAll('.app-toast')).map(
+                            element => ({
+                                text: (element.querySelector('.app-toast-text') || {}).textContent || '',
+                                success: element.classList.contains('success')
+                            })
                         )""")
                         if notice:
                             assert len(notice) == 1, notice

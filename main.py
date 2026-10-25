@@ -114,6 +114,7 @@ def _init_logging():
 class GachaApp:
     def __init__(self):
         self.window = None
+        self._window_maximized = False
         self.proxy_thread = None
         self.proxy_running = False  # 新增：代理运行标志
         self._proxy_lock = threading.Lock()    # 防止重复启动代理
@@ -135,7 +136,9 @@ class GachaApp:
             "version": "loading",
             "SSR_character": {},
             "SSR_weapon": {},
-            "SSR_permanent": {}
+            "SSR_permanent": {},
+            "SR_character": {},
+            "SR_weapon": {},
         }
         self.ssr_loading = True  # 标记正在加载
 
@@ -760,6 +763,21 @@ class GachaApp:
     # R2 上的五星数据（开发者维护，比内置 json 新；本地游戏数据解析失败时用它兜底）
     SSR_REMOTE_URL = "https://r2.gf2gacha-xkl.uk/ssr.json"
 
+    def _with_non_ssr(self, data):
+        """给五星表补充四星物品映射，供统计视图计算原生物品品质。"""
+        result = dict(data or {})
+        try:
+            path = Path(__file__).parent / "json" / "non_ssr.json"
+            if path.exists():
+                extra = json.loads(path.read_text(encoding="utf-8"))
+                result["SR_character"] = extra.get("SR_character", {})
+                result["SR_weapon"] = extra.get("SR_weapon", {})
+                result["R_weapon"] = extra.get("R_weapon", {})
+        except Exception as exc:
+            print(f"[SSR] 读取非五星物品表失败: {exc}")
+        result.setdefault("SR_character", {})
+        result.setdefault("SR_weapon", {})
+        return result
     def _load_ssr_data_impl(self):
         """按优先级加载五星数据，返回 (data, source)
 
@@ -775,7 +793,7 @@ class GachaApp:
             local_result = load_ssr_from_local()
             if local_result is not None:
                 print(f"[SSR] ★★★ 使用本地游戏数据，版本: {local_result.get('version')} ★★★")
-                return dict(local_result), "local-proto"
+                return self._with_non_ssr(local_result), "local-proto"
         except Exception as e:
             print(f"[SSR] 本地protobuf解析失败: {e}")
 
@@ -783,7 +801,7 @@ class GachaApp:
         remote = self._fetch_remote_ssr()
         if remote is not None:
             print(f"[SSR] ★★★ 使用 R2 远端数据，版本: {remote.get('version')} ★★★")
-            return remote, "remote"
+            return self._with_non_ssr(remote), "remote"
 
         # 3. 内置 json（最后兜底）
         try:
@@ -792,17 +810,17 @@ class GachaApp:
                 with open(local_ssr_path, "r", encoding="utf-8") as f:
                     local_data = json.load(f)
                 print(f"[SSR] 使用内置ssr.json（可能不是最新），版本: {local_data.get('version', 'unknown')}")
-                return local_data, "local-json"
+                return self._with_non_ssr(local_data), "local-json"
         except Exception as e:
             print(f"[SSR] 读取内置ssr.json失败: {e}")
 
         print("[SSR] 无法获取SSR数据，返回空结构")
-        return {
+        return self._with_non_ssr({
             "version": "none",
             "SSR_character": {},
             "SSR_weapon": {},
             "SSR_permanent": {},
-        }, "none"
+        }), "none"
 
     def _fetch_remote_ssr(self, timeout=5):
         """从 R2 拉取 ssr.json（超时/断网/格式异常一律返回 None，不影响主流程）"""
@@ -855,7 +873,7 @@ class GachaApp:
                 self._ssr_refresh_started = True
                 try:
                     path = Path(__file__).parent / 'json' / 'ssr.json'
-                    data = json.loads(path.read_text(encoding='utf-8'))
+                    data = self._with_non_ssr(json.loads(path.read_text(encoding='utf-8')))
                     if not isinstance(data, dict) or not data.get('SSR_character'):
                         raise ValueError('内置五星表无效')
                     self.ssr_data = data
@@ -887,6 +905,33 @@ class GachaApp:
                 'refreshing': self.ssr_loading and not self._closing.is_set(),
             }
 
+    # ------------------------------------------------------------------
+    # 自绘标题栏窗口控制
+    # ------------------------------------------------------------------
+    def window_minimize(self):
+        """最小化当前窗口。"""
+        if self.window:
+            self.window.minimize()
+        return {"status": "success", "maximized": self._window_maximized}
+
+    def window_toggle_maximize(self):
+        """最大化 / 还原当前窗口。"""
+        if not self.window:
+            return {"status": "error", "message": "窗口尚未就绪"}
+        if self._window_maximized:
+            self.window.restore()
+            self._window_maximized = False
+        else:
+            self.window.maximize()
+            self._window_maximized = True
+        return {"status": "success", "maximized": self._window_maximized}
+
+    def window_close(self):
+        """关闭当前窗口，on_closed 会统一恢复系统代理。"""
+        if self.window:
+            self.window.destroy()
+        return {"status": "success"}
+
     def _create_js_api(self):
         """只暴露前端使用的方法，避免桥接反射进入原生窗口及线程。"""
         names = (
@@ -894,10 +939,12 @@ class GachaApp:
             'get_capture_status', 'get_record_list', 'get_version_info',
             'get_gacha', 'export_record', 'import_record',
             'install_cert', 'uninstall_cert', 'open_github', 'open_log_file',
-            'prefetch_share_images', 'copy_image_to_clipboard',
+            'prefetch_share_images', 'get_cached_images', 'copy_image_to_clipboard',
             'get_update_status', 'mark_update_ok', 'dismiss_update_status',
             'rollback_update', 'start_update',
-            'get_announcement', 'mark_announcement_seen',
+            "get_announcement", 'mark_announcement_seen',
+            'get_key_export_status', 'start_key_export', 'copy_key_to_clipboard',
+            'window_minimize', 'window_toggle_maximize', 'window_close',
         )
         return SimpleNamespace(**{name: getattr(self, name) for name in names})
 
@@ -1154,6 +1201,23 @@ class GachaApp:
             print(f"[ERROR] 预热图标失败: {e}")
             return {"status": "error", "msg": f"预热图标失败: {e}"}
 
+    def get_cached_images(self, urls=None):
+        """批量返回角色/武器图片 data URI；磁盘缓存命中时不访问网络。"""
+        try:
+            from backend import icon_cache
+            url_list = [u for u in (urls or []) if isinstance(u, str) and u.startswith("http")]
+            if not url_list:
+                return {"status": "success", "images": {}, "count": 0}
+            images = icon_cache.get_data_uris(url_list, workers=8)
+            return {
+                "status": "success",
+                "images": images,
+                "count": len(images),
+                "missing": max(0, len(set(url_list)) - len(images)),
+            }
+        except Exception as exc:
+            print(f"[ERROR] 读取图片缓存失败: {exc}")
+            return {"status": "error", "message": str(exc), "images": {}}
     def copy_image_to_clipboard(self, _unused=None):
         """把分享图生成好并复制到剪贴板
 
@@ -1457,6 +1521,22 @@ class GachaApp:
             self.proxy_thread.start()
             return True
 
+    def _purge_expired_icon_cache(self, stage: str):
+        """清理超过 24 小时的图片缓存；任何失败都不影响启动或退出。"""
+        try:
+            from backend import icon_cache
+            stats = icon_cache.purge_expired()
+            if stats.get('removed'):
+                freed_kb = stats.get('freed_bytes', 0) / 1024
+                print(
+                    f"[icon-cache] {stage}清理完成: {stats['removed']} 个文件 / "
+                    f"{freed_kb:.1f} KB / {stats.get('seconds', 0):.3f}s"
+                )
+            if stats.get('failed'):
+                print(f"[icon-cache] {stage}清理有 {stats['failed']} 个文件失败，已跳过")
+        except Exception as exc:
+            print(f"[icon-cache] {stage}清理失败，已跳过: {exc}")
+
     def on_closed(self):
         """窗口关闭：恢复系统代理 + 清除捕获的请求
 
@@ -1482,6 +1562,8 @@ class GachaApp:
             print(f"[INFO] 退出时已清除捕获: {result.get('status')} / size={info['size']}")
         except Exception as e:
             print(f"[WARNING] 清除捕获失败: {e}")
+
+        self._purge_expired_icon_cache('退出时')
 
         print("[INFO] 应用关闭")
 
@@ -1524,6 +1606,82 @@ class GachaApp:
             "hint": capture.HINT_OPEN_GACHA_PAGE,
             "log_path": str(_log_path) if _log_path else "",
         }
+
+    # ---------------------------------------------------------------- 小程序导入钥匙
+
+    def get_key_export_status(self):
+        """给界面用：钥匙导出的无网络预览（捕获状态 / 渠道 / 凭证过期时间）"""
+        from backend import key_export
+
+        try:
+            return key_export.get_key_export_status()
+        except Exception as e:
+            print(f"[ERROR] 读取钥匙导出状态失败: {type(e).__name__}")
+            return {"ok": False, "error": {"kind": "internal", "msg": f"内部异常: {e}"}}
+
+    def start_key_export(self, uid=None):
+        """核验捕获的凭证；通过后暂存在后端内存，等用户点「复制」再写剪贴板"""
+        from backend import key_export
+
+        try:
+            result = key_export.start_key_export(uid)
+        except Exception as e:
+            print(f"[ERROR] 钥匙导出核验异常: {type(e).__name__}")
+            result = {"ok": False, "error": {"kind": "internal", "msg": f"内部异常: {e}"}}
+        if not result.get("ok"):
+            error = result.get("error") or {}
+            return {
+                "status": "error",
+                "code": error.get("kind", "unknown"),
+                "msg": self._describe_key_error(error),
+            }
+        return {
+            "status": "success",
+            "msg": "凭证核验通过",
+            "data": {key: value for key, value in result.items() if key != "ok"},
+        }
+
+    def copy_key_to_clipboard(self):
+        """把核验通过的钥匙写进剪贴板（不再发网络请求；钥匙不落盘、不进日志、不回传前端）"""
+        from backend import key_export
+
+        try:
+            result = key_export.copy_key_to_clipboard()
+        except Exception as e:
+            print(f"[ERROR] 钥匙复制异常: {type(e).__name__}")
+            result = {"ok": False, "error": {"kind": "internal", "msg": f"内部异常: {e}"}}
+        if not result.get("ok"):
+            error = result.get("error") or {}
+            return {
+                "status": "error",
+                "code": error.get("kind", "unknown"),
+                "msg": self._describe_key_error(error),
+            }
+        return {
+            "status": "success",
+            "msg": "钥匙已复制到剪贴板。打开微信小程序「夏克里助手」→ 抽卡分析 → 粘贴即可导入"
+                   "（钥匙是短期凭证，导入完成后不要保存）",
+        }
+
+    def _describe_key_error(self, error):
+        """把钥匙导出的结构化错误翻译成用户能照做的提示（口径对齐 _describe_replay_error）"""
+        kind = error.get("kind")
+        msg = error.get("msg") or "无描述"
+        if kind == "token":
+            return (f"凭证已过期或已失效（同账号在其他设备重新登录也会作废）：{msg}。"
+                    "请在游戏里重新打开一次「招募 · 访问详情」页面后再导出")
+        if kind == "network":
+            return f"网络请求失败：{msg}。请检查网络；如果开了其它代理 / 加速器 / VPN，请先关掉"
+        if kind == "http":
+            return (f"官方接口异常：{msg}。请稍后重试；若持续失败，"
+                    "请在游戏里重新打开「招募 · 访问详情」页面刷新凭证")
+        if kind in ("parse", "api"):
+            return f"官方接口返回异常：{msg}"
+        if kind == "internal":
+            return f"内部异常：{msg}"
+        # no_capture / bad_capture / format / uid_required / uid_mismatch /
+        # capture_changed / no_verified / clipboard 的 msg 在 key_export 里已是可照做的人话
+        return msg
 
     def get_update_status(self):
         """给界面用：上次更新走到哪一步、要不要提示用户"""
@@ -1670,6 +1828,7 @@ class GachaApp:
     def run(self):
         """启动应用"""
         _init_logging()
+        self._purge_expired_icon_cache('启动时')
 
         print("=" * 50)
         print("少女前线抽卡记录工具")
@@ -1709,8 +1868,12 @@ class GachaApp:
             width=1200,
             height=800,
             js_api=self._create_js_api(),
-            confirm_close=False,  # 询问是否关闭
-            resizable=False
+            confirm_close=False,
+            frameless=True,
+            easy_drag=False,
+            resizable=True,
+            shadow=True,
+            background_color='#0B0D0F',
         )
         
         # 注册关闭事件
