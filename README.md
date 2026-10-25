@@ -109,7 +109,7 @@
 
 ```powershell
 # PC 版
-python tools\make_release.py --version 1.1.8 --notes "这次改了什么"
+python tools\make_release.py --version 1.1.9 --notes "这次改了什么"
 # 安卓版（先改 XKL_android/app/build.gradle.kts 的 versionCode/versionName 并 assembleRelease）
 python tools\make_release.py --android --version 0.1.7 --notes "这次改了什么"
 ```
