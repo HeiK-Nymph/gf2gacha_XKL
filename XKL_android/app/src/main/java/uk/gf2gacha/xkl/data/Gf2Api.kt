@@ -53,7 +53,13 @@ data class PoolResult(
     val waiCount: Int get() = ssrHits.count { it.isWai }
 }
 
-data class LoginResult(val uid: String, val accessToken: String, val isGuest: Boolean)
+data class LoginResult(
+    val uid: String,
+    val accessToken: String,
+    val isGuest: Boolean,
+    /** 服务端返回的绑定手机号；**邮箱登录时为 null**，所以邮箱账号不能用短信续登 */
+    val phoneNumber: String? = null
+)
 
 /**
  * 官方接口封装。协议见 ../GF2_SMS_LOGIN_PROTOCOL.md
@@ -100,6 +106,13 @@ object Gf2Api {
      * 和短信登录**同一个 host**，但 body 里不带 sign / timestamp。
      */
     private const val PWD_LOGIN_URL = "https://gf2-zoneinfo.sunborngame.com/phone/login"
+
+    /**
+     * 邮箱账号密码登录（官方 `com.mica.micasdk.repository.http.ApiMethod.EMAIL_LOGIN = "email/login"`）。
+     * 与 [PWD_LOGIN_URL] 同一个 host、同一套公共参数，**同样不带 sign / timestamp**。
+     * 2026-10-28 用官方 PC 客户端抓包逐字段核对过。
+     */
+    private const val EMAIL_LOGIN_URL = "https://gf2-zoneinfo.sunborngame.com/email/login"
     private const val LIST_URL = "https://gf2-gacha-record.sunborngame.com/list"
     private const val ACCOUNT_INFO_URL = "https://gf2-zoneinfo.sunborngame.com/account/info"
 
@@ -182,7 +195,7 @@ object Gf2Api {
         }
 
     /**
-     * 账号密码登录。
+     * 手机号 + 密码登录。
      *
      * 逆向自官方 MicaSDK（`LoginP.phoneLogin` → `MD5U.encrypt` → `ApiClientAccount.phoneLogin`）：
      *
@@ -197,16 +210,8 @@ object Gf2Api {
         withContext(Dispatchers.IO) {
             require(password.isNotEmpty()) { "密码不能为空" }
             val deviceNum = Gf2Sign.deviceNum(context)
-            val body = JSONObject().apply {
-                // ---- 公共参数（与短信登录同源，取自官方 ApiCommon.addCommonParams） ----
-                put("os", 3)
-                put("reyun_channel_id", "1029")
-                put("game_channel_id", 5)
-                put("device_num", deviceNum)
-                put("language", "cn")
+            val body = loginBody(deviceNum).apply {
                 put("area_code", "+86")
-                put("mac", "")
-                // ---- 本条登录专有 ----
                 put("phone_number", phone)
                 put("passwd", Gf2Sign.md5(password))   // 官方就是裸 MD5
             }
@@ -215,16 +220,55 @@ object Gf2Api {
             parseLogin(json)
         }
 
-    /** 两种登录（短信 / 密码）的返回结构一致，解析共用 */
+    /**
+     * 邮箱 + 密码登录（官服）。
+     *
+     * 与 [passwordLogin] 同源（官方 `LoginP.emailLogin` → `ApiClientAccount.emailLogin`），
+     * 差别只有三处：
+     *   1. 账号字段是 `email`，不是 `phone_number`
+     *   2. **不带 `area_code`**（官方 `emailLogin` 只往 body 加 email / passwd）
+     *   3. 返回的 data 里没有 `phone_number`，所以邮箱账号**不能用短信续登**
+     *
+     * 2026-10-28 用 PC 客户端真实登录抓包核对：报文逐字段一致，响应 `code=0`。
+     * 明文密码同样只在内存里活一次。
+     */
+    suspend fun emailLogin(context: Context, email: String, password: String): LoginResult =
+        withContext(Dispatchers.IO) {
+            require(password.isNotEmpty()) { "密码不能为空" }
+            val deviceNum = Gf2Sign.deviceNum(context)
+            val body = loginBody(deviceNum).apply {
+                put("email", email)
+                put("passwd", Gf2Sign.md5(password))
+            }
+            val json = postJson(EMAIL_LOGIN_URL, body)
+            checkOk(json)
+            parseLogin(json)
+        }
+
+    /** 两种密码登录共用的公共参数（不含 area_code 与账号字段） */
+    private fun loginBody(deviceNum: String): JSONObject = JSONObject().apply {
+        // 与短信登录同源，取自官方 ApiCommon.addCommonParams
+        put("os", 3)
+        put("reyun_channel_id", "1029")
+        put("game_channel_id", 5)
+        put("device_num", deviceNum)
+        put("language", "cn")
+        put("mac", "")
+    }
+
+    /** 三种登录（短信 / 手机号密码 / 邮箱密码）的返回结构一致，解析共用 */
     private fun parseLogin(json: JSONObject): LoginResult {
         val data = json.optJSONObject("data")
             ?: throw Gf2Exception(-1, "登录返回缺少 data 字段")
         val token = data.optString("access_token", "")
         if (token.isEmpty()) throw Gf2Exception(-1, "登录返回缺少 access_token")
+        // 短信/手机号密码会带 phone_number；邮箱登录实测没有这个字段
+        val phone = data.optString("phone_number", "").takeIf { it.isNotEmpty() }
         return LoginResult(
             uid = data.optString("uid", ""),
             accessToken = token,
-            isGuest = data.optInt("is_guest", 0) == 1
+            isGuest = data.optInt("is_guest", 0) == 1,
+            phoneNumber = phone
         )
     }
 

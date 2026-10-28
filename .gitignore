@@ -153,3 +153,6 @@ json/.table_hash.json
 
 # Codex 工具运行完整日志（本地可重建，不提交）
 /.runtime/
+
+# WorkBuddy 会话数据与临时产物（含本机凭证，绝对不提交）
+/.workbuddy/

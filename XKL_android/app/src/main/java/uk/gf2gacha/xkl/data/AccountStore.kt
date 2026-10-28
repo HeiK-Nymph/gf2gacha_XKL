@@ -9,6 +9,14 @@ import java.io.File
 class Account(val uid: String, val channel: GameChannel = GameChannel.OFFICIAL) {
     val key: String get() = channel.accountKey(uid)
     var phone: String = ""
+
+    /**
+     * 登录用的邮箱（官服邮箱登录才会有）。
+     *
+     * 邮箱账号的登录响应**不带 phone_number**，发不了短信验证码，
+     * 所以续登只能回登录页用「邮箱 + 密码」，这里存下来是为了预填和界面展示。
+     */
+    var email: String = ""
     var token: String = ""
     var tokenSavedAt: Long = 0L
     var recordsUpdatedAt: Long = 0L
@@ -60,6 +68,7 @@ class AccountStore(context: Context) {
                 if (uid.isEmpty()) continue
                 val account = Account(uid, GameChannel.fromId(obj.optInt("channel", 5)))
                 account.phone = obj.optString("phone", "")
+                account.email = obj.optString("email", "")
                 account.token = obj.optString("token", "")
                 account.tokenSavedAt = obj.optLong("tokenSavedAt", 0L)
                 account.recordsUpdatedAt = obj.optLong("recordsUpdatedAt", 0L)
@@ -117,6 +126,7 @@ class AccountStore(context: Context) {
                     put("uid", account.uid)
                     put("channel", account.channel.id)
                     put("phone", account.phone)
+                    put("email", account.email)
                     put("token", account.token)
                     put("tokenSavedAt", account.tokenSavedAt)
                     put("recordsUpdatedAt", account.recordsUpdatedAt)
@@ -141,11 +151,23 @@ class AccountStore(context: Context) {
         return account
     }
 
-    /** 登录成功后写入/更新账号（不动别账号的数据） */
-    fun upsert(uid: String, phone: String, token: String, channel: GameChannel = GameChannel.OFFICIAL): Account {
+    /**
+     * 登录成功后写入/更新账号（不动别账号的数据）。
+     *
+     * [phone] 与 [email] 都允许为空：邮箱登录没有手机号，手机号短信/密码登录没有邮箱。
+     * 非空才覆盖，避免同一个 uid 用另一种方式登录时把已存的信息抹掉。
+     */
+    fun upsert(
+        uid: String,
+        phone: String,
+        token: String,
+        channel: GameChannel = GameChannel.OFFICIAL,
+        email: String = ""
+    ): Account {
         val key = channel.accountKey(uid)
         val account = items.getOrPut(key) { Account(uid, channel) }
         if (phone.isNotEmpty()) account.phone = phone
+        if (email.isNotEmpty()) account.email = email
         if (token.isNotEmpty()) {
             account.token = token
             account.tokenSavedAt = System.currentTimeMillis() / 1000

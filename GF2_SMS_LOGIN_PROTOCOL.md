@@ -7,7 +7,8 @@
 
 ## 0. 结论
 纯手机 App 即可完成：手机号 -> 发码 -> 校码 -> 拿 token -> 查抽卡记录。
-不需要 root / VPN / 证书 / 电脑 / 账号密码。签名算法无密钥。
+也支持**手机号 + 密码**（§6 同域的 `phone/login`）和**邮箱 + 密码**（§8 的 `email/login`），
+邮箱账号不需要短信。不需要 root / VPN / 证书 / 电脑。签名算法无密钥。
 
 ## 1. device_num（客户端自造，本地持久化）
     android_id = Settings.Secure.getString(cr, "android_id")
@@ -69,7 +70,36 @@ access_token 的 payload 解码为 {"openid":"...","expires":<epoch>,"is_guest":
 ### 7.3 辅助接口
     GET https://gf2-zoneinfo.sunborngame.com/account/info  + 同 Authorization  可取 uid
 
-## 8. 注意
+## 8. 邮箱账号密码登录（2026-10-28 抓包实测）
+
+官方 SDK 里邮箱登录是**独立接口**（`ApiMethod.EMAIL_LOGIN = "email/login"`，
+`ApiClientAccount.emailLogin` → `LoginP.emailLogin`），和 §6 的手机号密码登录
+**同 host、同一套公共参数、同样不带 `sign` / `timestamp`**。
+
+    POST https://gf2-zoneinfo.sunborngame.com/email/login
+    body: {"os":3,"reyun_channel_id":"1029","game_channel_id":5,"device_num":"<dn>",
+           "language":"cn","mac":"","email":"<邮箱>","passwd":"<md5(明文)，32 位小写>"}
+    -> {"code":0,"msg":"OK","data":{
+         "access_token":"<...>","uid":"<游戏 UID>","is_real":1,"is_guest":0,
+         "is_activation":1,"is_adult":1,"unfreeze_time":0,"age":49,"pi":"...",
+         "is_need_set_passwd":false,"uc_account_token":""}}
+
+与手机号密码登录的差异（实现时必须处理）：
+
+- **不带 `area_code`**：官方 `emailLogin` 只往 body 加 `email` / `passwd`。
+- **返回的 data 没有 `phone_number`**（短信登录有）→ 邮箱账号发不了短信验证码，
+  续登只能用「邮箱 + 密码」。
+- 登录响应里 `uc_account_token` 是**空串**；后续 `/account/info` 才返回值。
+- `uid` 与 `/account/info` 返回的 uid 一致；`/account/info` 的 `account` 字段就是登录邮箱。
+- 客户端判定（官方 `LoginFrag.phoneOrEmailLogin`）：账号**含 `@`** 走 `email/login`，
+  否则走 `phone/login`；邮箱再用 `StringU.isEmail` 校验。
+- 密码只做 `md5(明文)`，无盐；登录页只校验非空，`isPassword`（6–20 位、非纯数字/字母/符号）
+  只在注册时用。
+
+App 的数据模型相应增加 `email`：邮箱账号 `phone` 为空、`email` 非空；同一个 uid 用手机号再登一次
+时只补 `phone`，不会抹掉 `email`（`AccountStore.upsert` 非空才覆盖）。
+
+## 9. 注意
 - 这是模拟官方客户端登录的第三方实现，账号安全与风控责任在 App 方；device_num 建议每台设备固定一个。
 - 短信发码接口切勿自动化批量调用（法律与滥用风险），必须用户手动点击并做频率限制。
 - 手机号只在本地用于发码/登录，不要上传自建服务器留存。

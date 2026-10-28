@@ -22,20 +22,30 @@ import uk.gf2gacha.xkl.data.BiliVerificationCancelled
 import uk.gf2gacha.xkl.data.Gf2Api
 import uk.gf2gacha.xkl.data.Gf2Exception
 import uk.gf2gacha.xkl.data.GameChannel
+import uk.gf2gacha.xkl.data.LoginResult
 import uk.gf2gacha.xkl.data.SmsChallenge
 
 /**
  * 添加账号：手机号 + 短信验证码登录（默认），也可切到账号密码登录。
  *
+ * 官服密码支持**手机号或邮箱**（含 `@` 自动走 `email/login`，与官方客户端同一判定）；
  * 官服密码使用官方MD5协议，B服使用动态RSA公钥；需要安全验证时在应用内完成。
  * 密码不写入账号文件或实例状态。
  *
- * 登录成功只做两件事：把账号（uid/手机号/令牌）写进 AccountStore，然后关掉本页回主界面。
+ * 登录成功只做两件事：把账号（uid/手机号或邮箱/令牌）写进 AccountStore，然后关掉本页回主界面。
  * **不会碰其它账号的数据**；用户中途取消/失败，主界面状态原样保留。
  */
 class LoginActivity : AppCompatActivity() {
 
-    companion object { const val EXTRA_CHANNEL = "login_channel" }
+    companion object {
+        const val EXTRA_CHANNEL = "login_channel"
+
+        /** 续登跳转时预填的账号（手机号或邮箱） */
+        const val EXTRA_ACCOUNT = "login_account"
+
+        /** 与官方 StringU.isEmail 同义：必须含 @，域名部分带点（matches 是全匹配，不用 ^$） */
+        private val EMAIL_PATTERN = Regex("""[^@\s]+@[^@\s]+\.[^@\s]+""")
+    }
 
     private lateinit var phoneInput: EditText
     private lateinit var codeInput: EditText
@@ -76,6 +86,10 @@ class LoginActivity : AppCompatActivity() {
         channelGroup.check(if (channel == GameChannel.BILIBILI) R.id.channel_bili else R.id.channel_official)
         updateChannel()
         switchMode(savedInstanceState?.getBoolean("pwdMode", false) == true)
+        // 续登跳转过来时预填账号（邮箱或手机号），密码永远不预填
+        val prefill = savedInstanceState?.getString("accountInput")
+            ?: intent.getStringExtra(EXTRA_ACCOUNT)
+        if (!prefill.isNullOrEmpty()) phoneInput.setText(prefill)
         if (resendAt > SystemClock.elapsedRealtime()) startCountdown()
         channelGroup.setOnCheckedChangeListener { _, checked ->
             channel = if (checked == R.id.channel_bili) GameChannel.BILIBILI else GameChannel.OFFICIAL
@@ -88,7 +102,7 @@ class LoginActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener { sendCode() }
         loginButton.setOnClickListener { login() }
-        findViewById<Button>(R.id.cancel_button).setOnClickListener { finish() }
+        findViewById<View>(R.id.back_button).setOnClickListener { finish() }
         modeSwitch.setOnClickListener { switchMode(!pwdMode) }
     }
 
@@ -100,11 +114,17 @@ class LoginActivity : AppCompatActivity() {
         pwdInput.visibility = if (toPwd) View.VISIBLE else View.GONE
         pwdNote.visibility = if (toPwd) View.VISIBLE else View.GONE
         val biliPassword = toPwd && channel == GameChannel.BILIBILI
-        phoneInput.inputType = if (biliPassword) InputType.TYPE_CLASS_TEXT else InputType.TYPE_CLASS_PHONE
-        phoneInput.filters = arrayOf(InputFilter.LengthFilter(if (biliPassword) 100 else 11))
+        phoneInput.inputType = when {
+            // 官服密码模式允许邮箱：带上 @ 键，同时仍然能输手机号
+            toPwd && channel == GameChannel.OFFICIAL ->
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+            biliPassword -> InputType.TYPE_CLASS_TEXT
+            else -> InputType.TYPE_CLASS_PHONE
+        }
+        phoneInput.filters = arrayOf(InputFilter.LengthFilter(if (toPwd) 100 else 11))
         pwdInput.filters = arrayOf(InputFilter.LengthFilter(if (biliPassword) 128 else 32))
         pwdNote.setText(if (biliPassword) R.string.login_bili_pwd_note else R.string.login_pwd_note)
-        // B服账号密码可使用手机号、用户名或邮箱；短信模式仍要求手机号。
+        // 密码模式：官服用「手机号或邮箱」，B服可用手机号、用户名或邮箱；短信模式仍只收手机号。
         phoneInput.hint = getString(
             if (toPwd) R.string.login_account_hint else R.string.login_phone_hint
         )
@@ -142,6 +162,7 @@ class LoginActivity : AppCompatActivity() {
         outState.putInt("channel", channel.id)
         outState.putBoolean("pwdMode", pwdMode)
         outState.putLong("resendAt", resendAt)
+        outState.putString("accountInput", phoneInput.text.toString())
         challenge?.let {
             outState.putString("challengePhone", it.phone)
             outState.putString("captchaKey", it.captchaKey)
@@ -181,17 +202,36 @@ class LoginActivity : AppCompatActivity() {
     private fun login() {
         if (busy) return
         val account = phoneInput.text.toString().trim()
-        if (pwdMode && channel == GameChannel.BILIBILI) {
-            if (account.isBlank()) { toast("请输入B站账号"); return }
+        if (account.isEmpty()) {
+            toast(if (pwdMode) "请输入手机号或邮箱" else "请输入手机号")
+            return
+        }
+        if (pwdMode) {
+            // B服：手机号 / 用户名 / 邮箱都交给 B 站判断，本地不限制格式
+            if (channel == GameChannel.OFFICIAL) {
+                if (account.contains("@")) {
+                    if (!isEmail(account)) {
+                        toast("邮箱格式不正确")
+                        return
+                    }
+                } else if (!isPhone(account)) {
+                    toast("请输入 11 位手机号，或改用邮箱登录")
+                    return
+                }
+            }
             loginWithPassword(account)
             return
         }
-        if (account.length != 11 || !account.all { it.isDigit() }) {
+        if (!isPhone(account)) {
             toast("请输入 11 位手机号")
             return
         }
-        if (pwdMode) loginWithPassword(account) else loginWithSms(account)
+        loginWithSms(account)
     }
+
+    private fun isPhone(value: String): Boolean = value.length == 11 && value.all(Char::isDigit)
+
+    private fun isEmail(value: String): Boolean = EMAIL_PATTERN.matches(value)
 
     private fun loginWithSms(phone: String) {
         val code = codeInput.text.toString().trim()
@@ -204,7 +244,7 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val result = Gf2Api.smsLogin(this@LoginActivity, phone, code, channel, challenge)
-                onLoggedIn(result.uid, phone, result.accessToken)
+                onLoggedIn(result, phone)
             } catch (e: Exception) {
                 setStatus("登录失败：" + describe(e))
             } finally {
@@ -216,10 +256,7 @@ class LoginActivity : AppCompatActivity() {
     /** 只在本次登录内使用密码；B服仅在服务端要求时显示验证窗口。 */
     private fun loginWithPassword(account: String) {
         val pwd = pwdInput.text.toString()
-        if (channel == GameChannel.OFFICIAL && (pwd.length < 6 || pwd.length > 20)) {
-            toast("密码长度应为 6–20 位")
-            return
-        }
+        // 官方登录页只校验非空，复杂度留给服务端（老账号可能有短密码）
         if (pwd.isEmpty()) { toast("请输入密码"); return }
         pwdInput.setText("")
         setBusy(true)
@@ -237,8 +274,12 @@ class LoginActivity : AppCompatActivity() {
                         }
                         proof
                     }
-                } else Gf2Api.passwordLogin(this@LoginActivity, account, pwd)
-                onLoggedIn(result.uid, account, result.accessToken)
+                } else if (account.contains("@")) {
+                    Gf2Api.emailLogin(this@LoginActivity, account, pwd)
+                } else {
+                    Gf2Api.passwordLogin(this@LoginActivity, account, pwd)
+                }
+                onLoggedIn(result, account)
             } catch (e: BiliVerificationCancelled) {
                 setStatus("已取消安全验证，可重新登录")
             } catch (e: CancellationException) {
@@ -251,10 +292,15 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun onLoggedIn(uid: String, phone: String, accessToken: String) {
-        val mobile = phone.takeIf { it.length == 11 && it.all(Char::isDigit) }.orEmpty()
-        AccountStore(this@LoginActivity).upsert(uid, mobile, accessToken, channel)
-        toast("账号已添加：uid=" + uid)
+    private fun onLoggedIn(result: LoginResult, accountInput: String) {
+        val emailLogin = accountInput.contains("@")
+        // 手机号优先用服务端返回的；邮箱登录没有 phone_number，就留空（续登改走邮箱密码）
+        val mobile = result.phoneNumber?.takeIf { isPhone(it) }
+            ?: accountInput.takeIf { !emailLogin && isPhone(it) }
+            ?: ""
+        val email = accountInput.takeIf { emailLogin }.orEmpty()
+        AccountStore(this@LoginActivity).upsert(result.uid, mobile, result.accessToken, channel, email)
+        toast("账号已添加：uid=" + result.uid)
         finish()
     }
 

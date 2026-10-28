@@ -219,6 +219,7 @@ class MainActivity : AppCompatActivity() {
         val parts = ArrayList<String>()
         parts.add(account.channel.label + " · UID: " + maskUid(account.uid))
         if (account.phone.isNotEmpty()) parts.add(maskPhone(account.phone))
+        else if (account.email.isNotEmpty()) parts.add(maskEmail(account.email))
         if (account.recordsUpdatedAt > 0) {
             parts.add("更新 " + timeFormat.format(Date(account.recordsUpdatedAt * 1000)))
         }
@@ -320,7 +321,12 @@ class MainActivity : AppCompatActivity() {
     private fun confirmReauthentication(account: Account, action: PendingAction) {
         if (store.current()?.key != account.key || reauthBusy || reauthDialog?.isShowing == true) return
         if (account.phone.length != 11) {
-            startActivity(Intent(this, LoginActivity::class.java).putExtra(LoginActivity.EXTRA_CHANNEL, account.channel.id))
+            // 邮箱账号没有手机号，发不了验证码：回登录页并预填邮箱，用密码续登
+            startActivity(
+                Intent(this, LoginActivity::class.java)
+                    .putExtra(LoginActivity.EXTRA_CHANNEL, account.channel.id)
+                    .putExtra(LoginActivity.EXTRA_ACCOUNT, account.email)
+            )
             return
         }
         reauthDialog = MaterialAlertDialogBuilder(this)
@@ -456,6 +462,7 @@ class MainActivity : AppCompatActivity() {
                 val bits = ArrayList<String>()
                 bits.add(account.channel.label)
                 if (account.phone.isNotEmpty()) bits.add(maskPhone(account.phone))
+                else if (account.email.isNotEmpty()) bits.add(maskEmail(account.email))
                 bits.add(if (account.token.isNotEmpty()) "凭证有效" else "凭证已过期")
                 if (account.recordsUpdatedAt > 0) {
                     bits.add("更新 " + timeFormat.format(Date(account.recordsUpdatedAt * 1000)))
@@ -1250,6 +1257,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun maskPhone(phone: String): String =
         if (phone.length != 11) phone else phone.take(3) + "****" + phone.takeLast(4)
+
+    /** 邮箱打码：保留前 2 位和完整域名（12***@qq.com） */
+    private fun maskEmail(email: String): String {
+        val at = email.indexOf('@')
+        if (at <= 0) return email
+        val name = email.substring(0, at)
+        val head = if (name.length <= 2) name.take(1) else name.take(2)
+        return head + "***" + email.substring(at)
+    }
 
     private fun toast(text: String) {
         Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
