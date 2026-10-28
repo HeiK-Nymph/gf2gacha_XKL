@@ -119,6 +119,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        // 底部留出导航栏/手势安全区，避免最后一行内容或按钮被手势区压住
+        findViewById<View>(R.id.main_root).applyBottomSafeInset()
         store = AccountStore(this)
 
         uidView = findViewById(R.id.uid_view)
@@ -163,6 +165,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.refresh_button).setOnClickListener { smartRefresh() }
         findViewById<Button>(R.id.update_button).setOnClickListener { checkUpdate(manual = true) }
         findViewById<Button>(R.id.announcement_button).setOnClickListener { checkAnnouncements(manual = true) }
+        findViewById<Button>(R.id.community_button).setOnClickListener { openCommunity() }
         findViewById<Button>(R.id.export_key_button).setOnClickListener { showExportKey() }
 
         // 后台把五星表换成 R2 上的最新版，拿到后重算一次（表更新不用发版）
@@ -215,7 +218,23 @@ class MainActivity : AppCompatActivity() {
         checkUpdate(manual = false)
     }
 
+    private fun openCommunity() {
+        val account = store.current() ?: run {
+            showAddAccountPrompt()
+            return
+        }
+        if (account.channel != GameChannel.OFFICIAL) {
+            Toast.makeText(this, "B服账号暂不支持社区功能", Toast.LENGTH_SHORT).show()
+            return
+        }
+        startActivity(Intent(this, CommunityActivity::class.java))
+    }
+
     private fun renderAccountHeader(account: Account) {
+        // 社区功能只对官服开放：B 服是 B 站登录，拿不到官方 access_token
+        findViewById<Button>(R.id.community_button).visibility =
+            if (account.channel == GameChannel.OFFICIAL) View.VISIBLE else View.GONE
+
         val parts = ArrayList<String>()
         parts.add(account.channel.label + " · UID: " + maskUid(account.uid))
         if (account.phone.isNotEmpty()) parts.add(maskPhone(account.phone))

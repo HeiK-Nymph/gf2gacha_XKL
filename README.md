@@ -5,7 +5,7 @@
 | 客户端 | 下载文件 | 需要什么 | 怎么拿记录 |
 |---|---|---|---|
 | **PC 版（Windows）** | `gf2gacha_XKL.zip` | 电脑 + 装一次 mitmproxy 证书 | 内置代理抓一次游戏请求，之后重放 |
-| **安卓版 0.1.7（新）** | `gf2gacha_XKL_android.apk` | **只要手机** | 手机号 + 短信验证码登录后直接查（不用电脑 / root / 证书 / VPN） |
+| **安卓版 0.1.9（新）** | `gf2gacha_XKL_android.apk` | **只要手机** | 手机号 + 短信验证码登录后直接查（不用电脑 / root / 证书 / VPN） |
 
 下载：**[GitHub Releases](https://github.com/HeiK-Nymph/gf2gacha_XKL/releases)**
 · R2 直链：[PC 版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL.zip) / [安卓版](https://r2.gf2gacha-xkl.uk/gf2gacha_XKL_android.apk)
@@ -83,7 +83,7 @@
 - 点击「检查更新」按钮可查看是否有新版本
 - 如有更新，可跳转到 GitHub 下载
 
-## 📱 安卓版 0.1.7
+## 📱 安卓版 0.1.9
 
 **只要一台 64 位 ARM 安卓手机（Android 7.0+）**：支持官服和B服，不需要电脑、root、证书或 VPN。
 
@@ -109,15 +109,18 @@
 
 ```powershell
 # PC 版
-python tools\make_release.py --version 1.1.9 --notes "这次改了什么"
+python tools\make_release.py --version 1.1.10 --notes "这次改了什么"
 # 安卓版（先改 XKL_android/app/build.gradle.kts 的 versionCode/versionName 并 assembleRelease）
-python tools\make_release.py --android --version 0.1.7 --notes "这次改了什么"
+python tools\make_release.py --android --version 0.1.9 --notes "这次改了什么"
 ```
 
 **上传顺序：先传包（zip / apk），最后传 json** —— 反了会让用户读到新版本号却下不到包。
 
 正式发布必须完成以下步骤，R2 和 GitHub Releases 缺一不可：
 
+0. 先跑 `python tools/check_sensitive.py`（会扫 git 已跟踪文件里的 JWT / 私钥 / access_token / API key / 手机号），
+   确认没有真实凭证被跟踪。`json/latest_request.json`（抓包产物，含游戏 `Authorization`）必须保持未跟踪状态，
+   不要 `git add -f` 它；测试用的真实账号、记录、证书、`.runtime/`、`localdata/` 也都不进 git。
 1. 修改 `version.json` 的版本号，同步更新 README 和 `XKL_site/src/data/releases.js` 的兜底信息。
 2. 重新构建前端 `frontend/dist`，再运行 PyInstaller 生成 `dist/gf2gacha_XKL`。
 3. 运行发布前测试，包括真实冻结版 EXE 启动验证。

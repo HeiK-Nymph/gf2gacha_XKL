@@ -68,6 +68,8 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        // 登录页底部按钮在滚动区内，同样留出导航栏/手势安全区
+        findViewById<View>(R.id.login_root).applyBottomSafeInset()
 
         phoneInput = findViewById(R.id.phone_input)
         codeInput = findViewById(R.id.code_input)

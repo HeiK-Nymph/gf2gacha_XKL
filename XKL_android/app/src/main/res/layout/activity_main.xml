@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg"
@@ -80,6 +81,19 @@
             android:orientation="horizontal"
             android:paddingTop="14dp"
             android:paddingBottom="14dp" />
+
+        <!-- 社区签到：金色实底主按钮，放在主操作按钮组上方，只对官服显示 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/community_button"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_btn_gold"
+            android:text="社区签到"
+            android:textColor="@color/bg"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"

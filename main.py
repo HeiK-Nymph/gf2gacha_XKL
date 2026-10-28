@@ -944,6 +944,7 @@ class GachaApp:
             'rollback_update', 'start_update',
             "get_announcement", 'mark_announcement_seen',
             'get_key_export_status', 'start_key_export', 'copy_key_to_clipboard',
+            'get_community_status', 'bind_community', 'community_one_click',
             'window_minimize', 'window_toggle_maximize', 'window_close',
         )
         return SimpleNamespace(**{name: getattr(self, name) for name in names})
@@ -1606,6 +1607,76 @@ class GachaApp:
             "hint": capture.HINT_OPEN_GACHA_PAGE,
             "log_path": str(_log_path) if _log_path else "",
         }
+
+    # ---------------------------------------------------------------- 社区签到 / 任务 / 兑换
+
+    def _community_error(self, exc):
+        print(f"[ERROR] 社区操作失败: {type(exc).__name__}: {exc}")
+        return {"status": "error", "msg": str(exc) or "社区操作失败"}
+
+    def get_community_status(self):
+        """社区快照（只读，不会在首次使用时偷偷换票）。
+
+        * 令牌有效 → 直接返回；
+        * 以前绑过但令牌过期 → 有游戏凭证就自动续期（无感）；
+        * 从未绑定 → 返回未绑定，由「绑定社区」按钮显式触发。
+        """
+        from backend import community
+
+        try:
+            account = community.load_account()
+            if community.token_valid(account):
+                return {"status": "success", "data": community.snapshot(str(account.get("token") or ""))}
+
+            if not account:
+                return {
+                    "status": "success",
+                    "data": {
+                        "ok": False,
+                        "bound": False,
+                        "message": "尚未绑定：先在游戏里打开「招募 · 访问详情」并点一次「更新记录」，再点「绑定社区」。",
+                    },
+                }
+
+            if not community.game_token_from_capture():
+                return {
+                    "status": "success",
+                    "data": {
+                        "ok": False,
+                        "bound": False,
+                        "message": "社区令牌已过期，且没有新的游戏凭证：请在游戏里打开「招募 · 访问详情」，回到工具点「更新记录」后再绑定。",
+                    },
+                }
+
+            account = community.bind()  # 仅「已过期」这一种情况自动续期
+            return {"status": "success", "data": community.snapshot(str(account.get("token") or ""))}
+        except community.CommunityError as exc:
+            return {"status": "error", "code": exc.code, "msg": exc.message}
+        except Exception as exc:
+            return self._community_error(exc)
+
+    def bind_community(self):
+        """手动绑定：用当前捕获的游戏 access_token 换社区 JWT。"""
+        from backend import community
+
+        try:
+            account = community.bind()
+            return {"status": "success", "data": community.snapshot(str(account.get("token") or ""))}
+        except community.CommunityError as exc:
+            return {"status": "error", "code": exc.code, "msg": exc.message}
+        except Exception as exc:
+            return self._community_error(exc)
+
+    def community_one_click(self):
+        """按钮入口：签到 → 每日任务 → 兑换。"""
+        from backend import community
+
+        try:
+            return {"status": "success", "data": community.one_click()}
+        except community.CommunityError as exc:
+            return {"status": "error", "code": exc.code, "msg": exc.message}
+        except Exception as exc:
+            return self._community_error(exc)
 
     # ---------------------------------------------------------------- 小程序导入钥匙
 

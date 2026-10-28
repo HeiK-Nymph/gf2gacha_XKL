@@ -57,6 +57,7 @@ XKL_uniapp/unpackage/dist/
 
 # 运行时生成的数据文件
 json/latest_request.json
+json/latest_request_*.json
 backend/ssr_parsed.json
 
 # 临时/测试文件（无业务价值）
@@ -156,3 +157,6 @@ json/.table_hash.json
 
 # WorkBuddy 会话数据与临时产物（含本机凭证，绝对不提交）
 /.workbuddy/
+
+# 社区令牌等本机数据（含 30 天 JWT，别提交）
+localdata/

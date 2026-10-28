@@ -32,6 +32,10 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".ui.CommunityActivity"
+            android:exported="false" />
+
 
         <!-- 分享图片给微信/QQ 用（API 24+ 必须走 FileProvider） -->
         <provider

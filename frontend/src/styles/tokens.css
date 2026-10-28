@@ -138,6 +138,7 @@ body {
 }
 .app-dot.ok { background: var(--ok); box-shadow: 0 0 0 3px rgba(89, 183, 122, 0.14), 0 0 9px rgba(89, 183, 122, 0.55); }
 .app-dot.bad { background: var(--bad); box-shadow: 0 0 0 3px rgba(217, 81, 67, 0.14), 0 0 9px rgba(217, 81, 67, 0.48); }
+.app-dot.warn { background: var(--warning); box-shadow: 0 0 0 3px rgba(212, 160, 39, 0.14), 0 0 9px rgba(212, 160, 39, 0.48); }
 
 /* Loading indicator */
 .app-spinner {

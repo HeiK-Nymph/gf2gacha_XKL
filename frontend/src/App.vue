@@ -49,6 +49,11 @@
           <span class="nav-copy"><strong>工具</strong><small>SYSTEMS</small></span>
           <span class="nav-index">02</span>
         </button>
+        <button type="button" class="nav-item" :class="{ active: view === 'community' }" @click="switchToCommunity">
+          <AppIcon name="gift" :size="16" />
+          <span class="nav-copy"><strong>社区</strong><small>COMMUNITY</small></span>
+          <span class="nav-index">03</span>
+        </button>
       </nav>
       <div class="side-footer">
         <div class="side-status">
@@ -78,6 +83,10 @@
           <AppButton variant="primary" :loading="isUpdating" @click="updateRecord">
             <AppIcon name="refresh" :size="14" />
             更新记录
+          </AppButton>
+          <AppButton variant="quiet" @click="switchToTools">
+            <AppIcon name="key" :size="14" />
+            导出到小程序
           </AppButton>
           <AppButton variant="quiet" :loading="isSharing" @click="openShareDialog">
             <AppIcon name="share" :size="14" />
@@ -226,7 +235,7 @@
             </transition>
           </section>
           <!-- 工具 -->
-          <section v-else key="tools" class="tools-view view-panel">
+          <section v-else-if="view === 'tools'" key="tools" class="tools-view view-panel">
             <div class="tools-intro">
               <div>
                 <div class="section-kicker"><span class="section-index">02</span> SYSTEMS / DIAGNOSTICS</div>
@@ -347,6 +356,134 @@
               </AppButton>
             </div>
           </div>
+            </div>
+          </section>
+
+          <!-- 社区 -->
+          <section v-else key="community" class="tools-view view-panel">
+            <div class="tools-intro">
+              <div>
+                <div class="section-kicker"><span class="section-index">03</span> COMMUNITY / DAILY OPS</div>
+                <h2 class="page-title">社区日常</h2>
+                <p class="page-desc">复用游戏凭证登录社区，一键完成签到、每日任务与积分兑换。</p>
+              </div>
+              <div class="system-ready">
+                <span class="app-dot" :class="communityDotClass" />
+                <div><strong>{{ communityStatusText }}</strong><small>COMMUNITY LINK</small></div>
+              </div>
+            </div>
+
+            <div class="tools-grid community-grid">
+              <!-- 账号 / 一键 -->
+              <div class="tool-card is-wide">
+                <div class="tool-head">
+                  <AppIcon name="gift" :size="16" class="tool-icon" />
+                  <h3>社区账号</h3>
+                </div>
+                <div v-if="community?.bound" class="status-rows status-rows--inline">
+                  <div class="status-row">
+                    <span class="status-label">昵称</span>
+                    <span class="status-value">{{ community.nick_name || '—' }}</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="status-label">积分</span>
+                    <span class="status-value">{{ community.score ?? '—' }}</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="status-label">等级</span>
+                    <span class="status-value">{{ community.level ?? '—' }}（{{ community.exp ?? 0 }} 经验）</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="status-label">令牌有效期</span>
+                    <span class="status-value" :class="{ expired: communityTokenExpired }">{{ community.token_exp }}</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="status-label">今日签到</span>
+                    <span class="status-value">{{ community.signed_in ? '已签到' : '未签到' }}</span>
+                  </div>
+                </div>
+                <p v-else class="tool-desc">
+                  {{ community?.message || '尚未绑定：先在游戏里打开「招募 · 访问详情」并点一次「更新记录」，再点「绑定社区」。' }}
+                </p>
+                <div class="tool-actions">
+                  <template v-if="community?.bound">
+                    <AppButton size="sm" variant="ghost" :loading="communityLoading" @click="refreshCommunity(true)">
+                      <AppIcon name="refresh" :size="13" />
+                      刷新状态
+                    </AppButton>
+                    <AppButton
+                      size="sm"
+                      variant="quiet"
+                      :loading="communityBinding"
+                      title="用当前游戏凭证换一张新票；换游戏账号时用"
+                      @click="bindCommunity"
+                    >
+                      重新绑定
+                    </AppButton>
+                  </template>
+                  <AppButton v-else size="sm" variant="primary" :loading="communityBinding" @click="bindCommunity">
+                    绑定社区
+                  </AppButton>
+                  <AppButton
+                    size="sm"
+                    variant="primary"
+                    :loading="communityRunning"
+                    :disabled="!community?.bound"
+                    @click="communityOneClick"
+                  >
+                    一键签到 + 任务 + 兑换
+                  </AppButton>
+                </div>
+              </div>
+
+              <!-- 每日任务 -->
+              <div class="tool-card">
+                <div class="tool-head">
+                  <h3>每日任务</h3>
+                </div>
+                <div class="status-rows status-rows--split">
+                  <div v-for="task in communityTasks" :key="task.task_name" class="status-row">
+                    <span class="status-label">{{ task.task_name }}</span>
+                    <span class="status-value">{{ task.complete_count }}/{{ task.max_complete_count }}</span>
+                  </div>
+                  <div v-if="!communityTasks.length" class="status-hint">绑定后显示任务进度</div>
+                </div>
+                <p class="tool-desc">浏览 3 次、点赞 3 次、分享 1 次；动作即计数，没有领取按钮。</p>
+              </div>
+
+              <!-- 兑换 -->
+              <div class="tool-card">
+                <div class="tool-head">
+                  <h3>积分兑换</h3>
+                </div>
+                <div class="status-rows status-rows--split">
+                  <div v-for="item in communityExchange" :key="item.exchange_id" class="status-row">
+                    <span class="status-label">{{ item.item_name }} ×{{ item.item_count }}</span>
+                    <span class="status-value">需 {{ item.use_score }} 分 · 已换 {{ item.exchange_count }}/{{ item.max_exchange_count }}</span>
+                  </div>
+                  <div v-if="!communityExchange.length" class="status-hint">绑定后显示兑换清单</div>
+                </div>
+                <p class="tool-desc">
+                  一键兑换顺序：基原信息核 → 情报拼图 ×2 → 萨狄斯金 → 战场报告 → 解析图纸；积分不够或兑换次数用完会自动跳过。
+                </p>
+              </div>
+
+              <!-- 最近一次执行：执行中也要占位，避免卡片出现/消失导致网格重排 -->
+              <div v-if="communityRunning || communitySteps.length" class="tool-card is-wide">
+                <div class="tool-head">
+                  <h3>最近一次执行</h3>
+                </div>
+                <div class="status-rows status-rows--inline">
+                  <div v-if="communityRunning" class="status-row">
+                    <span class="status-label">进行中</span>
+                    <span class="status-value">正在签到 / 做任务 / 兑换，请稍候…</span>
+                  </div>
+                  <div v-for="(step, index) in communitySteps" :key="index" class="status-row">
+                    <span class="status-label">{{ step.name }}</span>
+                    <span class="status-value" :class="{ expired: step.status === 'error' }">{{ step.message }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         </transition>
@@ -698,6 +835,101 @@
     // 状态面板的信息要新；钥匙状态是纯本地解码，顺手刷一次也不贵
     refreshStatus(false)
     if (!keyStatus.value) refreshKeyStatus()
+  }
+
+  // ---------------- 社区（签到 / 每日任务 / 兑换） ----------------
+  // 令牌与请求细节都在 backend/community.py；这里只负责展示与按钮反馈。
+  const community = ref(null)
+  const communityLoading = ref(false)
+  const communityBinding = ref(false)
+  const communityRunning = ref(false)
+  const communitySteps = ref([])
+  const communityReady = computed(() => !!community.value?.bound)
+  const communityTasks = computed(() => [
+    ...(community.value?.tasks?.daily || []),
+    ...(community.value?.tasks?.more || []),
+  ])
+  const communityExchange = computed(() => community.value?.exchange || [])
+  const communityTokenExpired = computed(
+    () => !!community.value?.token_exp_ts && community.value.token_exp_ts * 1000 < Date.now(),
+  )
+  const communityDotClass = computed(() => {
+    if (!communityReady.value) return 'bad'
+    return community.value?.signed_in ? 'ok' : 'warn'
+  })
+  const communityStatusText = computed(() => {
+    if (communityLoading.value) return '读取中'
+    if (!community.value) return '未连接'
+    if (!communityReady.value) return '未绑定'
+    return communityTokenExpired.value ? '令牌过期' : '已连接'
+  })
+
+  const refreshCommunity = async (notify = false) => {
+    const api = window.pywebview?.api
+    if (!api || typeof api.get_community_status !== 'function') return
+    communityLoading.value = true
+    try {
+      const res = await withTimeout(api.get_community_status(), 20000)
+      if (res?.status === 'success') {
+        community.value = res.data || {}
+        if (notify) toast.success('社区状态已刷新')
+      } else {
+        toast.error(res?.msg || '读取社区状态失败')
+      }
+    } catch (e) {
+      toast.error(`读取社区状态失败: ${e.message || e}`)
+    } finally {
+      communityLoading.value = false
+    }
+  }
+
+  const switchToCommunity = () => {
+    view.value = 'community'
+    if (!community.value && !communityLoading.value) refreshCommunity(false)
+  }
+
+  const bindCommunity = async () => {
+    const api = window.pywebview?.api
+    if (!api || typeof api.bind_community !== 'function') return
+    communityBinding.value = true
+    try {
+      const res = await withTimeout(api.bind_community(), 30000)
+      if (res?.status === 'success') {
+        community.value = res.data || {}
+        toast.success(`已绑定社区账号${community.value?.nick_name ? '：' + community.value.nick_name : ''}`)
+      } else {
+        toast.error(res?.msg || '绑定社区失败')
+      }
+    } catch (e) {
+      toast.error(`绑定社区失败: ${e.message || e}`)
+    } finally {
+      communityBinding.value = false
+    }
+  }
+
+  const communityOneClick = async () => {
+    const api = window.pywebview?.api
+    if (!api || typeof api.community_one_click !== 'function') return
+    if (communityRunning.value) return
+    communityRunning.value = true
+    communitySteps.value = []
+    try {
+      const res = await withTimeout(api.community_one_click(), 120000)
+      if (res?.status === 'success') {
+        const data = res.data || {}
+        communitySteps.value = data.steps || []
+        if (data.account) community.value = data.account
+        const failed = communitySteps.value.some((step) => step.status === 'error')
+        if (failed) toast.warning('部分步骤失败，请看「最近一次执行」')
+        else toast.success('社区日常已完成')
+      } else {
+        toast.error(res?.msg || '一键执行失败')
+      }
+    } catch (e) {
+      toast.error(`一键执行失败: ${e.message || e}`)
+    } finally {
+      communityRunning.value = false
+    }
   }
 
   // ---------------- 分享：选择要分享的卡池 ----------------
@@ -2040,6 +2272,17 @@
   }
   .tool-card:first-child,
   .tool-card:last-child { grid-column: 1 / -1; }
+  /* 社区视图：卡片宽度写死，避免结果卡片出现/消失时网格重新排布（原截图里「每日任务」右侧留空） */
+  .community-grid > .tool-card { grid-column: auto; }
+  .community-grid > .tool-card.is-wide { grid-column: 1 / -1; }
+  /* 竖排信息（账号 / 执行结果）：标签定宽、值紧跟其后，不贴右边缘 */
+  .status-rows--inline .status-row { align-items: baseline; }
+  .status-rows--inline .status-label { width: 84px; flex: none; }
+  .status-rows--inline .status-value { flex: 1; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+  /* 任务 / 兑换（半宽卡）：名称在左、数值贴右，才好扫读 */
+  .status-rows--split .status-row { align-items: center; }
+  .status-rows--split .status-label { width: auto; flex: 1 1 auto; min-width: 0; }
+  .status-rows--split .status-value { flex: none; white-space: nowrap; }
   .tool-head {
     display: flex;
     align-items: center;
@@ -2387,5 +2630,6 @@
     .pool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pool-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .analytics-grid { grid-template-columns: 1fr; }
+    .community-grid { grid-template-columns: 1fr; }
     .display-mode-wrap > span { display: none; }  }
 </style>
