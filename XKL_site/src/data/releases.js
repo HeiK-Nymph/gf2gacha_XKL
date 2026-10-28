@@ -20,8 +20,8 @@ export const platforms = [
     downloadUrl: `${R2_BASE}/gf2gacha_XKL.zip`,
     versionUrl: `${R2_BASE}/version.json`,
     version: '1.1.10',
-    size: 47522317,
-    sha256: 'e07e6a472746cf51a35edbe456ca3bdd4ebed7a386d93847e333b13a69fd39b9',
+    size: 37738036,
+    sha256: 'c8f8fc06cbb20fd5894f1338b1aa776b61b0af3399c7a7be9695875a6f7b6af7',
     summary: '内置代理抓一次游戏请求，之后反复重放。五个池子一起统计。',
     requirements: ['系统：Windows 10 / 11', '首次需装一次 mitmproxy 证书', '进一次「招募 · 访问详情」完成捕获'],
     steps: [
