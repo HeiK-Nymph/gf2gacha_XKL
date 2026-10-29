@@ -86,11 +86,13 @@ object ShareCard {
         val limitedWai = limited.sumOf { type -> allResults.firstOrNull { it.poolType == type }?.waiCount ?: 0 }
         val notWai = if (limitedSsr == 0) "—"
         else String.format(java.util.Locale.US, "%.1f%%", (limitedSsr - limitedWai) * 100.0 / limitedSsr)
-        val average = if (ssr == 0) "—" else Math.round(total.toFloat() / ssr).toString() + " 抽"
-        val title = Titles.title(total, ssr)
-        val maxPity = allResults.maxOfOrNull { it.pity } ?: 0
-        val maxCost = allResults.maxOfOrNull { it.maxCost } ?: 0
-        val tags = Titles.tags(total, ssr, maxPity, maxCost)
+        // 平均 UP：限定池总抽数 ÷ UP 数；角色池与武器池的 UP 一起算
+        val limitedDraws = limited.sumOf { type -> allResults.firstOrNull { it.poolType == type }?.total ?: 0 }
+        val limitedUp = limitedSsr - limitedWai
+        val average = if (limitedUp == 0) "—"
+        else Math.round(limitedDraws.toFloat() / limitedUp).toString() + " 抽"
+        val title = Titles.title(allResults)
+        val tags = Titles.tags(allResults)
 
         // ---- 池名+统计那行（跟 App 一样会换行，先量好行数再算高度）----
         val waiText = if (pool.typeId == Gf2Api.POOL_PERMANENT) "" else " · 歪 " + result.waiCount + " 个"
@@ -139,11 +141,11 @@ object ShareCard {
         canvas.drawText(title, PAD, y + 26f, paint)
         y += 36f
 
-        // ---- 三个大数字：总抽卡数 / 平均出金 / 小保不歪 ----
+        // ---- 三个大数字：总抽卡数 / 平均UP / 小保底不歪 ----
         val colW = (W - PAD * 2) / 3f
         drawHero(canvas, paint, PAD + colW * 0f, y, colW, "$total 抽", "总抽卡数")
-        drawHero(canvas, paint, PAD + colW * 1f, y, colW, average, "平均出金")
-        drawHero(canvas, paint, PAD + colW * 2f, y, colW, notWai, "小保不歪")
+        drawHero(canvas, paint, PAD + colW * 1f, y, colW, average, "平均UP")
+        drawHero(canvas, paint, PAD + colW * 2f, y, colW, notWai, "小保底不歪")
         y += 52f
 
         // ---- 标签胶囊 ----
@@ -168,7 +170,7 @@ object ShareCard {
             y += 34f
         }
 
-        // ---- 四格统计卡（五星数 / 角色平均 / 武器平均 / 常驻平均）----
+        // ---- 四格统计卡（五星数 / 角色UP平均 / 武器UP平均 / 常驻平均）----
         val cardH = 62f
         paint.color = CARD
         canvas.drawRoundRect(RectF(PAD, y, W - PAD, y + cardH), 12f, 12f, paint)
@@ -178,12 +180,12 @@ object ShareCard {
         canvas.drawRoundRect(RectF(PAD, y, W - PAD, y + cardH), 12f, 12f, paint)
         paint.style = Paint.Style.FILL
         val statW = (W - PAD * 2) / 4f
-        val charAvg = averageOf(allResults, intArrayOf(3, 6))
-        val weaponAvg = averageOf(allResults, intArrayOf(4, 7))
+        val charAvg = averageUpOf(allResults, intArrayOf(3, 6))
+        val weaponAvg = averageUpOf(allResults, intArrayOf(4, 7))
         val permAvg = averageOf(allResults, intArrayOf(1))
         drawHero(canvas, paint, PAD + statW * 0f, y + 10f, statW, ssr.toString(), "五星数", 20f)
-        drawHero(canvas, paint, PAD + statW * 1f, y + 10f, statW, charAvg, "角色平均", 20f)
-        drawHero(canvas, paint, PAD + statW * 2f, y + 10f, statW, weaponAvg, "武器平均", 20f)
+        drawHero(canvas, paint, PAD + statW * 1f, y + 10f, statW, charAvg, "角色UP平均", 20f)
+        drawHero(canvas, paint, PAD + statW * 2f, y + 10f, statW, weaponAvg, "武器UP平均", 20f)
         drawHero(canvas, paint, PAD + statW * 3f, y + 10f, statW, permAvg, "常驻平均", 20f)
         y += cardH + 14f
 
@@ -404,6 +406,18 @@ object ShareCard {
             ssr += result.ssrCount
         }
         return if (ssr == 0) "—" else Math.round(total.toFloat() / ssr).toString() + "抽"
+    }
+
+    /** 限定池「平均 UP」：这些池的总抽数 ÷ 非歪五星数 */
+    private fun averageUpOf(all: Collection<PoolResult>, types: IntArray): String {
+        var total = 0
+        var up = 0
+        for (type in types) {
+            val result = all.firstOrNull { it.poolType == type } ?: continue
+            total += result.total
+            up += result.ssrHits.count { !it.isWai }
+        }
+        return if (up == 0) "—" else Math.round(total.toFloat() / up).toString() + "抽"
     }
 
     /** 并行拉本池五星角色 / 武器图片（失败就画占位圈） */

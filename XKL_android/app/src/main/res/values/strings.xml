@@ -25,8 +25,8 @@
     <string name="login_cancel">取消</string>
     <string name="login_back">返回</string>
     <string name="main_total">总抽卡数</string>
-    <string name="main_average">平均出金</string>
-    <string name="main_not_wai">小保不歪</string>
+    <string name="main_average">平均UP</string>
+    <string name="main_not_wai">小保底不歪</string>
     <string name="main_add_account">添加账号</string>
     <string name="main_pick_account">管理账号</string>
     <string name="main_refresh">刷新</string>

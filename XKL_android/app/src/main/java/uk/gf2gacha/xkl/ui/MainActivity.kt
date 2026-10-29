@@ -572,13 +572,13 @@ class MainActivity : AppCompatActivity() {
     // ---------------------------------------------------------------- 渲染
 
     private fun renderHeader() {
+        // 称号 / 标签 / 三格主指标 / 四格统计都是「账号级」：一律用五池合计，
+        // 不跟着 TabLayout 选中的卡池变（切卡池只重绘 renderPool 的池子明细）。
         val pools = results.values
         if (pools.isEmpty()) return
         val total = pools.sumOf { it.total }
         val ssr = pools.sumOf { it.ssrCount }
-        titleView.text = Titles.title(total, ssr)
-
-        val average = if (ssr == 0) "—" else Math.round(total.toFloat() / ssr).toString() + " 抽"
+        titleView.text = Titles.title(pools)
 
         val limited = listOf(
             Gf2Api.POOL_CHARACTER, Gf2Api.POOL_WEAPON,
@@ -586,6 +586,11 @@ class MainActivity : AppCompatActivity() {
         )
         val limitedSsr = limited.sumOf { results[it]?.ssrCount ?: 0 }
         val limitedWai = limited.sumOf { results[it]?.waiCount ?: 0 }
+        // 平均 UP：限定池总抽数 ÷ UP 数；角色池与武器池的 UP 一起算
+        val limitedDraws = limited.sumOf { results[it]?.total ?: 0 }
+        val limitedUp = limitedSsr - limitedWai
+        val average = if (limitedUp == 0) "—"
+        else Math.round(limitedDraws.toFloat() / limitedUp).toString() + " 抽"
         val notWai = if (limitedSsr == 0) "—"
         else String.format(Locale.US, "%.1f%%", (limitedSsr - limitedWai) * 100.0 / limitedSsr)
 
@@ -594,9 +599,7 @@ class MainActivity : AppCompatActivity() {
         addColumn(heroRow, average, getString(R.string.main_average), 24f)
         addColumn(heroRow, notWai, getString(R.string.main_not_wai), 24f)
 
-        val pity = pools.maxOfOrNull { it.pity } ?: 0
-        val maxCost = pools.maxOfOrNull { it.maxCost } ?: 0
-        renderTags(Titles.tags(total, ssr, pity, maxCost))
+        renderTags(Titles.tags(pools))
         renderStats(ssr)
     }
 
@@ -622,9 +625,21 @@ class MainActivity : AppCompatActivity() {
     private fun renderStats(ssrCount: Int) {
         statsRow.removeAllViews()
         addColumn(statsRow, ssrCount.toString(), "五星数", 20f)
-        addColumn(statsRow, averageOf(intArrayOf(3, 6)), "角色平均", 20f)
-        addColumn(statsRow, averageOf(intArrayOf(4, 7)), "武器平均", 20f)
+        addColumn(statsRow, averageUpOf(intArrayOf(3, 6)), "角色UP平均", 20f)
+        addColumn(statsRow, averageUpOf(intArrayOf(4, 7)), "武器UP平均", 20f)
         addColumn(statsRow, averageOf(intArrayOf(1)), "常驻平均", 20f)
+    }
+
+    /** 限定池「平均 UP」：这些池的总抽数 ÷ 非歪五星数 */
+    private fun averageUpOf(types: IntArray): String {
+        var total = 0
+        var up = 0
+        for (type in types) {
+            val result = results[type] ?: continue
+            total += result.total
+            up += result.ssrHits.count { !it.isWai }
+        }
+        return if (up == 0) "—" else Math.round(total.toFloat() / up).toString() + "抽"
     }
 
     private fun averageOf(types: IntArray): String {
