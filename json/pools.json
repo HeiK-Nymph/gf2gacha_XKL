@@ -8221,5 +8221,249 @@
         "kind": "weapon"
       }
     ]
+  },
+  "296001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "破坏者",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 1088,
+        "name": "破坏者",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1001,
+        "name": "克罗丽科",
+        "kind": "character"
+      },
+      {
+        "id": 1008,
+        "name": "纳美西丝",
+        "kind": "character"
+      }
+    ]
+  },
+  "297001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "盖娅终结",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 10883,
+        "name": "盖娅终结",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10882,
+        "name": "铁鬣",
+        "kind": "weapon"
+      },
+      {
+        "id": 11007,
+        "name": "野兔",
+        "kind": "weapon"
+      },
+      {
+        "id": 11014,
+        "name": "复仇女神",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "298001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "希丽雅",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 1082,
+        "name": "希丽雅",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "299001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "斯诺特拉",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 10823,
+        "name": "斯诺特拉",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10822,
+        "name": "格威尔36-康派科特",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "300001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "索普",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 1076,
+        "name": "索普",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "301001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "碎穹嚎歌",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 10763,
+        "name": "碎穹嚎歌",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10762,
+        "name": "特殊模组战术步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "302001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "索米",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 1039,
+        "name": "索米",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1038,
+        "name": "莉塔拉",
+        "kind": "character"
+      },
+      {
+        "id": 1036,
+        "name": "科谢尼娅",
+        "kind": "character"
+      }
+    ]
+  },
+  "303001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "未言使命",
+    "start_time": 1793667600,
+    "end_time": 1795481999,
+    "start_time_text": "2026-11-03 09:00:00",
+    "end_time_text": "2026-11-24 08:59:59",
+    "up_5": [
+      {
+        "id": 10393,
+        "name": "未言使命",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10392,
+        "name": "索米",
+        "kind": "weapon"
+      },
+      {
+        "id": 10382,
+        "name": "加利尔轻机枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 10362,
+        "name": "斯捷奇金",
+        "kind": "weapon"
+      }
+    ]
   }
 }
