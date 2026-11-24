@@ -8465,5 +8465,249 @@
         "kind": "weapon"
       }
     ]
+  },
+  "304001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "卡萝",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 1089,
+        "name": "卡萝",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1017,
+        "name": "闪电",
+        "kind": "character"
+      },
+      {
+        "id": 1009,
+        "name": "寇尔芙",
+        "kind": "character"
+      }
+    ]
+  },
+  "305001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "阈限风暴",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 10893,
+        "name": "阈限风暴",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10892,
+        "name": "MDR突击步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11023,
+        "name": "格洛利娅",
+        "kind": "weapon"
+      },
+      {
+        "id": 11015,
+        "name": "金牛座曲线",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "306001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "代理人",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 1083,
+        "name": "代理人",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "307001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "恶兆之钥",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 10833,
+        "name": "恶兆之钥",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10832,
+        "name": "黑棘",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "308001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "绛雨",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 1035,
+        "name": "绛雨",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "309001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "跃虎",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 10353,
+        "name": "跃虎",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10352,
+        "name": "九七式",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
+  },
+  "310001": {
+    "type_id": 3,
+    "type_name": "人形UP卡池",
+    "name": "米什缇",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 1051,
+        "name": "米什缇",
+        "kind": "character"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 1022,
+        "name": "夏克里",
+        "kind": "character"
+      },
+      {
+        "id": 1026,
+        "name": "纳甘",
+        "kind": "character"
+      }
+    ]
+  },
+  "311001": {
+    "type_id": 4,
+    "type_name": "武器UP卡池",
+    "name": "白日梦",
+    "start_time": 1795482000,
+    "end_time": 1797296399,
+    "start_time_text": "2026-11-24 09:00:00",
+    "end_time_text": "2026-12-15 08:59:59",
+    "up_5": [
+      {
+        "id": 10513,
+        "name": "白日梦",
+        "kind": "weapon"
+      }
+    ],
+    "up_4": [
+      {
+        "id": 10512,
+        "name": "无壳弹步枪11",
+        "kind": "weapon"
+      },
+      {
+        "id": 11031,
+        "name": "罗宾逊先进步枪",
+        "kind": "weapon"
+      },
+      {
+        "id": 11049,
+        "name": "纳甘左轮",
+        "kind": "weapon"
+      }
+    ]
   }
 }

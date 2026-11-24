@@ -60,6 +60,9 @@ json/latest_request.json
 json/latest_request_*.json
 backend/ssr_parsed.json
 
+# 更新工具生成的本地纹理索引（按本机游戏包扫描，可重建）
+/.cache/
+
 # 临时/测试文件（无业务价值）
 tempCodeRunnerFile.py
 test.py
