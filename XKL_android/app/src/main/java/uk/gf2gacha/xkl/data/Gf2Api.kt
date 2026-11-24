@@ -53,6 +53,58 @@ data class PoolResult(
     val waiCount: Int get() = ssrHits.count { it.isWai }
 }
 
+/**
+ * 真实抽卡顺序：时间升序，同一秒（= 一次十连的 10 条）内部「旧→新」。
+ *
+ * 官方 /list 接口把同一秒的 10 条按「新→旧」返回（列表最上面那条是这十连的最后一抽），
+ * RecordMerge 落盘时也保持这个顺序（fakeId 依赖它），所以列表里的同秒组是倒序的。
+ * 直接按列表顺序累加垫抽等于把每个十连倒着数：五星抽数、当前垫抽全会错。
+ * 实测某测试账号角色池：破坏者是那十连的第 10 抽、塞布丽娜是下一十连的第 9 抽，
+ * 真实 9 抽，按列表顺序会算成 11；用第三方工具 20 条五星逐条对拍全部吻合。
+ */
+internal fun chronological(records: List<GachaRecord>): List<GachaRecord> {
+    val ascending = records.sortedBy { it.time }
+    val ordered = ArrayList<GachaRecord>(ascending.size)
+    var start = 0
+    while (start < ascending.size) {
+        var end = start + 1
+        while (end < ascending.size && ascending[end].time == ascending[start].time) end++
+        for (i in end - 1 downTo start) ordered.add(ascending[i])
+        start = end
+    }
+    return ordered
+}
+
+/**
+ * 统计核心（与 Android 无关，可单测）：按真实抽卡顺序累加垫抽，
+ * 命中五星（name 非 null）就记下「这一金花了多少抽」并清零。
+ *
+ * @return 五星明细（按时间升序）+ 累计到最新一抽的当前垫抽
+ */
+internal fun analyzeHits(
+    records: List<GachaRecord>,
+    name: (GachaRecord) -> String?,
+    isWai: (GachaRecord) -> Boolean
+): Pair<List<SsrHit>, Int> {
+    val hits = ArrayList<SsrHit>()
+    var pity = 0
+    for (record in chronological(records)) {
+        pity++
+        val ssrName = name(record) ?: continue
+        hits.add(
+            SsrHit(
+                time = record.time,
+                itemId = record.itemId,
+                name = ssrName,
+                costDraws = pity,
+                isWai = isWai(record)
+            )
+        )
+        pity = 0
+    }
+    return hits to pity
+}
+
 data class LoginResult(
     val uid: String,
     val accessToken: String,
@@ -398,28 +450,15 @@ object Gf2Api {
     fun analyzeCached(context: Context, pool: Pool, raw: List<GachaRecord>): PoolResult =
         analyze(context, pool, raw)
 
-    /** 统计：每条五星花了多少抽、当前垫抽数（records 已按时间升序） */
+    /** 统计：每条五星花了多少抽、当前垫抽数（按真实抽卡先后累计） */
     private fun analyze(context: Context, pool: Pool, raw: List<GachaRecord>): PoolResult {
         val table = SsrTable.get(context)
         val sorted = raw.sortedBy { it.time }
-        val hits = ArrayList<SsrHit>()
-        var pity = 0
-        for (record in sorted) {
-            pity++
-            val name = table.name(record.itemId, pool.typeId)
-            if (name != null) {
-                hits.add(
-                    SsrHit(
-                        time = record.time,
-                        itemId = record.itemId,
-                        name = name,
-                        costDraws = pity,
-                        isWai = table.isWai(record.itemId, pool.typeId)
-                    )
-                )
-                pity = 0
-            }
-        }
+        val (hits, pity) = analyzeHits(
+            sorted,
+            name = { table.name(it.itemId, pool.typeId) },
+            isWai = { table.isWai(it.itemId, pool.typeId) }
+        )
         return PoolResult(pool.typeId, pool.name, pool.isWeapon, sorted, hits, pity)
     }
 

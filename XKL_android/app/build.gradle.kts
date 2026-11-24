@@ -22,8 +22,8 @@ android {
         applicationId = "uk.gf2gacha.xkl"
         minSdk = 24
         targetSdk = 34
-        versionCode = 18
-        versionName = "0.1.10"
+        versionCode = 19
+        versionName = "0.1.11"
         buildConfigField("String", "BILI_APP_KEY", "\"$biliAppKey\"")
         testInstrumentationRunner = "uk.gf2gacha.xkl.MiniProgramKeyInstrumentation"
         resourceConfigurations += listOf("zh", "en")
@@ -107,4 +107,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt:coil:2.7.0")
+    // 抽数统计的 JVM 单测（app/src/test）：只测纯函数 analyzeHits/chronological，不碰 Android
+    testImplementation("junit:junit:4.13.2")
 }
